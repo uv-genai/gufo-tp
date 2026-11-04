@@ -599,6 +599,9 @@ struct ArgmaxCandidate {
 /// n_tokens * kArgmaxParts candidates.
 void Argmax(const float* logits, ArgmaxCandidate* scratch, std::int32_t* out,
             std::uint32_t n_tokens, std::uint32_t vocab, hipStream_t stream);
+/// row[1] = float bits of softmax(logits)[row[0]] over `vocab` entries.
+void ArgmaxConfidence(const float* logits, std::int32_t* row,
+                      std::uint32_t vocab, hipStream_t stream);
 
 /// One rank's part of a vocabulary split across two ranks: the argmax of its
 /// `count` logits, whose first entry is vocabulary index `first`, written as

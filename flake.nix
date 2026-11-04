@@ -128,6 +128,7 @@
             ps.jsonschema # independent structured-output schema oracle
             lpipsRocm
             ps.numpy
+            ps.av # official video decoder oracle
             ps.librosa # pinned official EmbeddingGemma audio decoder oracle
             ps.scipy
             ps.matplotlib # benchmark charts (tools/bench/model-bench.py render)
@@ -407,6 +408,7 @@
               pkgsSys.libwebp
               pkgsSys.libsndfile
               pkgsSys.soxr
+              pkgsSys.ffmpeg-headless
               pkgsSys.openssl
             ];
             src = staticAnalysisSource;
@@ -526,6 +528,7 @@
               pkgsSys.libwebp
               pkgsSys.libsndfile
               pkgsSys.soxr
+              pkgsSys.ffmpeg-headless
               pkgsSys.openssl
             ];
             src = testSource;

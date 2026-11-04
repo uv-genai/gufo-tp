@@ -6,7 +6,7 @@ redirect until that copy is removed).
 **When state changes** (merge, tag, push, script/config change, incident): **replace
 or edit this file in full** — do not leave stale tips, shas, or “untested” claims.
 
-Last updated: **2026-11-04** (session: **v0.28.1 merged on branch `merge-upstream-v0.28.1`** @ `f62fd881`; TP2 smoke **10/10 PASS**; **user llama-swap IN PROGRESS** — interim Q8 prose (eBPF tutorial): prompt 9,877 / gen 379, prefill **947.91 t/s**, gen **51.79 t/s**. After user PASS → PR into `main` → tag/release. Project is **Gufo-TP**; repo `uv-genai/gufo-tp`).
+Last updated: **2026-11-04** (session: **v0.28.1 validated — smoke 10/10 + user llama-swap PASS** (Q8 prose: prompt 9,877 / gen 379, prefill **947.91 t/s**, gen **51.79 t/s**, tutorial 50% longer than previous); PR → merge → tag/release. Project is **Gufo-TP**; repo `uv-genai/gufo-tp`).
 
 ---
 
@@ -30,8 +30,8 @@ Historical dated handoffs in `~/gufo-merge-handoff/HANDOFF-*.md` are **archive o
 | Branch | **`merge-upstream-v0.28.1`** (in flight; `main` @ `413677b1` until PR merges) |
 | Push | **`uv-genai` only** → https://github.com/uv-genai/gufo-tp.git |
 | Upstream | `origin` → gufo-org/gufo; local track **`gufo-org`** — **never push** |
-| Tip | **`413677b1`** = `main` (v0.27.0 released). **In flight:** branch **`merge-upstream-v0.28.1`** @ **`f62fd881`** (merge `96d86629` + blaslt fix) — smoke 10/10, llama-swap running, **PR pending user PASS** |
-| Upstream merged through | **v0.27.0** on `main`; **v0.28.1** merged on branch awaiting PR |
+| Tip | branch **`merge-upstream-v0.28.1`** validated (smoke 10/10 + llama-swap PASS); merging to `main` via PR |
+| Upstream merged through | **v0.28.1** (via PR; see §1) |
 | v0.27.0 tag | `tp2-rdma-merge-v0.27.0-2026-10-31` — https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.27.0-2026-10-31 |
 | v0.28.1 binary | sha **`42aded09e711ab88ea41152360949d6e96034a4e8323da3b6a0e027a5c95a577`** on both hosts (from branch `f62fd881`) |
 | Repo rename | 2026-10-29: `uv-genai/gufo` → **`uv-genai/gufo-tp`**; project is **Gufo-TP** (binary/CLI stays `gufo`) |

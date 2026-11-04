@@ -6,7 +6,7 @@ redirect until that copy is removed).
 **When state changes** (merge, tag, push, script/config change, incident): **replace
 or edit this file in full** — do not leave stale tips, shas, or “untested” claims.
 
-Last updated: **2026-11-04** (session: **v0.28.1 validated — smoke 10/10 + user llama-swap PASS** (Q8 prose: prompt 9,877 / gen 379, prefill **947.91 t/s**, gen **51.79 t/s**, tutorial 50% longer than previous); PR → merge → tag/release. Project is **Gufo-TP**; repo `uv-genai/gufo-tp`).
+Last updated: **2026-11-04** (session: **v0.28.1 merged via PR #20, smoke 10/10 + user llama-swap PASS; tagged & released** — see §1. Project is **Gufo-TP**; repo `uv-genai/gufo-tp`).
 
 ---
 
@@ -27,13 +27,13 @@ Historical dated handoffs in `~/gufo-merge-handoff/HANDOFF-*.md` are **archive o
 | | |
 | --- | --- |
 | Tree | `/home/ugo/projects/gufo` |
-| Branch | **`merge-upstream-v0.28.1`** (in flight; `main` @ `413677b1` until PR merges) |
+| Branch | **`main`** |
 | Push | **`uv-genai` only** → https://github.com/uv-genai/gufo-tp.git |
 | Upstream | `origin` → gufo-org/gufo; local track **`gufo-org`** — **never push** |
-| Tip | branch **`merge-upstream-v0.28.1`** validated (smoke 10/10 + llama-swap PASS); merging to `main` via PR |
-| Upstream merged through | **v0.28.1** (via PR; see §1) |
+| Tip | **`2a7c0262`** = tag **`tp2-rdma-merge-v0.28.1-2026-11-04`** (PR #20 squash; `main` == `uv-genai/main`) |
+| Upstream merged through | **v0.28.1** (`12effe36`); README tracks through v0.28.1; released |
 | v0.27.0 tag | `tp2-rdma-merge-v0.27.0-2026-10-31` — https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.27.0-2026-10-31 |
-| v0.28.1 binary | sha **`42aded09e711ab88ea41152360949d6e96034a4e8323da3b6a0e027a5c95a577`** on both hosts (from branch `f62fd881`) |
+| Release notes | **https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.28.1-2026-11-04** (v0.27.0: …/tp2-rdma-merge-v0.27.0-2026-10-31) |
 | Repo rename | 2026-10-29: `uv-genai/gufo` → **`uv-genai/gufo-tp`**; project is **Gufo-TP** (binary/CLI stays `gufo`) |
 
 **Non-negotiables:** `grep -ci nix AGENTS.md` → **0**; never run that package
@@ -48,11 +48,11 @@ directive 2026-10-29) so the tag row shows the notes link.
 | | |
 | --- | --- |
 | Path | `build/release/gufo` on **both** hosts |
-| sha256 | **`bcba05beca2503ec76dc823b97aa414daa163622f0c7896258610f166de8555d`** (v0.27.0) — shipped to strix-halo-1 already |
-| Built from | tip **`67e20e61`** (v0.27.0 merge + kernels `kWmmaMemberShift` fix); format clean; tree == HEAD |
-| TP2 smoke | **2026-10-31 PASS 10/10** on both hosts, sha `bcba05be…` matched; `/ready` 200; PONG, 3481-tok long, short eBPF NL content asserts, 5× session, 2× agent prefix; logs free of `tp_pair_lost`/mismatch/status5; only expected `q8_0_expanded` WARN (upstream #788, 168 tensors); pair stopped for user llama-swap |
+| sha256 | **`42aded09e711ab88ea41152360949d6e96034a4e8323da3b6a0e027a5c95a577`** (v0.28.1) — both hosts |
+| Built from | tip **`2a7c0262`** (PR #20 squash of merge-upstream-v0.28.1); format clean |
+| TP2 smoke | **2026-11-04 PASS 10/10** on both hosts, sha `42aded09…` matched; `/ready` 200; PONG, 3481-tok long, short eBPF NL content asserts, 5× session, 2× agent prefix; logs free of `tp_pair_lost`/mismatch/status5; only expected `q8_0_expanded` WARN (168 tensors) |
 | v0.26.0 smoke | **2026-10-29 PASS** on both hosts, sha `7b9c4e48…` matched; `/ready` 200; 10/10 requests (PONG, 3481-tok long, short eBPF NL w/ content asserts, 5× session, 2× agent prefix); logs free of `tp_pair_lost`/mismatch/status5; thinking off via `chat_template_kwargs` for asserts |
-| User llama-swap (Q8-tp2) | **2026-10-29 PASS** (v0.26.0) — prefill “way faster”, decode ~56 vs ~45; **2026-10-31 PASS** (v0.27.0): “works well” |
+| User llama-swap (Q8-tp2) | **2026-10-29 PASS** (v0.26.0); **2026-10-31 PASS** (v0.27.0): “works well”; **2026-11-04 PASS** (v0.28.1): prose eBPF tutorial prompt 9,877 / gen 379, prefill **947.91 t/s**, gen **51.79 t/s**, tutorial 50% longer than previous — speed and quality both good |
 | Three-way spot bench | **2026-10-29** sha `7b9c4e48…`; artifact `artifacts/three-way-2026-10-29.json`; driver `tools/bench/three_way_q4_q8.py` **on strix-halo-1**; REPS medians, unique salts, `cached=0`, `--think off`, ctx 32768 |
 | Released | **`tp2-rdma-merge-v0.27.0-2026-10-31`** (this tag) and `tp2-rdma-merge-v0.26.0-2026-10-29` on uv-genai with GitHub Release notes; **not** pushed to origin |
 | Configure | three host flags in `AGENTS.md` (HIP compiler + `-include format`) |
@@ -151,7 +151,7 @@ Prompt lookup type: **`speculative::PromptLookup<>`** (moved in v0.22), payload 
 6. **User llama-swap** validation (Q8-tp2).
 7. Tag `tp2-rdma-merge-vX.Y.Z-<YYYY-MM-DD>`; push **uv-genai only**.
 
-Dated tags: v0.16.0-2026-10-17 … **v0.27.0-2026-10-31** (Release notes linked). Next: next upstream. **Each new tag: push uv-genai + create GitHub Release with notes.**
+Dated tags: v0.16.0-2026-10-17 … **v0.28.1-2026-11-04** (Release notes linked). Next: next upstream. **Each new tag: push uv-genai + create GitHub Release with notes.**
 
 ---
 

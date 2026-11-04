@@ -21,7 +21,6 @@ bool OwnF16(hipDataType type, int k) {
   // rows (m == 48 is a TP2 rank's half of the recurrent gates, 96/2).
   return type == HIP_R_16F && k == 2560;
 }
-}
 
 bool OwnBf16(hipDataType type, int m, int k) {
   // The indexer query and key projections, and a TP2 rank's halves.

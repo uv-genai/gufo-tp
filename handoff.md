@@ -54,7 +54,7 @@ directive 2026-10-29) so the tag row shows the notes link.
 | v0.26.0 smoke | **2026-10-29 PASS** on both hosts, sha `7b9c4e48…` matched; `/ready` 200; 10/10 requests (PONG, 3481-tok long, short eBPF NL w/ content asserts, 5× session, 2× agent prefix); logs free of `tp_pair_lost`/mismatch/status5; thinking off via `chat_template_kwargs` for asserts |
 | User llama-swap (Q8-tp2) | **2026-10-29 PASS** (v0.26.0); **2026-10-31 PASS** (v0.27.0): “works well”; **2026-11-04 PASS** (v0.28.1): prose eBPF tutorial prompt 9,877 / gen 379, prefill **947.91 t/s**, gen **51.79 t/s**, tutorial 50% longer than previous — speed and quality both good |
 | Three-way spot bench | **2026-10-29** sha `7b9c4e48…`; artifact `artifacts/three-way-2026-10-29.json`; driver `tools/bench/three_way_q4_q8.py` **on strix-halo-1**; REPS medians, unique salts, `cached=0`, `--think off`, ctx 32768 |
-| Released | **`tp2-rdma-merge-v0.27.0-2026-10-31`** (this tag) and `tp2-rdma-merge-v0.26.0-2026-10-29` on uv-genai with GitHub Release notes; **not** pushed to origin |
+| Released | **`tp2-rdma-merge-v0.28.1-2026-11-04`** (this tag) plus `v0.27.0-2026-10-31` and `v0.26.0-2026-10-29` on uv-genai with GitHub Release notes; **not** pushed to origin |
 | Configure | three host flags in `AGENTS.md` (HIP compiler + `-include format`) |
 
 **TP2 serve defaults** (all four `tools/tp2/rank{0,1}-{q4,q8}.sh`):
@@ -141,15 +141,20 @@ Prompt lookup type: **`speculative::PromptLookup<>`** (moved in v0.22), payload 
 
 ## 6. Process (each new upstream release)
 
-1. `git fetch origin`; merge **one tag** into fork `main` per `docs/MERGE-CHECKLIST.md`.
-2. Resolve conflicts **keeping TP2 gates**; README/AGENTS: manual review, no blind
-   merge; AGENTS nix count **0**.
+1. `git fetch origin`; create branch **`merge-upstream-vX.Y.Z`**; merge **one tag**
+   per `docs/MERGE-CHECKLIST.md`.
+2. Resolve conflicts **keeping TP2/MTP gates**; README/AGENTS/SERVER docs: **semantic
+   merge** (fork owns them — integrate upstream additions, keep Gufo-TP branding);
+   AGENTS nix count **0**.
 3. Format (`tools/ci/check-format.py`) + release build (host flags).
-4. Ship **same sha** to strix-halo-1; no leftover `gufo`.
-5. Smoke: PONG, >1024-token prompt, short NL (eBPF-style content assert),
+4. Ship **same sha** to strix-halo-1; no leftover `gufo` (pre-flight: ports 18515/16,
+   `amd-smi` processes, both hosts `pgrep -ax gufo`).
+5. Smoke on branch: PONG, >1024-token prompt, short NL (eBPF-style content assert),
    ≥5 @ sessions, agent-style, logs free of mismatch/status5/`tp_pair_lost`.
 6. **User llama-swap** validation (Q8-tp2).
-7. Tag `tp2-rdma-merge-vX.Y.Z-<YYYY-MM-DD>`; push **uv-genai only**.
+7. **PR into `main`** (squash merge; title `chore: merge upstream vX.Y.Z into main`).
+8. Tag `tp2-rdma-merge-vX.Y.Z-<YYYY-MM-DD>` on merged `main`; push **uv-genai only**;
+   **GitHub Release with notes** (required).
 
 Dated tags: v0.16.0-2026-10-17 … **v0.28.1-2026-11-04** (Release notes linked). Next: next upstream. **Each new tag: push uv-genai + create GitHub Release with notes.**
 
@@ -159,7 +164,7 @@ Dated tags: v0.16.0-2026-10-17 … **v0.28.1-2026-11-04** (Release notes linked)
 
 | Path | Purpose |
 | --- | --- |
-| `README.md` | fork overview; tracks upstream **through v0.26.0** (no nix section; Windows build note kept; TP2 table still 2026-10-14 numbers) |
+| `README.md` | fork overview; tracks upstream **through v0.28.1** (Gufo-TP branding; no nix section; Windows build note kept; TP2 table still 2026-10-14 numbers) |
 | `AGENTS.md` | build, remotes, **TP2 hazard table** |
 | `docs/MERGE-CHECKLIST.md` | merge + runtime checklist |
 | `docs/MERGE-UPSTREAM-2026-10-24.md` | series write-up |

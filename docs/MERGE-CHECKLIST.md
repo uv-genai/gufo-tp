@@ -21,8 +21,13 @@ See also: [TP2.md](models/qwen3.8-flash-next/TP2.md) · [AGENTS.md](../AGENTS.md
     `mtp_policy.hpp`)
 - [ ] For each such commit, ask: **does it change how many GPU collectives a
   decode/prefill cycle runs?** If yes → TP2 hazard (table below).
-- [ ] Prefer **one upstream release per session**: merge → format/build →
-  TP2 smoke → user llama-swap validation → tag/push, then the next tag.
+- [ ] Prefer **one upstream release per session**: branch
+  `merge-upstream-vX.Y.Z` → merge tag → format/build → TP2 smoke → user
+  llama-swap validation → **PR into `main` (squash)** → tag/push + GitHub
+  Release with notes, then the next tag.
+- [ ] README / AGENTS / handoff / SERVER docs are **fork-owned**: integrate
+  upstream additions semantically; keep Gufo-TP branding; `grep -ci nix
+  AGENTS.md` → **0**.
 
 ## 2. TP2 hazard policy (non-negotiable)
 

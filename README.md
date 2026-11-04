@@ -13,7 +13,7 @@ parallelism across two hosts** on top.
 > **Gufo-TP is its own project.** It merges
 > [gufo-org/gufo](https://github.com/gufo-org/gufo) with the **TP2-enabled fork**
 > [neuhaus/gufo](https://github.com/neuhaus/gufo), tracks upstream `main`
-> (through **v0.27.0**), and keeps every one-host feature and
+> (through **v0.28.1**), and keeps every one-host feature and
 > fix; the forked work is the two-host path (InfiniBand, RoCE v2, or
 > USB4/Thunderbolt) and its launchers and benchmarks.
 >
@@ -40,12 +40,12 @@ parallelism across two hosts** on top.
 On one host, Flash-Next decode and prefill are already excellent. **TP2 is
 faster than one host at every concurrency we measured**, and it holds contexts
 and the full Q8 model that do not fit a single 128 GiB APU. After merging
-upstream through v0.27.0, one-host Flash-Next reports **1,801.01 tok/s AR
+upstream through v0.28.1, one-host Flash-Next reports **1,801.01 tok/s AR
 prefill** and up to **116.93 tok/s tg** (see [Benchmarks](docs/models/qwen3.8-flash-next/BENCHMARKS.md)).
 The matched TP2 series below is from the v0.15.0-era binary (Q4 MTP,
 `pp2048 / tg128`, 2026-10-14). TP2 **runtime** was requalified on
 `tp2-rdma-merge-v0.27.0-2026-10-31` (smoke 10/10 + user llama-swap approved);
-the table numbers below have **not** been re-benchmarked on v0.27.0:
+the table numbers below have **not** been re-benchmarked on v0.28.1:
 
 | Depth (tokens) | 1-host pp | **TP2 pp** | 1-host tg | **TP2 tg** |
 | ---: | ---: | ---: | ---: | ---: |
@@ -244,6 +244,7 @@ limits disallow those pins. Gufo leaves `HSA_USERPTR_FOR_PAGED_MEM` unchanged.
 | ROCm HIP compiler/runtime, hipBLAS, hipBLASLt, rocBLAS | GPU execution and matrix multiplication |
 | hipCUB, rocPRIM, rocWMMA headers | Compiled GPU kernels |
 | ICU, libcurl, OpenSSL, libpng, libjpeg, libwebp | Tokenization, HTTPS, hashing and images |
+| FFmpeg development libraries | Video embedding decoding and RGB conversion |
 | libsndfile, libsoxr | Audio decoding and reference-compatible resampling |
 | FFmpeg and ffprobe | Video/audio output; invoked as separate executables |
 | libibverbs (rdma-core) | Optional TP2 two-host path (`-DGUFO_ENABLE_TP2_RDMA=ON`) |
@@ -256,7 +257,7 @@ For example, on Debian/Ubuntu the ordinary system libraries are:
 
 ```sh
 sudo apt install build-essential cmake ninja-build pkg-config \
-  libicu-dev libcurl4-openssl-dev libssl-dev libpng-dev libjpeg-dev libwebp-dev libsndfile1-dev libsoxr-dev ffmpeg
+  libicu-dev libcurl4-openssl-dev libssl-dev libpng-dev libjpeg-dev libwebp-dev libsndfile1-dev libsoxr-dev libavformat-dev libavcodec-dev libavutil-dev libswscale-dev ffmpeg
 
 # ROCm libraries from the table, named as AMD's repository ships them.
 sudo apt install hipblas-dev hipblaslt-dev rocblas-dev \

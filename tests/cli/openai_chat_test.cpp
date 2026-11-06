@@ -6241,10 +6241,11 @@ void TestToolTagBoundaries() {
           if (implicit && initial != Initial::kReasoning)
             continue;
           const auto prefix =
-              initial == Initial::kContent ? std::string{}
-              : implicit ? std::string("Check tags.\n\n")
-                         : (initial == Initial::kAuto ? "<think>" : "") +
-                               std::string("Check tags.</think>\n");
+              initial == Initial::kContent
+                  ? std::string{}
+                  : (implicit ? std::string("Check tags.\n\n")
+                              : (initial == Initial::kAuto ? "<think>" : "") +
+                                    std::string("Check tags.</think>\n"));
           const auto raw = prefix + call + "\n" + noop;
           for (const int api : {0, 1, 2}) {
             const auto buffered =

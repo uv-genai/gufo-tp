@@ -30,6 +30,13 @@ The runner uses an existing pair and never launches a GPU process. Its
 `--phase timing` workload provides a small identical-history main/candidate
 control; compare each request and phase at the usual 5% and 10-ms thresholds.
 
+When a numerical cache epoch changes, run `--phase legacy-seed` on the
+previous binary with private disk caches. Restart both ranks with the
+candidate using those caches, then run `--phase invalidate-legacy --manifest
+<legacy-output>/manifest.json`. The old record must miss, prefill the complete
+prompt and return the expected text. Use fresh caches for the seed/restore
+qualification above.
+
 ## Embedding, ASR and TTS service checks
 
 `model_services.py` starts an isolated loopback production server, checks readiness

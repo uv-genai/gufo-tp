@@ -9,6 +9,8 @@ and TP2 320 intermediate widths, short restored passes and alternate down
 tile widths. The original fails these new Q8 route checks with zero paired
 outputs. `projection_ops` passes TP2 SSM output (2560 × 3072), TP2 attention
 and YaRN with the actual 12/1 heads. No tolerances or expected values changed.
+The persistence identity carries a new routed-projection epoch so snapshots
+computed by the former projection path miss after upgrade on both ranks.
 Full-model serving evidence is tracked in `handoff.md`.
 
 Sparse WMMA attention retains its existing absolute error envelope of 0.02

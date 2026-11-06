@@ -451,6 +451,8 @@ std::vector<std::uint8_t> QwenFlashNextCompatibilityIdentity(
            << "chat_template_reference_sha256="
            << tokenization::QwenChatTemplate::OfficialTemplateSha256() << '\n'
            << "state_abi=qwen38-flash-next-rocm-session-v1\n"
+           // Reject states computed by the former paired Q8 expert path.
+           << "routed_projection=q8-paired-signed-v1\n"
            << "payload_layout=qfn-rocm-session-snapshot-v"
            << models::qwen38_flash_next::Session::kSnapshotPayloadVersion
            << '\n'

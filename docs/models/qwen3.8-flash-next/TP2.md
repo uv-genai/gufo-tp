@@ -225,6 +225,9 @@ treats as a miss (the state is reset on both ranks and prefilled). TP2 files
 carry the rank in their cache identity, so neither a one-host server nor the
 other rank restores them. Within one process, a file of a request rank 1
 rejected is a miss, and a restore before the verdict depends on it.
+The Flash-Next identity also includes the routed-projection numerical epoch;
+the paired Q8 correction invalidates older computed states without changing
+the snapshot payload layout.
 
 **Agreement.** Both ranks digest every call and its result; `kEnd` carries rank
 0's digest and call count, and rank 1 fails the request on a difference. Under

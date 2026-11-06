@@ -168,12 +168,30 @@ def timing(check):
         assert again['usage']['cached_tokens'] > 0
 
 
+def legacy_seed(check):
+    body = payload('LEGACY_TP2', True, False)
+    result = check.call('legacy-prime', '/v1/chat/completions', body)
+    assert result['text'].strip() == 'BETA', result
+    assert result['metrics']['cache_disk_queued_bytes'] > 0, result
+    return body
+
+
+def invalidate_legacy(check, body):
+    result = check.call('legacy-invalidated', '/v1/chat/completions',
+                        {**body, 'cache_persist': False})
+    assert result['text'].strip() == 'BETA', result
+    assert result['usage']['cached_tokens'] == 0, result
+    assert not result['metrics']['cache_disk_hit'], result
+    assert result['metrics']['cache_disk_queued_bytes'] == 0, result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--url', required=True)
     parser.add_argument('--model', required=True)
     parser.add_argument('--mode', choices=('off', 'mtp'), required=True)
-    parser.add_argument('--phase', choices=('seed', 'restore', 'timing'), required=True)
+    parser.add_argument('--phase', choices=('seed', 'restore', 'timing',
+                                           'legacy-seed', 'invalidate-legacy'), required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--manifest', type=Path)
     args = parser.parse_args()
@@ -183,10 +201,17 @@ def main():
         if args.phase == 'seed':
             manifest = seed(check)
             (args.output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
-        elif args.phase == 'restore':
+        elif args.phase in ('restore', 'invalidate-legacy'):
             if not args.manifest:
-                parser.error('--manifest is required for restore')
-            restore(check, json.loads(args.manifest.read_text()))
+                parser.error('--manifest is required for this phase')
+            manifest = json.loads(args.manifest.read_text())
+            if args.phase == 'restore':
+                restore(check, manifest)
+            else:
+                invalidate_legacy(check, manifest)
+        elif args.phase == 'legacy-seed':
+            manifest = legacy_seed(check)
+            (args.output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
         else:
             timing(check)
         drafts = sum(row['usage']['draft_tokens'] for row in check.rows.values())

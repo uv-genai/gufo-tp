@@ -246,12 +246,9 @@ development builds. `GUFO_EXTENSIONS` is also an exact semicolon list; `*`
 selects discovery and an explicitly empty list selects none. An explicit list
 and lock mode conflict, and an empty entry from a stray `;` is rejected.
 
-Bootstrap: the current lock contains no migrated extensions. Existing legacy
-models still build and serve through their existing routes in both modes; they
-are not falsely reported as extension providers. Lock mode controls discovered
-extension manifests only. The pilot and later model cards populate this list as
-providers move, while Card14 adds metadata for remaining models before code
-migration. `gufo --version` preserves the version line first, then reports API,
+The lock now lists the eight migrated model extensions. Discovery also includes
+supported unshipped extensions; lock mode selects exactly the recorded names.
+`gufo --version` preserves the version line first, then reports API,
 selection and extension provenance. `gufo diagnose --section extensions
 [--json]` inspects provenance without model loads/HIP probes; ordinary human
 `diagnose` also lists extensions. Existing diagnostic JSON schema is unchanged.

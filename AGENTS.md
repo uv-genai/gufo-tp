@@ -46,6 +46,14 @@ dependency versions when comparing results.
 
 ## Focused tests
 
+**Model scope: never launch Qwen3.8 27B Q8**, for tests, benchmarks or
+diagnostics. The user explicitly prohibited it. Prioritize Qwen3.8 Flash-Next
+(Q4 and Q8, including TP2/MTP). Qwen3.8 27B Q4 is allowed only for a specific,
+justified check; do not add it automatically to a broad matrix. This overrides
+the generic multi-profile guidance below. State a finite validation scope and
+stopping criterion before model work; do not extend a Flash-Next task into
+unrelated model qualification.
+
 Formatting and Python repository checks run on the editing host; they do not
 need the GPU. Before committing C++ changes, run the shared CI check:
 
@@ -77,7 +85,7 @@ expose risk.
 
 Text API functional/regression tests live in [tests/functional/](tests/functional/README.md).
 Select suites explicitly. Model-specific changes need the affected model/modes;
-use all four profiles only for shared behavior changes. Run correctness on the
+use multiple permitted profiles only for shared behavior changes. Run correctness on the
 candidate; use main for matched affected timing controls and suspected regressions,
 not a duplicate full correctness run. Reuse baseline evidence only when revision,
 toolchain, harness, model, settings and cache history match. Include `long-context`

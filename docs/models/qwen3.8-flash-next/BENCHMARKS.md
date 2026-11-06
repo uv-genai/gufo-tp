@@ -260,7 +260,8 @@ host; with a cached prefix, prefill gains 3–15%.
 
 The [upstream merge record](../../MERGE-UPSTREAM-2026-11-06.md) records the
 native build, four TP2 modes, numerical checks and timing follow-ups for the
-extension migration and subsequent checkpoint changes. These use four sessions, context capacity 524288 and
+extension migration, checkpoint changes and v0.31 provider contracts.
+These use four sessions, context capacity 524288 and
 static YaRN 2; the earlier November 6 controls below use two sessions and are
 not the same baseline. Initial slower samples and unchanged-main controls
 are retained. These checks do not replace or requalify the historical

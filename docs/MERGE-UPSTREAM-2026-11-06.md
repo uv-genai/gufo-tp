@@ -165,7 +165,120 @@ the retained POSIX TP transport has not been ported. Hosted Linux and API/title
 results are linked from the pull request. Both GPUs are unloaded after testing.
 
 
-## Subsequent tags
+## v0.31.0
 
-v0.31.0 (`be7bd3be`) follows on its own branch and pull request after validation.
+Upstream tag `be7bd3be` (`v0.31.0`), based on validated v0.30.0 PR #30
+(`8d52f1c0`). Its upstream ancestry was recorded with no tree change before
+merging this tag on its separate branch.
+
+Provider sampling defaults, tool-dialect identity, reasoning markup and shared
+options are integrated with the mirrored runner. TP control protocol 23 carries
+the reasoning opener and whitespace mask and the exact automatic/reasoning/
+content constraint state. Older peers are rejected; both hosts must upgrade.
+
+The upstream component-only API transition is merged semantically: native
+snapshot/fork and persistence interfaces remain for TP2, including the dual
+serving lease, with public defaults for component-only providers. API 0.2.8
+records that retained contract. Component providers explicitly opt into their
+cache; TP2 continues to disable component restores and in-pass checkpoints.
+Native RAM/disk caches and the mirrored prompt-context wrapper honor legal
+prefill stops and preserve prefix identities. New tests cover these paths and
+sampling agreement across the control channel, including opener token zero.
+
+The equivalent upstream metadata-only GGUF fix is accepted with its clearer
+missing-padding diagnostic, retaining both sets of regression tests. Q4 weight
+links and native build/remote instructions were already current; README.md and
+AGENTS.md remain project-owned. Shared kernel math and TP2 optimization gates
+are retained. Snapshot payload 20 and the static YaRN cache identity remain.
+
+Candidate executable `5b36be34283d77f7dfa61bbcff4beece8296b3e5`, SHA-256
+`22e628c8f20aed0ee0067606242e63761fa6004d182a335e5fc949a76d77792b`.
+Raw evidence: `artifacts/upstream-2026-11-06/v0.31.0/`.
+
+- 10 focused native suites and 109/109 native PR contracts pass. Release build,
+  clang-format 21/23, API policy, metadata generation, documentation and strict
+  extension/link checks pass.
+- GPU verification/sampling passes. Single-host Q4 AR/MTP image-state restoration
+  compares logits and component bytes, rejects missing/changed image attachment,
+  and passes restoration before future images.
+
+[PR #31](https://github.com/uv-genai/gufo-tp/pull/31) integrates this tag.
+
+- Q8 TP2 passes 332 AR/MTP checks, including 96 reasoning-budget cases,
+  provider sampling defaults, tool streaming and Messages tools, constraints,
+  long prefill, cache reuse, concurrency, cancellation and disk restore after
+  restarting both ranks. Actual MTP drafts and clean rank logs are required.
+- Q4 TP2 passes 392 AR/MTP checks, including the same controls plus 60 image
+  checks. All four modes pass, using the byte-identical candidate on both
+  hosts. No rank error or forced shutdown occurred.
+- Single-host Flash-Next Q4 AR and MTP pass sampling defaults, tool streaming,
+  reasoning budgets, long-context, cancellation, image-cache reuse and disk
+  restart. Outputs and prefill/cache work match the v0.30.0 controls. MTP's
+  3090 per-request/phase and lifecycle comparisons pass. AR retains 23 timing
+  flags, principally concurrent snapshot/admission variation and three maximum
+  inter-token-delay observations; these remain advisory/inconclusive.
+- The completed Qwen27 Q4 AR/DFlash2 checks also pass functionally, with no
+  output/work differences. Their initial timing reports retain 13 and 21 flags.
+  The AR sampling-prefix main/candidate/main controls completed before shutdown:
+  the final unchanged-main observation reproduces the short-prefill variation
+  (288.7–311.0 ms on main versus 309.2–313.5 ms on the candidate for one case).
+  The combined 1118 prefix-phase comparisons have 1078 within limits and 40
+  inconclusive, with no confirmed slowdown. Concurrent requests exchange
+  admission order and snapshot timing; no per-request flags are averaged away.
+
+Validation closes with the evidence already collected. No further model runs
+are queued. The user's scope is Flash-Next; **Qwen3.8 27B Q8 must never be run
+again**, and 27B Q4 requires a specific justification. Its earlier Q8 baseline
+hit the 900-second suite deadline, then completed with a 1800-second suite
+deadline (120-second request deadlines and timing margins unchanged). The
+candidate was stopped after sampling/tool checks and part of the reasoning
+suite; Q8 AR/DFlash2 is not qualified. The additional Q4 DFlash2 timing prefix
+was also stopped. Interrupted and incomplete reports are retained as such.
+
+The [single-host result index](models/qwen3.8-flash-next/artifacts/upstream-v0.31.0/single-host-results.json),
+[36119 recorded phase observations](models/qwen3.8-flash-next/artifacts/upstream-v0.31.0/single-host-observations.csv.gz),
+[14598 comparisons](models/qwen3.8-flash-next/artifacts/upstream-v0.31.0/single-host-comparisons.csv.gz)
+and [completed Q4 AR prefix qualification](models/qwen3.8-flash-next/artifacts/upstream-v0.31.0/single-qwen27-q4-off-prefix-qualification.json.gz)
+retain completed, failed-deadline and interrupted work. These totals are
+evidence counts, not blanket pass counts. The remaining timing flags are
+unqualified; no single-host speedup or all-model qualification is claimed.
+
+Vision-enabled startup now hashes and uploads the projector before readiness.
+In the Qwen27 Q4 AR warm restart, loader time changes from 1329 to 1824 ms;
+the candidate records 424 ms for projector identity and 74 ms for upload.
+The harness observes readiness at 1521.8 versus 2021.1 ms. These lifecycle
+measurements include new preparation work and remain separate from matched
+inference timings. The eager preparation is retained from upstream.
+
+Timing compares the matching v0.30.0 executable `7f0d93f2`, with the same
+ROCm toolchain, model files and ordered request histories. TP2 uses four
+sessions, context capacity 524288 and static YaRN 2. Standard speed remains
+canonical prose pp2048/tg128 at d0 (actual 2040 prompt tokens), greedy,
+thinking off and one active client. Per-request/per-phase gates remain both
+5% and 10 ms, with every initial and follow-up observation retained.
+
+Q8 AR/MTP and Q4 MTP measured timings are within limits. Q4 AR initially
+flags standard decode, 3579.2 → 3818.6 ms (+6.7%); its output and work counts
+match. The focused main/candidate/main repeat gives 3592.9 / 3620.3 /
+3580.1 ms, with every measured candidate phase within limits against both
+controls. The initial slower capture did not reproduce and remains
+advisory/inconclusive; no blanket timing pass or speedup is claimed.
+
+The [352 phase observations](models/qwen3.8-flash-next/artifacts/upstream-v0.31.0/timing-observations.csv)
+and [224 comparisons](models/qwen3.8-flash-next/artifacts/upstream-v0.31.0/timing-comparisons.csv)
+retain initial runs, focused repeats and unchanged-main controls, including
+setup and warmup. All measured output hashes and prompt, completion, cache,
+prefill and draft counts match.
+
+Hosted Linux CPU/repository checks and PR title/API policy pass for code head
+`5b36be34` ([Linux run](https://github.com/uv-genai/gufo-tp/actions/runs/42228586718)).
+Later changes are documentation and retained evidence only. The automatic
+Windows package job fails on the existing POSIX TP control header
+`arpa/inet.h`; its extension-contract job passes.
+
+DeepSeek Flash 0731 weights are absent on both hosts; its AR/DSpark GPU paths
+are not qualified by these checks. Windows remains outside this Linux task's
+scope. The intermittent client stream error remains unreproduced, with no
+claim that this integration fixes it.
+
 Unreleased upstream main (`211dba49` at discovery) is excluded.

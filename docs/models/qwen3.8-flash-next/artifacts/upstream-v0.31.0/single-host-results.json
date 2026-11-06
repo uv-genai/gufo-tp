@@ -1,0 +1,134 @@
+[
+  {
+    "run": "single-flash-q4-mtp-baseline",
+    "host": "strix-halo-2",
+    "status": "passed",
+    "functional_status": "passed",
+    "error": null,
+    "measurements_error": null
+  },
+  {
+    "run": "single-flash-q4-mtp-candidate",
+    "host": "strix-halo-2",
+    "status": "passed",
+    "functional_status": "passed",
+    "error": null,
+    "measurements_error": null,
+    "quality_or_coverage_changes": []
+  },
+  {
+    "run": "single-flash-q4-off-baseline",
+    "host": "strix-halo-2",
+    "status": "passed",
+    "functional_status": "passed",
+    "error": null,
+    "measurements_error": null
+  },
+  {
+    "run": "single-flash-q4-off-candidate",
+    "host": "strix-halo-2",
+    "status": "inconclusive",
+    "functional_status": "passed",
+    "error": null,
+    "measurements_error": null,
+    "quality_or_coverage_changes": []
+  },
+  {
+    "run": "single-qwen27-q4-dflash2-baseline",
+    "host": "strix-halo-2",
+    "status": "passed",
+    "functional_status": "passed",
+    "error": null,
+    "measurements_error": null
+  },
+  {
+    "run": "single-qwen27-q4-dflash2-candidate",
+    "host": "strix-halo-2",
+    "status": "inconclusive",
+    "functional_status": "passed",
+    "error": null,
+    "measurements_error": null,
+    "quality_or_coverage_changes": []
+  },
+  {
+    "run": "single-qwen27-q4-dflash2-prefix-main-repeat",
+    "host": "strix-halo-2",
+    "status": "running",
+    "functional_status": null,
+    "error": null,
+    "measurements_error": null,
+    "final_disposition": "interrupted at finite closeout; no qualification pass; no process remains running"
+  },
+  {
+    "run": "single-qwen27-q4-off-baseline",
+    "host": "strix-halo-2",
+    "status": "passed",
+    "functional_status": "passed",
+    "error": null,
+    "measurements_error": null
+  },
+  {
+    "run": "single-qwen27-q4-off-candidate",
+    "host": "strix-halo-2",
+    "status": "inconclusive",
+    "functional_status": "passed",
+    "error": null,
+    "measurements_error": null,
+    "quality_or_coverage_changes": []
+  },
+  {
+    "run": "single-qwen27-q4-off-prefix-candidate-repeat",
+    "host": "strix-halo-2",
+    "status": "inconclusive",
+    "functional_status": "passed",
+    "error": null,
+    "measurements_error": null,
+    "quality_or_coverage_changes": []
+  },
+  {
+    "run": "single-qwen27-q4-off-prefix-main-control",
+    "host": "strix-halo-2",
+    "status": "inconclusive",
+    "functional_status": "passed",
+    "error": null,
+    "measurements_error": null,
+    "quality_or_coverage_changes": []
+  },
+  {
+    "run": "single-qwen27-q4-off-prefix-main-repeat",
+    "host": "strix-halo-2",
+    "status": "passed",
+    "functional_status": "passed",
+    "error": null,
+    "measurements_error": null
+  },
+  {
+    "run": "single-qwen27-q8-off-baseline",
+    "host": "strix-halo-1",
+    "status": "failed",
+    "functional_status": "failed",
+    "error": null,
+    "measurements_error": null,
+    "final_disposition": "whole-suite 900-second timeout; incomplete, not a pass",
+    "future_policy": "permanently prohibited by user; never run this model again"
+  },
+  {
+    "run": "single-qwen27-q8-off-baseline-extended",
+    "host": "strix-halo-1",
+    "status": "passed",
+    "functional_status": "passed",
+    "error": null,
+    "measurements_error": null,
+    "future_policy": "permanently prohibited by user; never run this model again"
+  },
+  {
+    "run": "single-qwen27-q8-off-candidate-extended",
+    "host": "strix-halo-1",
+    "status": "running",
+    "functional_status": null,
+    "error": null,
+    "measurements_error": null,
+    "final_disposition": "interrupted at finite closeout; no qualification pass; no process remains running",
+    "future_policy": "permanently prohibited by user; never run this model again"
+  }
+]

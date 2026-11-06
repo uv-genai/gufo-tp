@@ -733,9 +733,11 @@
               export CCACHE_NOHASHDIR=true
             '';
           };
+          tp2-rdma = pkgs.${system}.mkShell {
+            inputsFrom = [ self.packages.${system}.tp2-rdma ];
+            packages = [ pkgs.${system}.clang-tools ];
+          };
         }
       );
-
-
     };
 }

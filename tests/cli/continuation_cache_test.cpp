@@ -50,6 +50,45 @@ struct FakeSnapshot final : gufo::server::ContinuationSnapshot {
   const gufo::server::ContinuationState* owner;
 };
 
+void TestSnapshotPrefillAlignment() {
+  using Tokens = std::vector<gufo::server::ContinuationToken>;
+  std::vector<std::size_t> invalidations(1);
+  gufo::server::ContinuationCache cache(
+      1, [&] { return std::make_unique<FakeState>(0, &invalidations); },
+      {.restore =
+           [](gufo::server::ContinuationState& state,
+              const gufo::server::ContinuationSnapshot& snapshot) {
+             dynamic_cast<FakeState&>(state).value =
+                 dynamic_cast<const FakeSnapshot&>(snapshot).value;
+           },
+       .capacity_bytes = [] { return 1024; },
+       .prefill_alignment = 2},
+      4);
+  auto seed = cache.Acquire(Tokens{1, 2, 3, 4, 5});
+  Expect(seed.TryReserveSnapshot(sizeof(std::size_t), 4),
+         "reserve aligned fallback");
+  Expect(seed.PublishSnapshot({1, 2, 3, 4},
+                              std::make_shared<FakeSnapshot>(4)) != 0,
+         "publish aligned fallback");
+  Expect(seed.TryReserveSnapshot(sizeof(std::size_t), 5, true),
+         "reserve exact retry");
+  seed.Commit({1, 2, 3, 4, 5}, std::make_unique<FakeSnapshot>(5));
+  Expect(cache.CachedPrefixTokens(Tokens{1, 2, 3, 4, 5}) == 5,
+         "unaligned snapshot is an exact-prompt hit");
+  Expect(cache.CachedPrefixTokens(Tokens{1, 2, 3, 4, 5, 6}) == 4,
+         "longer prompt must skip the unaligned snapshot");
+  auto extension = cache.Acquire(Tokens{1, 2, 3, 4, 5, 6});
+  Expect(extension.cached_tokens() == 4 &&
+             dynamic_cast<FakeState&>(extension.state()).value == 4,
+         "extension restores the aligned fallback");
+  extension.Invalidate();
+  auto retry = cache.Acquire(Tokens{1, 2, 3, 4, 5});
+  Expect(retry.cached_tokens() == 5 &&
+             dynamic_cast<FakeState&>(retry.state()).value == 5,
+         "exact retry restores the unaligned snapshot");
+  retry.Invalidate();
+}
+
 void TestBorrowedSnapshotPrefersAvailableOwner() {
   using Tokens = std::vector<gufo::server::ContinuationToken>;
   std::vector<std::size_t> invalidations(2);
@@ -1364,6 +1403,7 @@ void TestNewBranchPreservesSharedSourceUnderBytePressure() {
 }
 
 int main() {
+  TestSnapshotPrefillAlignment();
   TestAppendedImagesReuseOnlyCompatiblePrefixes();
   TestImageIdentityIsolation();
   TestColdMissThenExactExtensionHit();

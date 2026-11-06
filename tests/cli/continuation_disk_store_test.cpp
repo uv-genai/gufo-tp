@@ -127,6 +127,7 @@ const FakeSnapshot& RequireFakeSnapshot(const TextRunnerSnapshot& snapshot) {
 
 class FakeRunner final : public TextModelRunner {
 public:
+  std::size_t prefill_alignment{1};
   explicit FakeRunner(std::string identity, std::string model_id = "fake-model")
       : identity_(identity.begin(), identity.end()),
         model_id_(std::move(model_id)) {}
@@ -141,6 +142,7 @@ public:
                 .incremental_prefill = true,
                 .snapshot = true,
                 .fork = true,
+                .prefill_alignment = prefill_alignment,
             },
         .persistence =
             TextRunnerPersistenceDescriptor{
@@ -348,6 +350,29 @@ void TestSha256KnownVector() {
   Expect(gufo::crypto::Sha256FileHex(path) ==
              "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
          "streamed artifact SHA-256 matches the in-memory implementation");
+}
+
+void TestDiskPrefillAlignment() {
+  TemporaryDirectory directory("gufo-continuation-alignment");
+  FakeRunner runner("aligned-artifact");
+  runner.prefill_alignment = 2;
+  {
+    ContinuationDiskStore writer({directory.path(), 1 << 20, 1 << 16});
+    Expect(SaveTokens(writer, runner, {1, 2, 3, 4}, FakeSnapshot(4, 4)).stored,
+           "save aligned checkpoint");
+    Expect(
+        SaveTokens(writer, runner, {1, 2, 3, 4, 5}, FakeSnapshot(5, 5)).stored,
+        "save exact retry checkpoint");
+  }
+  ContinuationDiskStore reader({directory.path(), 1 << 20, 1 << 16});
+  auto state = runner.CreateState();
+  auto exact = RestoreTokens(reader, runner, *state, {1, 2, 3, 4, 5});
+  Expect(exact.restored && exact.token_count == 5,
+         "disk allows an unaligned exact retry");
+  auto longer = RestoreTokens(reader, runner, *state, {1, 2, 3, 4, 5, 6});
+  Expect(longer.restored && longer.token_count == 4 &&
+             RequireFakeState(*state).value == 4,
+         "disk extension skips unaligned checkpoint for aligned fallback");
 }
 
 void TestRestartRestoreAndCompatibilityIdentity() {
@@ -1175,6 +1200,7 @@ void TestMinimumCheckpointStep() {
 }
 
 int main() {
+  TestDiskPrefillAlignment();
   TestAppendedImagePrefixesSurviveRestart();
   TestBoundedAsyncPersistenceDoesNotBlockLookup();
   TestIndexedPrefixLookup();

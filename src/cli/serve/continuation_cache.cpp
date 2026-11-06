@@ -104,6 +104,14 @@ struct ContinuationCache::Impl {
             snapshot_support.snapshot_reusable(*snapshot));
   }
 
+  [[nodiscard]] bool SnapshotPositionReusable(std::size_t position,
+                                              std::size_t prompt_size) const {
+    const auto alignment = std::max<std::size_t>(
+        1, snapshot_support.prefill_alignment.value_or(1));
+    return !snapshot_mode() || position == prompt_size ||
+           position % alignment == 0;
+  }
+
   // Rank extra copies before the last useful checkpoint of a prefix family.
   // Exact tokens and input identity, not client IDs or hashes, establish that
   // another continuation can keep the family reusable after this removal.
@@ -489,6 +497,8 @@ ContinuationCache::Lease ContinuationCache::Acquire(
         stable_prefix_tokens == 0 ||
         std::ranges::any_of(impl_->entries, [&](const auto& entry) {
           return entry->valid && impl_->SnapshotReusable(entry->snapshot) &&
+                 impl_->SnapshotPositionReusable(entry->tokens.size(),
+                                                 prompt.size()) &&
                  (entry->tokens.size() <= stable_prefix_tokens ||
                   (entry->stable_prefix_tokens != 0 &&
                    entry->stable_prefix_tokens <= stable_prefix_tokens)) &&
@@ -515,6 +525,9 @@ ContinuationCache::Lease ContinuationCache::Acquire(
         skip_reason = "stable_prefix_boundary";
       else if (!IsPrefix(entry.tokens, prompt))
         skip_reason = "token_prefix";
+      else if (!impl_->SnapshotPositionReusable(entry.tokens.size(),
+                                                prompt.size()))
+        skip_reason = "prefill_alignment";
       else if (!(impl_->snapshot_mode()
                      ? impl_->SnapshotReusable(entry.snapshot)
                      : impl_->StateReusable(*entry.state)))
@@ -761,6 +774,7 @@ std::size_t ContinuationCache::CachedPrefixTokens(
     if (entry->valid && (impl_->snapshot_mode() || entry->available) &&
         entry->tokens.size() > longest &&
         matches(entry->tokens, entry->input_identity) &&
+        impl_->SnapshotPositionReusable(entry->tokens.size(), prompt.size()) &&
         (impl_->snapshot_mode() ? impl_->SnapshotReusable(entry->snapshot)
                                 : impl_->StateReusable(*entry->state)))
       longest = entry->tokens.size();

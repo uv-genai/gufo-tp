@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <span>
 #include <string_view>
 #include <vector>
@@ -89,6 +90,9 @@ public:
     /// without snapshot support.
     StateReusable state_reusable;
     SnapshotReusable snapshot_reusable;
+    /// Unaligned checkpoints are exact-prompt retries only. Live frontiers
+    /// retain their existing continuation semantics.
+    std::optional<std::size_t> prefill_alignment;
   };
 
   class Lease {

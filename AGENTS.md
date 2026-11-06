@@ -194,7 +194,9 @@ hidden (e.g. 10240 vs 122880 = 1 vs 12 rows × 2560 F32).
   `TpWorldSize()==1`). Lookup can skip neural `MtpForward` cycles; under TP
   both ranks always run the neural draft path with the mirrored count.
   Snapshots still carry lookup state as `speculative::PromptLookup<>::State`
-  (payload v18).
+  (payload v20).
+- Dynamic YaRN session re-rotation is single-host only. TP2 retains the
+  configured static factor and its own position-policy persistence identity.
 - `defer_residual_` only when `tp_world_size()==1`. Forced draft counts come
   from rank 0 (`request.drafts` / `batch_drafts`).
 - Watch live concurrency on rank 0: `GET /metrics`

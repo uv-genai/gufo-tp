@@ -448,6 +448,7 @@ ContinuationCache::SnapshotSupport MakeSnapshotSupport(
             return text_snapshot != nullptr &&
                    validated->runner->CanReuse(*text_snapshot);
           },
+      .prefill_alignment = validated->descriptor.capabilities.prefill_alignment,
   };
 }
 

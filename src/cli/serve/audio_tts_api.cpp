@@ -469,9 +469,9 @@ HttpResponse Speech(const HttpRequest& request, TtsService& service,
       };
       if (!service.Synthesize(synthesis, check, &result, &error)) {
         const bool invalid_result = error == kInvalidSynthesisResultError;
-        log->error_code = (invalid_audio || invalid_result) ? "invalid_audio"
-                          : check() ? "cancelled"
-                                    : "generation_failed";
+        log->error_code = (invalid_audio || invalid_result)
+                              ? "invalid_audio"
+                              : (check() ? "cancelled" : "generation_failed");
         if (invalid_audio)
           error = "Qwen3-TTS produced invalid audio";
         if (sse && !check()) {

@@ -98,8 +98,74 @@ contract job passed. Hosted Linux CPU/repository checks passed for code head `b4
 Subsequent commits update documentation only; the native suite above is
 separate evidence.
 
+## v0.30.0
+
+Upstream tag: `f801b8ca` (`v0.30.0`). Development base: `9e12cfb2`,
+PR #29's validated v0.29.0 integration. Its upstream ancestry was recorded
+without changing the tree before merging this tag on a separate branch.
+
+Single-host component serving gains multiple checkpoints within a prefill
+pass, with shared checkpoint windows in the attention and GDN kernels.
+TP2 retains mirrored native RAM/disk snapshots and explicitly rejects in-pass
+checkpoint entry points. Its paired prefill, rank-local head geometry,
+static YaRN, forced draft counts and single-host-only optimization gates remain.
+Control protocol 22 and snapshot payload 20 are unchanged.
+
+Upstream's component-only host cleanup was integrated semantically: the native
+TP continuation cache, persistence, public metrics and runner contracts remain.
+The upstream component tests and retained native snapshot tests run separately.
+Those native tests exposed an attempted second reservation of an already
+reserved snapshot; the merge now re-reserves only component captures.
+README.md and AGENTS.md retain project ownership and native host instructions.
+
+Validation uses executable `7f0d93f232ae2337e851706bc8479ed5db9563dc`, SHA-256
+`9ad8a5a3b4d81a53f2eb6bed136e97a2f894da661c1cd45bd70826bcdee54f7a`.
+Both hosts receive this exact binary. Raw records are under
+`artifacts/upstream-2026-11-06/v0.30.0/`.
+
+- Native PR contracts: 109/109 pass; release build, formatting, generated
+  metadata, API 0.1.21 policy, documentation, strict extension boundaries and
+  target link graphs pass.
+- GPU operators: GDN, attention and projection pass with existing tolerances.
+- Single-host Q4 checkpoint numerical checks: all eight AR/MTP comparisons
+  pass, including multiple boundaries and the device-exhaustion fallback,
+  against independently split passes.
+
+- Two-host Q8: 94 AR/MTP functional checks pass. Two-host Q4: 154 AR/MTP
+  checks pass, including 60 image checks. Both modes cover cache reuse,
+  concurrency, cancellation, long prefill, constrained output and disk restart.
+  All rank logs are clean before controlled shutdown. Actual MTP drafts are
+  verified, using four sessions, context capacity 524288 and static YaRN 2.
+
+[PR #30](https://github.com/uv-genai/gufo-tp/pull/30) integrates this tag.
+The matching v0.29.0 executable `3ea5054d` is the timing baseline; no unrelated
+correctness sweep is repeated on main. Same toolchain, models and settings,
+per-request/per-phase thresholds of both 5% and 10 ms, and standard d0
+pp2048/tg128 (actual 2040 prompt tokens) are retained.
+
+Q8 MTP and Q4 AR initial measured timings are within limits. Q8 AR initially
+flags standard decode, 3919.0 → 4960.6 ms (+26.6%), and other phases. The
+focused main/candidate/main sequence gives 3949.5 / 3978.4 / 4337.8 ms;
+unchanged main itself moves +9.8%. Candidate repeat measured phases are within
+limits against both controls. The initial slower capture remains retained and
+advisory/inconclusive, without a blanket timing pass or speedup claim.
+
+Q4 MTP initially flags standard decode, 2716.5 → 3019.5 ms (+11.2%),
+and several other phases. The main/candidate/main repeat gives
+2761.0 / 2703.3 / 2782.3 ms, with every measured candidate phase within limits
+against both controls. The initial slowdown did not reproduce and remains in
+the record; no margins were widened.
+
+The [448 phase observations](models/qwen3.8-flash-next/artifacts/upstream-v0.30.0/timing-observations.csv)
+and [320 comparisons](models/qwen3.8-flash-next/artifacts/upstream-v0.30.0/timing-comparisons.csv)
+include initial runs, repeats, unchanged-main controls and setup/calibration
+requests. Measured output hashes and prompt/cache/completion/draft work match.
+The automatic Windows package path remains outside this Linux qualification;
+the retained POSIX TP transport has not been ported. Hosted Linux and API/title
+results are linked from the pull request. Both GPUs are unloaded after testing.
+
+
 ## Subsequent tags
 
-v0.30.0 (`f801b8ca`) and v0.31.0 (`be7bd3be`) were discovered but are not
-part of this merge. Each follows on a separate branch and pull request after
-validation. Unreleased upstream main (`211dba49` at discovery) is excluded.
+v0.31.0 (`be7bd3be`) follows on its own branch and pull request after validation.
+Unreleased upstream main (`211dba49` at discovery) is excluded.

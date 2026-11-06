@@ -131,7 +131,9 @@ Limits:
   on either.
 - Where TP2 is still behind one host (gaps to close, not design choices):
   - No in-pass prompt checkpoint (`PrefillThrough`): the last prefill pass
-    stops at the checkpoint boundary and snapshots there.
+    stops at the checkpoint boundary and snapshots there. Upstream v0.30
+    multiple in-pass captures remain single-host only; TP2 rejects these
+    entry points and retains mirrored pass-boundary snapshots.
     `tp_executor_test` fails when the TP2 wrapper turns off a runner
     capability that is not listed there as such a gap.
   - No in-pass prefill cancellation (`prefill_rollback`): cancellation takes

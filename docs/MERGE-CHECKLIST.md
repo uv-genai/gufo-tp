@@ -16,6 +16,8 @@ See also: [TP2.md](models/qwen3.8-flash-next/TP2.md) · [AGENTS.md](../AGENTS.md
   - `src/models/qwen38_flash_next/engine.*`
   - `.../kernels/rocm/executor.*`, `kernels.hip.cpp`, `verbs.cpp`
   - `src/cli/serve/{inference_backend,component_text_cache,text_model_runner,text_generation_scheduler}.*`
+  - model-owned `runner.cpp`, `provider.cpp`, `extension.cmake` and public
+    `src/ext/text.hpp` (TP transport and mirrored runner hooks)
   - MTP / draft / cache / checkpoint / prompt-lookup headers
     (`src/core/speculative/prompt_lookup.hpp`, `draft_vocab.hpp`,
     `mtp_policy.hpp`)
@@ -37,6 +39,7 @@ See also: [TP2.md](models/qwen3.8-flash-next/TP2.md) · [AGENTS.md](../AGENTS.md
 | Prompt lookup copies | **Off** (`lookup_cap==0`) |
 | Component cache restore | **Off** (`UsesComponentCache` false) |
 | `defer_residual_` | **Off** |
+| Dynamic YaRN session re-rotation | Single-host only; TP2 keeps static factor |
 | Forced draft width | Rank 0 plan only (`request.drafts` / `batch_drafts`) |
 | Attention/MoE “skip AR” shortcuts | Forbidden unless identical on both ranks |
 

@@ -28,6 +28,7 @@
 
 #include "src/cli/serve/generation_metrics.hpp"
 #include "src/cli/serve/http_server.hpp"
+#include "src/cli/serve/inference_backend.hpp"
 #include "src/cli/serve/logging.hpp"
 #include "src/cli/serve/stop_sequences.hpp"
 #include "src/cli/serve/trace.hpp"
@@ -114,6 +115,8 @@ struct Event {
 };
 
 struct FakeControl {
+  gufo::sampling::TextModelPreset sampling_preset{
+      gufo::sampling::TextModelPreset::kUnspecified};
   void Log(Event event) {
     const std::lock_guard<std::mutex> lock(mutex);
     events.push_back(event);
@@ -308,6 +311,7 @@ public:
                 .prefix_reuse = control_->prefix_reuse,
             },
         .persistence = std::nullopt,
+        .sampling_preset = control_->sampling_preset,
     };
   }
 
@@ -1396,13 +1400,16 @@ void TestPrefillYieldsToEveryDueDecoder(bool multi_token, bool batched) {
   control->multi_token_decode = multi_token;
   control->batched_multi_token_decode = batched;
   control->supports_batched_advance = multi_token;
-  control->block_advance_label = 2;
+  control->block_advance_label = 1;
   auto scheduler = MakeScheduler(control, 3, {.decode_active_tokens = 2});
 
   const std::size_t output_tokens = multi_token ? 30 : 10;
   auto request_a = scheduler->Submit({1}, output_tokens, 0.0F);
+  // Hold A before it can finish while the submitting thread is descheduled.
+  // Queue both peers before releasing it, so both decoders are still due
+  // between C's prefill chunks, regardless of host scheduling.
+  control->WaitForAdvance(1);
   auto request_b = scheduler->Submit({2}, output_tokens, 0.0F);
-  control->WaitForAdvance(2);
   auto request_c = scheduler->Submit({3, 30, 31, 32, 33, 34, 35}, 2, 0.0F);
   control->ReleaseAdvance();
 
@@ -3187,7 +3194,44 @@ void TestTokenLogprobs() {
   }
 }
 
+#if defined(ENGINE_ENABLE_HIP)
+void TestBackendPreservesModelSamplingPreset() {
+  using gufo::sampling::TextModelPreset;
+  for (const auto preset :
+       {TextModelPreset::kQwen38, TextModelPreset::kDeepSeekV4Flash}) {
+    auto control = std::make_shared<FakeControl>();
+    control->sampling_preset = preset;
+    gufo::server::InferenceBackend backend;
+    std::string error;
+    Expect(backend.load(std::make_shared<FakeRunner>(control), &error), error);
+    Expect(backend.sampling_defaults().model == preset,
+           "loading an extension preserves its sampling preset");
+    for (const bool thinking : {false, true}) {
+      const auto defaults = backend.sampling_defaults().Resolve(thinking);
+      const bool qwen_off = preset == TextModelPreset::kQwen38 && !thinking;
+      Expect(
+          defaults.temperature == (qwen_off ? 0.7F : 1.0F) &&
+              defaults.top_p == (qwen_off ? 0.8F : 0.95F) &&
+              defaults.top_k == (preset == TextModelPreset::kQwen38 ? 20 : 0) &&
+              defaults.presence_penalty == (qwen_off ? 1.5F : 0.0F),
+          "omitted sampling settings use the model's thinking preset");
+    }
+    gufo::sampling::SamplingConfig configured;
+    configured.temperature = 0.25F;
+    backend.set_sampling_defaults(32, configured, {.temperature = true});
+    const auto defaults = backend.sampling_defaults();
+    Expect(defaults.model == preset && defaults.max_tokens == 32 &&
+               defaults.Resolve(true).temperature == 0.25F &&
+               defaults.Resolve(true).top_p == 0.95F,
+           "server overrides retain the model preset for omitted fields");
+  }
+}
+#endif
+
 int main() {
+#if defined(ENGINE_ENABLE_HIP)
+  TestBackendPreservesModelSamplingPreset();
+#endif
   TestTokenLogprobs();
   TestPublicationWaitUsesRecentSubstantialPrefill();
   // Log assertions in this binary match the plain "[LEVEL] [component]" text

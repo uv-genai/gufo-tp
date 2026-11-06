@@ -4,13 +4,13 @@
 #include <array>
 #include <atomic>
 #include <cstring>
+#include <gufo/ext/experimental/snapshot_copy.hpp>
 #include <mutex>
 #include <optional>
 #include <stdexcept>
 #include <utility>
 #include <vector>
 
-#include "src/core/hip/snapshot_copy.hpp"
 #include "src/models/qwen38_flash_next/continuation_hooks.hpp"
 #include "src/models/qwen38_flash_next/kernels/rocm/executor.hpp"
 
@@ -28,6 +28,12 @@ bool Draft(ContinuationPart part) {
          part == ContinuationPart::kDraftPooledKeys ||
          part == ContinuationPart::kDraftRawKeys ||
          part == ContinuationPart::kDraftResidual;
+}
+bool RotatedKeys(ContinuationPart part) {
+  return part == ContinuationPart::kKey ||
+         part == ContinuationPart::kPooledKeys ||
+         part == ContinuationPart::kDraftKey ||
+         part == ContinuationPart::kDraftPooledKeys;
 }
 bool Pool(ContinuationPart part) {
   return part == ContinuationPart::kPooledKeys ||
@@ -111,7 +117,7 @@ public:
     return !restoring && !failed && (guarding || session->IsValid());
   }
   void BeforeExecution() override {
-    if (!IsValid() || pending || checkpoint)
+    if (!IsValid() || pending || at_boundary)
       throw std::logic_error("Flash-Next slot is not ready for execution");
   }
   void BeforeWrite(bool draft, std::uint32_t first, std::uint32_t end,
@@ -120,7 +126,7 @@ public:
     // Model execution temporarily disables its public validity flag. The
     // adapter's restore/failure status and outstanding transfers still gate
     // every native write, including graph replay and speculative rollback.
-    if (restoring || failed || pending || checkpoint)
+    if (restoring || failed || pending || at_boundary)
       throw std::logic_error("Flash-Next slot is not ready for mutation");
     CaptureDuringGuard readable(*this);
     for (const auto& component : adapter.layout_.Components()) {
@@ -136,7 +142,7 @@ public:
   void BeforeReset() override {
     if (invalidating)
       return;
-    if (restoring || pending || checkpoint)
+    if (restoring || pending || at_boundary)
       throw std::logic_error("cannot reset a busy Flash-Next slot");
     GuardAll();
   }
@@ -172,7 +178,10 @@ public:
   ContinuationAdapter& adapter;
   cache::MutationGuard& guard;
   std::unique_ptr<Session> session;
+  /// The in-pass checkpoint a boundary capture reads; null when it reads
+  /// the live session at the boundary.
   const rocm::PrefillCheckpoint* checkpoint{};
+  bool at_boundary{false};
   rocm::Session& CaptureState() const {
     return checkpoint ? *checkpoint->state : *session->session_;
   }
@@ -257,13 +266,14 @@ void ContinuationAdapter::PrefillThrough(cache::Slot& slot,
   if (!capture)
     throw std::invalid_argument("missing component checkpoint consumer");
   std::string error;
-  const auto consume = [&](const rocm::PrefillCheckpoint& checkpoint) {
+  const auto consume = [&](const rocm::PrefillCheckpoint* checkpoint) {
     struct BoundaryScope {
       State& state;
       bool guarding;
-      BoundaryScope(State& state, const rocm::PrefillCheckpoint& checkpoint)
+      BoundaryScope(State& state, const rocm::PrefillCheckpoint* checkpoint)
           : state(state), guarding(std::exchange(state.guarding, true)) {
-        state.checkpoint = &checkpoint;
+        state.checkpoint = checkpoint;
+        state.at_boundary = true;
       }
       ~BoundaryScope() {
         // The checkpoint arena may be reused by the next native pass. Even a
@@ -274,6 +284,7 @@ void ContinuationAdapter::PrefillThrough(cache::Slot& slot,
             (void)job->Wait();
         }
         state.checkpoint = nullptr;
+        state.at_boundary = false;
         state.guarding = guarding;
       }
     } scope(state, checkpoint);
@@ -331,7 +342,7 @@ std::vector<cache::ComponentPosition>
 ContinuationAdapter::PrefillCheckpointPositions(const cache::Slot& slot,
                                                 Rows boundary) const {
   const auto& state = As(slot);
-  if (!state.IsValid() || state.pending || state.checkpoint)
+  if (!state.IsValid() || state.pending || state.at_boundary)
     throw std::logic_error(
         "Flash-Next slot is not ready for checkpoint planning");
   if (boundary <= state.session->Position() || boundary > context_ ||
@@ -559,9 +570,12 @@ cache::Completion ContinuationAdapter::CapturePrivatePiece(
     metadata.draft = native.mtp_.position;
     metadata.blocks = native.blocks_;
     metadata.draft_blocks = native.mtp_.blocks;
+    // A boundary capture stores the base a restore rebuilds from its kept
+    // rows (none without MTP), whether it reads the arena or the live session.
     metadata.hidden_base =
-        state.checkpoint ? native.position_ - state.checkpoint->hidden_rows
-                         : session.hidden_base_;
+        state.checkpoint    ? native.position_ - state.checkpoint->hidden_rows
+        : state.at_boundary ? native.position_ - session.KeptHiddenRows()
+                            : session.hidden_base_;
     metadata.residual_valid = native.mtp_.residual_valid;
     metadata.ngram = native.ngram_;
     metadata.policy = session.draft_length_.State();
@@ -700,10 +714,53 @@ cache::Completion ContinuationAdapter::CopyRowsOut(const cache::Slot& slot,
       state, false, stream, [&](gufo::hip::TransferStream& transfer) {
         if (component.part == ContinuationPart::kTokens && !bytes.empty())
           std::memcpy(bytes.data(), source, bytes.size());
+        else if (!bytes.empty() && RotatedKeys(component.part) &&
+                 native.yarn_factor_ != 1.0F)
+          CopyNativeKeys(native, component, first, end, bytes, transfer);
         else if (!bytes.empty())
           Check(hip::CopySnapshotToHost(bytes.data(), source, bytes.size(),
                                         transfer.Native()));
       });
+}
+void ContinuationAdapter::CopyNativeKeys(
+    const rocm::Session& native, const ContinuationComponent& component,
+    Rows first, Rows end, std::span<std::byte> bytes,
+    gufo::hip::TransferStream& transfer) const {
+  const auto stream = transfer.Native();
+  const bool draft = Draft(component.part);
+  const auto* rows = reinterpret_cast<const __half*>(
+      component.part == ContinuationPart::kKey
+          ? native.attention_[component.layer].k_cache
+      : component.part == ContinuationPart::kPooledKeys
+          ? native.attention_[component.layer].block_k
+      : component.part == ContinuationPart::kDraftKey ? native.mtp_.k_cache
+                                                      : native.mtp_.block_k);
+  const auto* rope = draft ? native.vision_input_.rope()
+                           : native.attention_[component.layer].rope;
+  const auto copy = [&](__half* destination) {
+    model_->executor_->CopyNativeKeys(
+        native, rows, static_cast<std::uint32_t>(first),
+        static_cast<std::uint32_t>(end - first), Pool(component.part), rope,
+        destination, stream);
+  };
+  void* mapped{};
+  if (hipHostGetDevicePointer(&mapped, bytes.data(), 0) == hipSuccess &&
+      mapped) {
+    copy(static_cast<__half*>(mapped));
+    Check(hipGetLastError());
+    return;
+  }
+  // Ordinary host buffers are not visible to the kernel.
+  (void)hipGetLastError();
+  void* staging{};
+  Check(hipMalloc(&staging, bytes.size()));
+  copy(static_cast<__half*>(staging));
+  const auto copied = hipMemcpyAsync(bytes.data(), staging, bytes.size(),
+                                     hipMemcpyDeviceToHost, stream);
+  const auto settled = hipStreamSynchronize(stream);
+  (void)hipFree(staging);
+  Check(copied);
+  Check(settled);
 }
 std::span<const std::byte> ContinuationAdapter::BorrowRowsView(
     const cache::Slot& slot, cache::ComponentId id, Rows first,
@@ -723,6 +780,9 @@ std::span<const std::byte> ContinuationAdapter::BorrowRowsView(
   const auto row = component.descriptor.row_bytes;
   if (position == positions.end() || first >= end || end > position->valid_rows)
     throw std::invalid_argument("invalid Flash-Next borrowed range");
+  // Cached keys hold the native rotation (CopyRowsOut converts them).
+  if (RotatedKeys(component.part) && state.CaptureState().yarn_factor_ != 1.0F)
+    return {};
   return {static_cast<const std::byte*>(
               RowData(const_cast<State&>(state), component)) +
               first * row,
@@ -829,6 +889,10 @@ bool ContinuationAdapter::Validate(
   native.spec_base_ = metadata.target;
   native.spec_tokens_ = 0;
   native.snapshot_lineage_.reset();
+  // Cached keys hold the native rotation whatever factor wrote them, so one
+  // history can serve sessions at any factor. The next Feed or decode moves
+  // this session to the factor its positions need.
+  model_->executor_->AdoptYarnFactor(native, 1.0F);
   session.hidden_base_ = metadata.hidden_base;
   session.draft_length_ = policy;
   session.lookup_.Restore(metadata.lookup);
@@ -844,7 +908,7 @@ bool ContinuationAdapter::Invalidate(cache::Slot& slot) noexcept {
   State* resetting = nullptr;
   try {
     auto& state = As(slot);
-    if (state.pending || state.checkpoint)
+    if (state.pending || state.at_boundary)
       return false;
     resetting = &state;
     state.BeforeRelease();

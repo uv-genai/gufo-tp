@@ -39,10 +39,11 @@ and the same `--tp-control-token`, `--context`, `--prefill-chunk`,
 `--sessions`, MTP settings and `--mmproj` use; the handshake names any setting
 that differs.
 
-Control protocol **21** includes the mirrored reasoning budget. Upgrade both
-hosts together; mixed protocol/binary revisions are unsupported. Snapshot
-payload remains **v18**. The Q8 numerical cache epoch invalidates states from
-the earlier paired expert path, causing a fresh prefill after upgrade.
+Control protocol **22** marks the v0.29 extension integration and retains the
+mirrored reasoning budget. Upgrade both hosts together; mixed protocol/binary
+revisions are unsupported. Snapshot payload **v20** includes upstream's new
+session layout. Earlier snapshots miss and prefill again. The Q8 numerical
+cache epoch remains part of the identity.
 
 Checked-in rank launchers default to `--sessions 2 --context 524288
 --enable-yarn` on both hosts (YaRN factor 2). Manual servers default to port
@@ -199,6 +200,13 @@ configuration and prepared images) and closes with `kEnd`. Mirrored calls:
   host, and the budget is the smaller rank's (its automatic budget, or its
   `--cache-ram-bytes`).
 
+The Flash-Next extension owns model and transport creation. The host calls the
+provider's `create_tp_transport` factory, passes the public `TextTpTransport`
+through `TextRunnerOptions`, and wraps the returned runner. The model-owned
+`runner.cpp` retains standalone `CreateState` and snapshot methods for TP2;
+single-host serving uses the component adapter. Serving code must not regain
+direct dependencies on Flash-Next model internals.
+
 Every model call binds the communicator's scope to its instruction's index on
 both ranks. Rules the compiler does not enforce: every state-changing call must
 pass through the wrapper; a request's cancellation check is never passed to the
@@ -208,6 +216,12 @@ collectives on both ranks.** The component cache's adapter restore is rank-0
 only, so TP2 uses the mirrored snapshot cache (`UsesComponentCache` is false
 on `TpMirroredRunner`) and `PrefillThrough` runs `Prefill`. Otherwise the
 first session reuse diverges `operation_id`s and a later all-reduce hangs.
+
+The mirrored RAM and disk stores enforce the model's prefill alignment too.
+An unaligned snapshot can replay its exact prompt; a longer prompt restores
+an aligned fallback instead. Live frontiers retain their normal continuation
+rules. The capability audit must cover both cache selection and mirrored calls.
+
 
 Collective-shape rules kept through the v0.16→v0.23 requalify series (see
 [MERGE-CHECKLIST.md](../../MERGE-CHECKLIST.md)):
@@ -224,7 +238,10 @@ Collective-shape rules kept through the v0.16→v0.23 requalify series (see
   `TpWorldSize()==1`). Lookup can skip neural `MtpForward` cycles; under TP
   both ranks always run the neural draft path with the mirrored count.
   Snapshots still carry lookup state as
-  `speculative::PromptLookup<>::State` (payload version 18).
+  `speculative::PromptLookup<>::State` (payload version 20).
+- **Dynamic YaRN re-rotation is single-host only.** TP2 keeps the configured
+  static factor on both ranks. Its persistence identity includes
+  `tp_position_policy=static-yarn-v1` to distinguish that policy.
 - Any **new** upstream path that skips or adds a collective is a hazard until
   gated the same way. Prefer a hard single-host gate over hoping ranks agree.
 

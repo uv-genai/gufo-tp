@@ -68,7 +68,7 @@ ctest --preset gpu-full -R '^<test-name>$' --output-on-failure
 ```
 
 `cmake --build --preset pr`
-runs the hosted contract suite after configuring `cpu-test`. Full CPU checks,
+runs the focused contract subset after configuring `cpu-test`. Full CPU checks,
 sanitisers, GPU/operator/model checks and H3 quality tools remain available
 locally; see [docs/TESTING.md](docs/TESTING.md). Do not run full model sweeps,
 video generation or duplicate suites for routine edits. A missing-model skip
@@ -109,7 +109,7 @@ quality; successful optimizations become the default, without extra switches.
 
 - Keep model code, tests, tools and numerical contracts with their model.
 - Use the shared Qwen control-token constants for framing; see
-  [src/models/qwen/AGENTS.md](src/models/qwen/AGENTS.md). Inspect their definitions
+  [src/families/qwen/AGENTS.md](src/families/qwen/AGENTS.md). Inspect their definitions
   when reviewing or changing behavior, and keep reference fixtures independent.
 - Put Windows-specific code in `src/core/platform/`: one leaf per OS facility
   (files, pages, sockets), whose sources may branch on `_WIN32` or split into
@@ -125,6 +125,18 @@ quality; successful optimizations become the default, without extra switches.
   that title on `main`. Mark breaking changes with `!` in the title, and leave
   version and changelog updates to the release workflow.
 - Prefer `jj` when available (`jj version`); otherwise use Git.
+- Model implementations are source extensions; use `docs/extensions.md` and
+  the owning `extension.json` / `extension.cmake` for target registration.
+  Native builds discover extensions; `-DGUFO_EXTENSIONS_FROM_LOCK=ON` selects
+  the shipped lock set.
+- The source extension API is versioned independently. Public contracts under
+  `include/gufo/ext/`, their transitive surface, metadata schema and public CMake
+  contracts require an `ext-api` PR label and a new immutable Markdown record
+  in `include/gufo/ext/changes/<major>.<minor>/` when changed. Run
+  `python3 tools/ci/check-extension-api.py --write` after header/include changes.
+  API revisions derive from records; breaking changes advance `api-series.json`
+  and update in-tree users. This guarantees source compatibility after rebuild,
+  not binary ABI. See `docs/RELEASING.md`.
 - Follow the user's remote workflow and preserve unrelated work.
 
 ## Remotes and merges
@@ -137,6 +149,8 @@ quality; successful optimizations become the default, without extra switches.
   [docs/RELEASING.md](docs/RELEASING.md) for dated TP2 tags, source/binary
   identity and validation scope. Current TP2 release qualification is Linux;
   Windows is outside this work's scope.
+- **`README.md` and `AGENTS.md` are project-owned.** Integrate upstream changes
+  semantically; preserve Gufo-TP branding, release evidence and native host setup.
 - **`AGENTS.md` is fork-owned.** Do not merge upstream `AGENTS.md` changes
   that reintroduce the packaged environment. Before any commit, count case-
   insensitive matches of that environment's name in this file; the count must
@@ -180,7 +194,9 @@ hidden (e.g. 10240 vs 122880 = 1 vs 12 rows × 2560 F32).
   `TpWorldSize()==1`). Lookup can skip neural `MtpForward` cycles; under TP
   both ranks always run the neural draft path with the mirrored count.
   Snapshots still carry lookup state as `speculative::PromptLookup<>::State`
-  (payload v18).
+  (payload v20).
+- Dynamic YaRN session re-rotation is single-host only. TP2 retains the
+  configured static factor and its own position-policy persistence identity.
 - `defer_residual_` only when `tp_world_size()==1`. Forced draft counts come
   from rank 0 (`request.drafts` / `batch_drafts`).
 - Watch live concurrency on rank 0: `GET /metrics`

@@ -891,13 +891,14 @@ private:
 /// kTp2CapabilityGaps. Give it its capable value in the check in main too.
 std::vector<std::pair<std::string_view, std::size_t>> CapabilityFields(
     const TextRunnerCapabilities& capabilities) {
-  const auto& [incremental_prefill, snapshot, fork,
+  const auto& [supports_vision, incremental_prefill, snapshot, fork,
                final_token_advance_required, incremental_text_is_exact,
                multi_token_decode, batched_multi_token_decode,
                batched_multi_token_decode_max_width, prefix_reuse,
-               in_pass_checkpoint, partial_prefill_retention,
-               prefill_rollback] = capabilities;
-  return {{"incremental_prefill", incremental_prefill},
+               in_pass_checkpoint, partial_prefill_retention, prefill_rollback,
+               prefill_alignment] = capabilities;
+  return {{"supports_vision", supports_vision},
+          {"incremental_prefill", incremental_prefill},
           {"snapshot", snapshot},
           {"fork", fork},
           {"final_token_advance_required", final_token_advance_required},
@@ -909,7 +910,8 @@ std::vector<std::pair<std::string_view, std::size_t>> CapabilityFields(
           {"prefix_reuse", prefix_reuse},
           {"in_pass_checkpoint", in_pass_checkpoint},
           {"partial_prefill_retention", partial_prefill_retention},
-          {"prefill_rollback", prefill_rollback}};
+          {"prefill_rollback", prefill_rollback},
+          {"prefill_alignment", prefill_alignment}};
 }
 
 /// Capabilities TP2 turns off because rank 1 cannot mirror them yet. Each is
@@ -938,6 +940,7 @@ int main() {
   // runner it wraps, apart from the listed gaps.
   {
     const TextRunnerCapabilities every{
+        .supports_vision = true,
         .incremental_prefill = true,
         .snapshot = true,
         .fork = true,
@@ -950,6 +953,7 @@ int main() {
         .in_pass_checkpoint = true,
         .partial_prefill_retention = true,
         .prefill_rollback = true,
+        .prefill_alignment = 4,
     };
     auto toy = std::make_shared<ToyRunner>(ToyOptions{.capabilities = every});
     const TpMirroredRunner runner(toy, std::make_shared<CaptureSink>());

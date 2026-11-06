@@ -3,7 +3,7 @@
 #include <limits>
 #include <utility>
 
-#include "src/core/quant/ggml_dequant.hpp"
+#include "gufo/ext/experimental/ggml_dequant.hpp"
 
 namespace gufo::models::qwen38_flash_next::distributed {
 namespace {

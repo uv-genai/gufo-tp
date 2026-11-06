@@ -233,8 +233,8 @@ following development libraries. The pinned Nix toolchain uses GCC
 16.2 and ROCm 10.1.0 (HIP Clang 24). Attention and audio convolution kernels are compiled
 directly from HIP. Python, Triton/AOTriton, Composable Kernel and MIOpen are
 not production build or runtime requirements.
-Optional: apply the upstream ROCr 7.2.3 queue-memory
-[patch](.devops/nix/patches/rocr-fixed-cwsr.patch) when building your runtime
+Optional: apply the ROCr 10 queue-memory
+[patch](.devops/nix/patches/rocr-fixed-cwsr-rocm10.patch) when building your runtime
 for the same host-compaction protection. Flash-Next's host buffers also use
 Linux long-term pins, with ordinary HIP registration retained when system
 limits disallow those pins. Gufo leaves `HSA_USERPTR_FOR_PAGED_MEM` unchanged.

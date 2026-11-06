@@ -5565,6 +5565,7 @@ __launch_bounds__(256) __global__
   // Keep this stage's codes and affine/high-bit parameters live while the
   // next fetch can replace its quantization header and code-cache group.
   uint4 own_codes[kWaveRowTiles];
+  uint4 own_codes_hi[kQ8 && kPair ? kWaveRowTiles : 1];
   std::uint32_t own_scale[kWaveRowTiles];
   std::uint32_t own_high[kWaveRowTiles];
   const auto commit_stage = [&]() {
@@ -5581,6 +5582,10 @@ __launch_bounds__(256) __global__
       std::uint32_t scale_bias = 0;
       if constexpr (kPair) {
         own_codes[u] = f_codes[u];
+        if constexpr (kQ8) {
+          own_codes_hi[u] = f_codes_hi[u];
+          scale_bias = f_live[u] ? f_dm[u] : 0U;
+        }
         if constexpr (kQ5K)
           own_high[u] = f_high[u];
       } else if constexpr (kQ8) {
@@ -5671,7 +5676,41 @@ __launch_bounds__(256) __global__
     for (int kb = 0; kb < BK; ++kb) {
       v16h a_lo[kWaveRowTiles];
       v16h a_hi[kWaveRowTiles];
-      if constexpr (kPair) {
+      if constexpr (kPair && kQ8) {
+        // Each wave half owns one K32 block of a gate/up row. Decode both
+        // K16 fragments as signed bytes, then broadcast that block's halves
+        // together with its scale. K-quants below instead share nibble groups.
+        using v8u = __attribute__((__vector_size__(32))) std::uint32_t;
+#pragma unroll
+        for (int u = 0; u < kWaveRowTiles; ++u) {
+          const __half2 scale =
+              __low2half2(__builtin_bit_cast(__half2, own_scale[u]));
+          const uint4 lo = own_codes[u], hi = own_codes_hi[u];
+          const std::uint32_t words[8] = {lo.x, lo.y, lo.z, lo.w,
+                                          hi.x, hi.y, hi.z, hi.w};
+          __half2 h[16];
+#pragma unroll
+          for (int i = 0; i < 8; ++i)
+            CodesToHalves(words[i] ^ 0x80808080U, magic, scale,
+                          __floats2half2_rn(0.0F, 0.0F), h[2 * i],
+                          h[2 * i + 1]);
+          v16h own_lo, own_hi;
+          __builtin_memcpy(&own_lo, &h[0], 32);
+          __builtin_memcpy(&own_hi, &h[8], 32);
+          const v8u packed_lo = __builtin_bit_cast(v8u, own_lo);
+          const v8u packed_hi = __builtin_bit_cast(v8u, own_hi);
+          v8u peer_lo, peer_hi;
+#pragma unroll
+          for (int i = 0; i < 8; ++i) {
+            peer_lo[i] = XorLane(packed_lo[i], 16);
+            peer_hi[i] = XorLane(packed_hi[i], 16);
+          }
+          a_lo[u] =
+              __builtin_bit_cast(v16h, half_id == kb ? packed_lo : peer_lo);
+          a_hi[u] =
+              __builtin_bit_cast(v16h, half_id == kb ? packed_hi : peer_hi);
+        }
+      } else if constexpr (kPair) {
         // Decode each K16 fragment once, then duplicate its packed F16 bits
         // across the wave halves for WMMA. No weight data passes through LDS.
         using v8u = __attribute__((__vector_size__(32))) std::uint32_t;
@@ -5821,7 +5860,7 @@ __launch_bounds__(256) __global__
     __syncthreads();
   };
   fetch_stage(0, 0);
-  if constexpr (kPair) {
+  if constexpr (kPair && kKQuant) {
     // K-quant launchers require complete 256-element blocks. Expose their
     // four stages so cached code selection and scale shifts are constant.
     for (int kb0 = 0; kb0 < num_kb; kb0 += 8) {

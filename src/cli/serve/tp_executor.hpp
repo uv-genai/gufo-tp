@@ -174,6 +174,10 @@ public:
       const override;
   [[nodiscard]] DeviceProbeStatus PollDevice() const override;
   [[nodiscard]] bool DeviceUsable() const override;
+  [[nodiscard]] ReasoningTags ReasoningBudgetTags() const override;
+  [[nodiscard]] std::uint32_t VocabularySize() const override;
+  [[nodiscard]] std::vector<TextRunnerToken> TokenizeControl(
+      std::string_view text) const override;
   [[nodiscard]] std::vector<TextRunnerToken> Tokenize(
       std::string_view text) const override;
   [[nodiscard]] std::optional<std::vector<TextRunnerToken>> RenderAndTokenize(

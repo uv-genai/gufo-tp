@@ -27,7 +27,7 @@ namespace gufo::server {
 namespace {
 
 constexpr std::uint32_t kMagic = 0x54504331U;  // "TPC1"
-constexpr std::uint16_t kVersion = 20;         // requests and rank-1 executor
+constexpr std::uint16_t kVersion = 21;         // requests and rank-1 executor
                                                // instructions for concurrent
                                                // requests
 constexpr std::uint16_t kHello = 1;
@@ -152,6 +152,43 @@ bool ReadU64(std::span<const std::uint8_t> data, std::size_t* offset,
   return true;
 }
 
+void AppendTokens(std::vector<std::uint8_t>* out,
+                  std::span<const sampling::TokenId> tokens) {
+  AppendU32(out, static_cast<std::uint32_t>(tokens.size()));
+  for (const auto token : tokens)
+    AppendU32(out, token);
+}
+
+bool ReadTokens(std::span<const std::uint8_t> data, std::size_t* offset,
+                std::vector<sampling::TokenId>* tokens, std::string* error) {
+  std::uint32_t count = 0;
+  if (!ReadU32(data, offset, &count, error) || count > kMaxPromptTokens ||
+      count > (data.size() - *offset) / sizeof(std::uint32_t)) {
+    SetError(error, "TP reasoning token list is truncated or too large");
+    return false;
+  }
+  tokens->resize(count);
+  for (auto& token : *tokens) {
+    if (!ReadU32(data, offset, &token, error))
+      return false;
+  }
+  return true;
+}
+
+bool ValidReasoningBudget(const sampling::ReasoningBudget& budget) {
+  const auto valid_tokens = [](const auto& tokens) {
+    return tokens.size() <= kMaxPromptTokens &&
+           std::ranges::all_of(tokens, [](auto token) {
+             return token <= std::numeric_limits<std::int32_t>::max();
+           });
+  };
+  return budget.tokens <= std::numeric_limits<std::int32_t>::max() &&
+         !budget.forced.empty() && valid_tokens(budget.forced) &&
+         valid_tokens(budget.ends) && valid_tokens(budget.prompt) &&
+         (!budget.partial_utf8 ||
+          budget.partial_utf8->size() <= kMaxPromptTokens);
+}
+
 [[nodiscard]] bool IsDefaultSampling(const sampling::SamplingConfig& config) {
   const sampling::SamplingConfig defaults;
   return config.temperature == defaults.temperature &&
@@ -161,7 +198,8 @@ bool ReadU64(std::span<const std::uint8_t> data, std::size_t* offset,
          config.repeat_penalty == defaults.repeat_penalty &&
          config.repeat_last_n == defaults.repeat_last_n &&
          config.frequency_penalty == defaults.frequency_penalty &&
-         config.presence_penalty == defaults.presence_penalty;
+         config.presence_penalty == defaults.presence_penalty &&
+         !config.reasoning_budget;
 }
 
 [[nodiscard]] bool HasRequestFields(const TpControlCommand& command) {
@@ -350,6 +388,11 @@ bool ValidateTpControlCommand(const TpControlCommand& command,
     }
     try {
       command.sampling.Validate();
+      if (command.sampling.reasoning_budget &&
+          !ValidReasoningBudget(*command.sampling.reasoning_budget)) {
+        SetError(error, "TP reasoning budget is invalid or too large");
+        return false;
+      }
     } catch (const std::exception& exception) {
       SetError(error, std::string("TP control request sampling is invalid: ") +
                           exception.what());
@@ -809,13 +852,32 @@ bool TpControlChannel::SendCommand(const TpControlCommand& command,
     AppendU32(&payload, FloatBits(config.frequency_penalty));
     AppendU32(&payload, FloatBits(config.presence_penalty));
     // Request flags: bit 0 constrained decoding, bit 1 decoding past EOS,
-    // bit 2 the constraint's source follows.
+    // bit 2 the constraint's source follows, bit 3 a reasoning budget.
     const auto& source = command.constraint_source;
+    const auto& budget = config.reasoning_budget;
     AppendU32(
         &payload,
         (command.constrained || config.constraint != nullptr || source ? 1U
                                                                        : 0U) |
-            (command.stop_at_eos ? 0U : 2U) | (source ? 4U : 0U));
+            (command.stop_at_eos ? 0U : 2U) | (source ? 4U : 0U) |
+            (budget ? 8U : 0U));
+    if (budget) {
+      AppendU64(&payload, budget->tokens);
+      AppendTokens(&payload, budget->forced);
+      AppendTokens(&payload, budget->ends);
+      AppendTokens(&payload, budget->prompt);
+      const auto count =
+          budget->partial_utf8 ? budget->partial_utf8->size() : 0;
+      AppendU32(&payload, static_cast<std::uint32_t>(count));
+      for (std::size_t base = 0; base < count; base += 8) {
+        std::uint8_t bits = 0;
+        for (std::size_t bit = 0; bit < std::min<std::size_t>(8, count - base);
+             ++bit)
+          bits |= static_cast<std::uint8_t>((*budget->partial_utf8)[base + bit])
+                  << bit;
+        payload.push_back(bits);
+      }
+    }
     if (source) {
       AppendString(&payload, source->response_format_json);
       AppendU32(&payload, (source->response_format_responses ? 1U : 0U) |
@@ -950,11 +1012,36 @@ bool TpControlChannel::ReceiveCommand(TpControlCommand* command,
         !ReadU32(command_prompt_, &offset, &flags, error)) {
       return reject("TP control request sampling is truncated");
     }
-    if (flags > 7 || ((flags & 4U) != 0 && (flags & 1U) == 0)) {
+    if (flags > 15 || ((flags & 4U) != 0 && (flags & 1U) == 0)) {
       return reject("TP control request flags are invalid");
     }
     parsed.constrained = (flags & 1U) != 0;
     parsed.stop_at_eos = (flags & 2U) == 0;
+    if ((flags & 8U) != 0) {
+      auto budget = std::make_shared<sampling::ReasoningBudget>();
+      std::uint64_t tokens = 0;
+      std::uint32_t count = 0;
+      if (!ReadU64(command_prompt_, &offset, &tokens, error) ||
+          tokens > std::numeric_limits<std::int32_t>::max() ||
+          !ReadTokens(command_prompt_, &offset, &budget->forced, error) ||
+          !ReadTokens(command_prompt_, &offset, &budget->ends, error) ||
+          !ReadTokens(command_prompt_, &offset, &budget->prompt, error) ||
+          !ReadU32(command_prompt_, &offset, &count, error) ||
+          count > kMaxPromptTokens ||
+          (std::size_t{count} + 7) / 8 > command_prompt_.size() - offset) {
+        return reject("TP reasoning budget is truncated or too large");
+      }
+      budget->tokens = static_cast<std::size_t>(tokens);
+      if (count != 0) {
+        auto partial = std::make_shared<std::vector<bool>>(count);
+        for (std::size_t token = 0; token < count; ++token)
+          (*partial)[token] =
+              (command_prompt_[offset + token / 8] >> (token % 8)) & 1U;
+        budget->partial_utf8 = std::move(partial);
+      }
+      offset += (std::size_t{count} + 7) / 8;
+      config.reasoning_budget = std::move(budget);
+    }
     if ((flags & 4U) != 0) {
       auto& source = parsed.constraint_source.emplace();
       std::uint32_t source_flags = 0;

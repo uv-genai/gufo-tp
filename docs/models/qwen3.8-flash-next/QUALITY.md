@@ -1,5 +1,35 @@
 # Qwen3.8 Flash-Next quality
 
+## Paired Q8 expert projections, November 6, 2026
+
+The paired Q8 gate/up path now preserves its signed-byte codes and scale,
+including K = 64 stages. Independent numerical checks in `routed_wmma_ops`
+pass, as do byte-exact paired/separate route comparisons at the full 640
+and TP2 320 intermediate widths, short restored passes and alternate down
+tile widths. The original fails these new Q8 route checks with zero paired
+outputs. `projection_ops` passes TP2 SSM output (2560 × 3072), TP2 attention
+and YaRN with the actual 12/1 heads. No tolerances or expected values changed.
+The persistence identity carries a new routed-projection epoch so snapshots
+computed by the former projection path miss after upgrade on both ranks.
+Full-model serving evidence is tracked in `handoff.md`.
+
+Sparse WMMA attention retains its existing absolute error envelope of 0.02
+against the per-token reference, which is independently checked against FP64
+at 1e-6. Its compacted union of four query selections changes FP16 probability
+rounding when query groups change. The added 7-query/2,829-position check
+measures 5.44358e-6 between grouped and single-query layouts, with single-query
+reference error 3.74094e-5; TP head slices remain byte-exact to the full heads.
+The complete attention operator suite passes without changing tolerances.
+
+The retained 2,836-token full-model probe, split at 2,048, reports a maximum
+logit difference of 0.698152 after the Q8 fix. Its first differing observed final-row
+MoE input is in layer 3, after the first attention block; the preceding three linear layers and
+MoE outputs agree. This diagnostic does not establish byte-identical sparse
+prefill logits. AR/MTP serving fixtures, including cache bypass and restart,
+retain exact expected output. Evidence includes `probe-fixed/`,
+`probe-trace-fixed/`, `attention-detail.log` and `validation-3/` under
+`artifacts/tp2-review-fixes-2026-11-06/`.
+
 ## Sampled draft-head costs, October 23, 2026
 
 Based on main `41d93463`, including the expanded greedy-head eligibility.

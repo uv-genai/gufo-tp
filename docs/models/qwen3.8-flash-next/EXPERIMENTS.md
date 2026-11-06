@@ -1,5 +1,21 @@
 # Qwen3.8 Flash-Next experiments
 
+## Paired Q8 expert prefill (November 6, 2026)
+
+Retained correctness fix: paired gate/up tiles now decode both signed Q8_0
+code halves with their block scale and traverse complete 64-element stages.
+The previous path used K-quant nibble decoding with a zero scale and a
+256-element loop. Q8 TP2 generation changed when cache bypass enlarged a
+prefill chunk past 2,048 tokens; a layer trace located the first difference
+at layer 0's MoE output, with identical final-row input.
+
+`routed_wmma_ops` now checks Q8 paired versus separate gate/up, down-tile
+widths and short passes at intermediate widths 320 and 640, plus K = 64.
+The original fails with zero paired outputs; the fix passes byte for byte.
+Existing independent numerical checks and `projection_ops` also pass.
+Evidence: `artifacts/tp2-review-fixes-2026-11-06/`. Full serving qualification
+is recorded in `handoff.md` after validation.
+
 ## Prefill route independence (October 23, 2026)
 
 A prompt restored from a checkpoint and finished by a short prefill pass must

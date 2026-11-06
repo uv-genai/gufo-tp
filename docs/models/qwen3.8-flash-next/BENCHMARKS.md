@@ -215,6 +215,35 @@ sustained), so prefill is lower than in the one-host tables above; decode is
 not power-bound. Over USB4 a fresh 2K prompt prefills more slowly than on one
 host; with a cached prefix, prefill gains 3–15%.
 
+### Q8 regression controls, November 6, 2026
+
+Fresh `uv-genai/main` `78d8a4bf` against corrected `c1e4cc38`, same system
+ROCm 10.1 compiler, dependencies and release flags on both hosts; Q8 TP2,
+two sessions, context 524288, YaRN 2. Canonical prose pp2048/tg128 at d0
+(actual prompt 2040 tokens), greedy, thinking off, cache bypass. Each row is
+one capture; output hashes, prompt/cache work and draft counts match.
+These are regression observations alongside the historical published tables.
+
+| Mode | Build / capture | Prefill (tok/s) | Decode (tok/s) |
+| --- | --- | ---: | ---: |
+| MTP | mtp-main-a | 1454.56 | 41.94 |
+| MTP | mtp-candidate | 1429.91 | 35.88 |
+| MTP | mtp-main-b | 667.97 | 34.59 |
+| AR | off-main-a | 1491.35 | 28.83 |
+| AR | off-candidate | 1495.51 | 28.09 |
+| AR | off-main-b | 1422.05 | 25.26 |
+| MTP | mtp-candidate-repeat | 1431.60 | 39.78 |
+
+The same histories include an uncached and cached short code reply. Per-request
+phase gates remain 5% and 10 ms: 58 of 66 phase comparisons are within margin;
+8 MTP comparisons remain inconclusive after the candidate repeat and
+unchanged-main controls. Initial slower samples remain retained; there is no
+qualified speed improvement or established regression. The earlier larger
+prefill control changes output after correcting zero expert projections, so
+its timing is incomparable. Evidence:
+`artifacts/tp2-review-fixes-2026-11-06/matched-timing-1/` and
+`matched-timing-followup-1/`, plus the retained `validation-*` runs.
+
 ### Single user, autoregressive
 
 <!-- bench:single-ar-tp2 -->

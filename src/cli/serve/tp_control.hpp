@@ -187,7 +187,8 @@ struct TpControlCommand {
   TpControlCommandKind kind{TpControlCommandKind::kSingle};
   /// kSingle only: the request's sampling configuration. Rank 1 builds the
   /// same sampler for multi-token decoding, and checks rank 0's tokens against
-  /// its own choice only when this is greedy.
+  /// its own choice only when this is greedy. The reasoning budget includes
+  /// its forced/end/prompt tokens and UTF-8 completion mask on both ranks.
   sampling::SamplingConfig sampling{};
   /// kSingle only: decoding is constrained (structured output or a tool
   /// call), so rank 1 does not check rank 0's greedy choices against its own

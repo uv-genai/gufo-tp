@@ -4,6 +4,39 @@ The runners start isolated local servers and check real HTTP responses. Manual
 suites use production binaries and local weights. Devlab CI downloads only its
 selected models from pinned revisions.
 
+## TP2 request controls
+
+On an isolated Flash-Next TP2 pair with at least two sessions, select AR and
+MTP explicitly and run the SDK's `reasoning-budget` and `long-context` suites.
+For cache controls, enable a private `--cache-disk` directory on each rank:
+
+```sh
+python3 tests/functional/tp2_controls.py --url http://127.0.0.1:8322 \
+  --model cache-test --mode mtp --phase seed --output artifacts/tp2-cache-seed
+# Stop both ranks, draining their writes; restart with the same private caches.
+python3 tests/functional/tp2_controls.py --url http://127.0.0.1:8322 \
+  --model cache-test --mode mtp --phase restore --output artifacts/tp2-cache-restore \
+  --manifest artifacts/tp2-cache-seed/manifest.json
+```
+
+Repeat with `--mode off` for AR. This checks buffered and streamed chat and raw
+completions, preserves RAM reuse with `cache_persist: false`, bypasses lookup
+with `cache_prompt: false`, and proves only the unflagged controls restore
+from disk after restart. Every request, stream chunk and phase time is retained.
+Raw Completions reports prefill/cache counts in `timings`; its persistence
+verdict uses cached work after restart. Chat additionally checks its explicit
+disk-hit and queued-byte metrics in `usage.gufo`.
+The runner uses an existing pair and never launches a GPU process. Its
+`--phase timing` workload provides a small identical-history main/candidate
+control; compare each request and phase at the usual 5% and 10-ms thresholds.
+
+When a numerical cache epoch changes, run `--phase legacy-seed` on the
+previous binary with private disk caches. Restart both ranks with the
+candidate using those caches, then run `--phase invalidate-legacy --manifest
+<legacy-output>/manifest.json`. The old record must miss, prefill the complete
+prompt and return the expected text. Use fresh caches for the seed/restore
+qualification above.
+
 ## Embedding, ASR and TTS service checks
 
 `model_services.py` starts an isolated loopback production server, checks readiness

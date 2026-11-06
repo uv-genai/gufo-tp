@@ -1999,9 +1999,10 @@ std::shared_ptr<const JsonConstraint> JsonConstraint::WithTools(
   const bool deepseek = format == ToolFormat::kDeepSeek;
   const std::string_view marker =
       deepseek ? "<｜DSML｜tool_calls>" : "<tool_call>";
-  const auto end = literal(format == ToolFormat::kJson ? "}</tool_call>"
-                           : deepseek ? "</｜DSML｜invoke>"
-                                      : "</function>\n</tool_call>");
+  const auto end = literal(
+      format == ToolFormat::kJson
+          ? "}</tool_call>"
+          : (deepseek ? "</｜DSML｜invoke>" : "</function>\n</tool_call>"));
   const auto calls = static_cast<std::uint32_t>(grammar->rules_.size());
   grammar->rules_.push_back({});
   // In tool-only mode ordinary text remains unconstrained until a canonical

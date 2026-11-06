@@ -68,9 +68,7 @@ void TestSyntheticGeneration() {
       "<unk>", "hello", "world", "!", "a", "b", "c", std::string(kImEnd)};
   const std::vector<std::string> merges = {};
   const std::unordered_map<std::string, gufo::tokenization::TokenId> specials =
-      {
-          {std::string(kImEnd), 7},
-  };
+      {{std::string(kImEnd), 7}};
 
   auto tokenizer = gufo::tokenization::QwenTokenizer::CreateFromVocabulary(
       vocab, merges, specials);

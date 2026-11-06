@@ -41,6 +41,8 @@ set(gufo_pr_targets
   video_api_test minimax_h3_sampling_test minimax_h3_runtime_test)
 set(gufo_pr_tests ${gufo_pr_targets})
 if(NOT WIN32)
+  list(APPEND gufo_pr_targets tp_executor_test)
+  list(APPEND gufo_pr_tests tp_executor_test)
   list(APPEND gufo_pr_tests platform_library_relocated_test)
 endif()
 list(REMOVE_ITEM gufo_pr_tests

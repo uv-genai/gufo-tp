@@ -1,14 +1,16 @@
 # LIVE HANDOFF — Gufo-TP
 
 Canonical file: `/home/ugo/projects/gufo/handoff.md`. Updated **2026-11-06** for
-release `tp2-rdma-fixes-v0.28.1-2026-11-06`. Edit this file after deployment,
+the v0.29.0 upstream integration. Latest published release remains
+`tp2-rdma-fixes-v0.28.1-2026-11-06`. Edit this file after deployment,
 merge, release or incident changes; dated files under `~/gufo-merge-handoff/`
 are archives, and its lowercase `handoff.md` is only a pointer here.
 
 ## Read next
 
 1. [AGENTS.md](AGENTS.md): host flags, remotes and TP2 invariants.
-2. [Release notes](docs/releases/2026-11-06-tp2-fixes.md): changes and qualification.
+2. [Upstream merge record](docs/MERGE-UPSTREAM-2026-11-06.md): current integration and qualification.
+   [Prior release notes](docs/releases/2026-11-06-tp2-fixes.md) describe the published v0.28.1 fixes.
 3. [BUILD-LOCAL.md](BUILD-LOCAL.md) and [TP2-SETUP.md](TP2-SETUP.md): native build/deployment.
 4. [Merge checklist](docs/MERGE-CHECKLIST.md) and [TP2 design](docs/models/qwen3.8-flash-next/TP2.md).
 
@@ -19,12 +21,12 @@ are archives, and its lowercase `handoff.md` is only a pointer here.
 | Development | `/home/ugo/projects/gufo`, `main` tracks **`uv-genai/main`** |
 | Publish remote | **`uv-genai` only**, `https://github.com/uv-genai/gufo-tp.git` |
 | Upstream | `origin` → `gufo-org/gufo`, local tracking branch `gufo-org`; never push there |
-| Upstream merged through | **v0.28.1** (`12effe36`); later locally fetched tags are not merged development code |
+| Upstream merged through | **v0.29.0** (`883f67b6`); v0.30.0 and v0.31.0 remain queued for separate validated PRs |
 | Latest release | [tp2-rdma-fixes-v0.28.1-2026-11-06](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-fixes-v0.28.1-2026-11-06) |
 | Previous release | [tp2-rdma-merge-v0.28.1-2026-11-04](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.28.1-2026-11-04), code `2a7c0262` |
 | Review fixes | [PR #25](https://github.com/uv-genai/gufo-tp/pull/25), merged **`ba1ab427`**, closes #21–#24 |
 | Q4 reader fix | [PR #27](https://github.com/uv-genai/gufo-tp/pull/27), merged **`ae8a93c3`**, closes #26 |
-| Package version | `version.txt` stays **0.28.1**; dated TP2 source release, no installable binary asset |
+| Package version | `version.txt` is **0.29.0** from the upstream tag; the latest dated TP2 release remains based on v0.28.1 |
 
 Separate branches and validated PRs precede code merges. Every published tag
 must have a GitHub Release with written notes. Do not move published tags or
@@ -37,18 +39,22 @@ scope for this release.
 
 Both hosts have `/home/ugo/projects/gufo/build/release/gufo`:
 
-- Compiled revision **`85ae8ce2d2dde6bc9c0fade33db9f35104301124`**.
-- SHA-256 **`653edd21f64b265cd4a153048e7b89561a8651306c44671f2b883775e6d06d21`**.
-- Production code matches merged `ae8a93c3`; later release work changes docs.
-- The binary reports `gufo version development (85ae8ce2...)`. Do not confuse
+- Compiled revision **`3ea5054d6256266d9e48199e0665897019a5859f`**.
+- SHA-256 **`43be578145df68a7cf15a7e391910269fdc9763fbde3d8a251a122970f549da4`**.
+- Production code includes the v0.29.0 extension migration and TP snapshot
+  alignment repair; later commits change CI policy and documentation only.
+- The binary reports `gufo version development (3ea5054d...)`. Do not confuse
   its compiled revision with the squash commit or the release documentation commit.
+- The v0.28.1 baseline `85ae8ce2…` (SHA `653edd21…`) is retained on both
+  hosts at `artifacts/upstream-2026-11-06/gufo-main-v0.28.1`.
 - Previous binary `37feeaad…` is retained on both hosts at
   `artifacts/q4-file-check-2026-11-06/gufo-before`; the November 4 binary
   `42aded09…` is at `artifacts/tp2-review-fixes-2026-11-06/gufo-main`.
 
 The user's Q8 TP2 + MTP pair ran under llama-swap until an explicit UI unload
-at **18:51 AWST on November 6**. The final release check uses the same Q8 entry
-and leaves it unloaded afterward. A worker reporting a closed control channel
+at **18:51 AWST on November 6**. The subsequent upstream qualification uses
+isolated Q4/Q8 TP2 pairs, four sessions, context 524288 and static YaRN 2,
+then leaves the GPUs unloaded. A worker reporting a closed control channel
 at that unload time reflects the rank-0 shutdown, not a new generation failure.
 Query processes, `/running`, `/metrics` and `/slots` for live state before GPU
 work; preserve the user's current model selection and never load a second
@@ -91,7 +97,16 @@ Hashes and download instructions: [model guide](docs/models/qwen3.8-flash-next/R
 A preceding `peer closed the channel` launch failure was secondary to a missing
 Q4 file on rank 1; inspect both rank logs before diagnosing a collective bug.
 
-## Validation and evidence
+## Current upstream validation
+
+See the [merge record](docs/MERGE-UPSTREAM-2026-11-06.md) for the v0.29.0
+build, CPU/GPU tests, four TP2 modes and per-request timing controls. Raw
+evidence is retained under `artifacts/upstream-2026-11-06/v0.29.0/`.
+TP protocol is 22, snapshot payload is 20, and TP2 retains its mirrored
+snapshot path with component caching disabled. Static YaRN has a distinct
+persistence identity. Older peers or persisted states must not be mixed.
+
+## Prior v0.28.1 release validation and evidence
 
 | Scope | Result / evidence |
 | --- | --- |
@@ -112,8 +127,8 @@ Artifacts retained under the ignored repository `artifacts/` directory:
 
 Do not attribute every earlier suite to the final binary: the Q8 kernel/wire
 fix was qualified first, the cache epoch next, then the metadata-only reader.
-The current binary includes all three changes; the per-revision evidence above
-is intentional.
+The v0.28.1 release binary includes all three changes; the per-revision
+evidence above is intentional.
 
 ## User observations and remaining limits
 

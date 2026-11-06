@@ -140,7 +140,8 @@ queue and preparation timing flags remain visible in the
 [quality record](QUALITY.md#exact-sampled-decode-october-21-2026); no blanket
 timing pass is claimed.
 
-## Single user, autoregressive
+## Historical single-host measurements
+
 ### Single user, autoregressive
 
 Approximately pp2048 / tg128; depth is the cached prefix in tokens.
@@ -254,6 +255,16 @@ same-build one-host runs beside them, in the balanced power mode (85 W
 sustained), so prefill is lower than in the one-host tables above; decode is
 not power-bound. Over USB4 a fresh 2K prompt prefills more slowly than on one
 host; with a cached prefix, prefill gains 3–15%.
+
+### Upstream v0.29.0 regression controls, November 6, 2026
+
+The [upstream merge record](../../MERGE-UPSTREAM-2026-11-06.md) records the
+native build, four TP2 modes, numerical checks and timing follow-ups for the
+extension migration. These use four sessions, context capacity 524288 and
+static YaRN 2; the earlier November 6 controls below use two sessions and are
+not the same baseline. Initial slower samples and unchanged-main controls
+are retained. These checks do not replace or requalify the historical
+one-host-versus-TP2 speed tables.
 
 ### Q8 regression controls, November 6, 2026
 

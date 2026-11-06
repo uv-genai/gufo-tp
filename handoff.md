@@ -46,11 +46,13 @@ Both hosts have `/home/ugo/projects/gufo/build/release/gufo`:
   `artifacts/q4-file-check-2026-11-06/gufo-before`; the November 4 binary
   `42aded09…` is at `artifacts/tp2-review-fixes-2026-11-06/gufo-main`.
 
-At release preparation the **user's Q8 TP2 + MTP pair is running under
-llama-swap**. Leave it running; do not start another model load on either host.
-Earlier isolated test pairs were stopped, but that does not describe the
-current service. Query processes, `/running`, `/metrics` and `/slots` for live
-state before doing GPU work.
+The user's Q8 TP2 + MTP pair ran under llama-swap until an explicit UI unload
+at **18:51 AWST on November 6**. The final release check uses the same Q8 entry
+and leaves it unloaded afterward. A worker reporting a closed control channel
+at that unload time reflects the rank-0 shutdown, not a new generation failure.
+Query processes, `/running`, `/metrics` and `/slots` for live state before GPU
+work; preserve the user's current model selection and never load a second
+model on either host.
 
 | Role | Host | Entry |
 | --- | --- | --- |

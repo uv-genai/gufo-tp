@@ -193,7 +193,7 @@ on `TpMirroredRunner`) and `PrefillThrough` runs `Prefill`. Otherwise the
 first session reuse diverges `operation_id`s and a later all-reduce hangs.
 
 Collective-shape rules kept through the v0.16→v0.23 requalify series (see
-[MERGE-CHECKLIST.md](../../../MERGE-CHECKLIST.md)):
+[MERGE-CHECKLIST.md](../../MERGE-CHECKLIST.md)):
 
 - **Invariant:** both ranks issue the **same** all-reduces (order, count,
   bytes). Rank 0 mirrors calls and draft **counts**, not every decode

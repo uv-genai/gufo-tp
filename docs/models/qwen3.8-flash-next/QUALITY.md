@@ -1,5 +1,16 @@
 # Qwen3.8 Flash-Next quality
 
+## Paired Q8 expert projections, November 6, 2026
+
+The paired Q8 gate/up path now preserves its signed-byte codes and scale,
+including K = 64 stages. Independent numerical checks in `routed_wmma_ops`
+pass, as do byte-exact paired/separate route comparisons at the full 640
+and TP2 320 intermediate widths, short restored passes and alternate down
+tile widths. The original fails these new Q8 route checks with zero paired
+outputs. `projection_ops` passes TP2 SSM output (2560 × 3072), TP2 attention
+and YaRN with the actual 12/1 heads. No tolerances or expected values changed.
+Full-model serving evidence is tracked in `handoff.md`.
+
 ## Sampled draft-head costs, October 23, 2026
 
 Based on main `41d93463`, including the expanded greedy-head eligibility.

@@ -1,5 +1,9 @@
 # Model API functional tests
 
+The runners start isolated local servers and check real HTTP responses. Manual
+suites use production binaries and local weights. Devlab CI downloads only its
+selected models from pinned revisions.
+
 ## TP2 request controls
 
 On an isolated Flash-Next TP2 pair with at least two sessions, select AR and
@@ -22,10 +26,6 @@ from disk after restart. Every request, stream chunk and phase time is retained.
 The runner uses an existing pair and never launches a GPU process. Its
 `--phase timing` workload provides a small identical-history main/candidate
 control; compare each request and phase at the usual 5% and 10-ms thresholds.
-
-The runners start isolated local servers and check real HTTP responses. Manual
-suites use production binaries and local weights. Devlab CI downloads only its
-selected models from pinned revisions.
 
 ## Embedding, ASR and TTS service checks
 

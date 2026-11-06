@@ -1150,8 +1150,9 @@ std::vector<__half> RoutedDown(const Routing& r, const void* w,
 /// (separate 16- or 48-row tiles), and every separate tile height against
 /// the paired route, bit for bit. Model shapes (640 x 2560 gate/up, top-10,
 /// ragged buckets over many experts; 2560 x 640 down).
-bool CheckPassRoutes(q::WeightType gate_type, q::WeightType down_type) {
-  constexpr std::size_t m = 640, k = 2560, used = 10, n_tokens = 1619;
+bool CheckPassRoutes(q::WeightType gate_type, q::WeightType down_type,
+                     std::size_t m = 640, std::size_t k = 2560) {
+  constexpr std::size_t used = 10, n_tokens = 1619;
   constexpr std::size_t experts = 128;
   const auto gate = MakePacked(gate_type, experts, m, k, 0xA11CE);
   const auto up = MakePacked(gate_type, experts, m, k, 0xB0B0);
@@ -1176,8 +1177,9 @@ bool CheckPassRoutes(q::WeightType gate_type, q::WeightType down_type) {
   for (std::size_t i = 0; i < x.size(); ++i)
     x[i] = __float2half(Uniform(&state, (i / k) % 3 == 0 ? 0.05F : 3.0F));
   auto* d_x = Upload(x);
-  const std::string name =
-      std::string(TypeName(gate_type)) + "/" + TypeName(down_type);
+  const std::string name = std::string(TypeName(gate_type)) + "/" +
+                           TypeName(down_type) + " m=" + std::to_string(m) +
+                           " k=" + std::to_string(k);
   bool ok = true;
   const Routing all(ids, 0, n_tokens, used, experts);
   const auto paired = PairedSwiglu(all, d_gate, d_up, gate_type, d_x, m, k);
@@ -1233,6 +1235,15 @@ int main() {
     for (const auto gate : {q::WeightType::kQ4_K, q::WeightType::kQ5_K})
       for (const auto down : {q::WeightType::kQ5_1, q::WeightType::kQ8_0})
         routes = CheckPassRoutes(gate, down) && routes;
+    routes = CheckPassRoutes(q::WeightType::kQ8_0, q::WeightType::kQ8_0, 320) &&
+             routes;
+    routes =
+        CheckPassRoutes(q::WeightType::kQ8_0, q::WeightType::kQ8_0) && routes;
+    // Q8 accepts complete 64-element stages, including less than one K-quant
+    // block.
+    routes =
+        CheckPassRoutes(q::WeightType::kQ8_0, q::WeightType::kQ8_0, 64, 64) &&
+        routes;
     if (!routes)
       throw std::runtime_error("routed expert rows depend on the pass route");
     ReportVectorAccuracy();

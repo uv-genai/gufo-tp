@@ -328,7 +328,8 @@ void CheckAttentionProjection(
             "attention fusion changed rounding, cache boundaries or replay");
     }
   }
-  if (q::AttentionF16Gemm(weights, input, device_gamma, device_gamma + 256,
+  if (heads == 12 && kv_heads == 1 &&
+      q::AttentionF16Gemm(weights, input, device_gamma, device_gamma + 256,
                           static_cast<float*>(actual[0]) + 8,
                           static_cast<float*>(actual[1]) + 8,
                           static_cast<__half*>(actual[2]) + 8,
@@ -926,7 +927,8 @@ double Run(std::size_t batch, std::size_t m, std::size_t k, std::uint32_t seed,
                              static_cast<std::uint32_t>(batch),
                              m == 13312 ? 24 : 12, m == 13312 ? 2 : 1);
     CheckAttentionProjection(
-        d_w, d_x_half, d_f16, static_cast<std::uint32_t>(batch), 24, 2,
+        d_w, d_x_half, d_f16, static_cast<std::uint32_t>(batch),
+        m == 13312 ? 24 : 12, m == 13312 ? 2 : 1,
         gufo::models::qwen38_flash_next::MakeYarnRope(
             {.factor = 2.5F, .original_context = 262144}, 64, 1e7F));
   }
@@ -1316,6 +1318,7 @@ int main() {
     ok = Run(200, 200, 6144, 0xDEADBEEFU) < 1e-2 && ok;
     ok = Run(1025, 2560, 6144, 0x51A17U, 2) < 1e-2 && ok;
     ok = Run(2049, 2560, 6144, 0x25606144U, 2) < 1e-2 && ok;
+    ok = Run(1036, 2560, 3072, 0x25603072U, 2) < 1e-2 && ok;
     // Wide SSM projection: two K blocks per stage, with a partial token tile.
     ok = Run(2049, 16384, 2560, 0x16384256U, 2) < 1e-2 && ok;
     // A TP rank's GDN heads: 8 key and 24 value heads.

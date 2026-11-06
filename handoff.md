@@ -6,7 +6,7 @@ redirect until that copy is removed).
 **When state changes** (merge, tag, push, script/config change, incident): **replace
 or edit this file in full** — do not leave stale tips, shas, or “untested” claims.
 
-Last updated: **2026-11-06** (session: **review fixes #21–#24 validated on `codex/fix-tp2-review-findings`; CPU/PR, GPU operator and AR/MTP serving checks PASS; timing observations retained below** — baseline recheck in §2. Project is **Gufo-TP**; repo `uv-genai/gufo-tp`).
+Last updated: **2026-11-06** (session: **Q4 metadata-only shard fix #26 / PR #27; Q4 llama-swap TP2 + MTP launch and 24 serving checks PASS**. Review fixes #21–#24 merged in PR #25; their timing observations remain below. Project is **Gufo-TP**; repo `uv-genai/gufo-tp`).
 
 ---
 
@@ -27,10 +27,11 @@ Historical dated handoffs in `~/gufo-merge-handoff/HANDOFF-*.md` are **archive o
 | | |
 | --- | --- |
 | Tree | `/home/ugo/projects/gufo` |
-| Development | **`main` → `uv-genai/main`**; review branch **`codex/fix-tp2-review-findings`**, validated before PR merge |
+| Development | **`main` → `uv-genai/main`**; Q4 reader fix branch **`codex/fix-gguf-metadata-only-shards`** |
 | Push | **`uv-genai` only** → https://github.com/uv-genai/gufo-tp.git |
 | Upstream | `origin` → gufo-org/gufo; local track **`gufo-org`** — **never push** |
-| Review PR | [#25](https://github.com/uv-genai/gufo-tp/pull/25) |
+| Q4 reader PR | [#27](https://github.com/uv-genai/gufo-tp/pull/27), fixes [#26](https://github.com/uv-genai/gufo-tp/issues/26) |
+| Review PR | [#25](https://github.com/uv-genai/gufo-tp/pull/25), merged as **`ba1ab427`** |
 | Review code | **`a40b1616`** contains the request-control/Q8 fixes and cache epoch; numerical kernel source **`c1e4cc38`**; main control is **`78d8a4bf`**; previous release code **`2a7c0262`** = **`tp2-rdma-merge-v0.28.1-2026-11-04`** (PR #20 squash) |
 | Upstream merged through | **v0.28.1** (`12effe36`); README tracks through v0.28.1; released |
 | v0.27.0 tag | `tp2-rdma-merge-v0.27.0-2026-10-31` — https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.27.0-2026-10-31 |
@@ -49,10 +50,11 @@ directive 2026-10-29) so the tag row shows the notes link.
 | | |
 | --- | --- |
 | Path | `build/release/gufo` on **both** hosts |
-| sha256 | **`37feeaadddc1e870eb48427e8239c445106ec8e203363731de2c1642c5d909f1`** — validated on both hosts |
-| Built from | **`a40b1616`** (request controls, paired Q8 expert fix and persistence numerical epoch); original v0.28.1 binary (`42aded09…`, source `2a7c0262`) retained on both hosts at `artifacts/tp2-review-fixes-2026-11-06/gufo-main` |
+| sha256 | **`653edd21f64b265cd4a153048e7b89561a8651306c44671f2b883775e6d06d21`** — validated on both hosts |
+| Built from | **`85ae8ce2`** (metadata-only GGUF shard fix, including all PR #25 fixes); preceding binary **`37feeaad…`** retained on both hosts at `artifacts/q4-file-check-2026-11-06/gufo-before`; original v0.28.1 binary (`42aded09…`, source `2a7c0262`) at `artifacts/tp2-review-fixes-2026-11-06/gufo-main` |
+| Q4 llama-swap validation | **2026-11-06 PASS**: real `gufo-qwen3.8-flash-next-tp2-q4` entry on strix-halo-1 loads and returns PONG through port **8080**. Its backend on **5801** passes **15** generation/reuse/concurrency requests plus **9** tool/schema/streaming checks. Sessions **2**, context **524288**, YaRN **2**, MTP drafts observed; 3877-token prefill; exact replay with **85 cached tokens**; **2 active / 3 queued**. Evidence: `artifacts/q4-file-check-2026-11-06/`. |
 | TP2 smoke | **2026-11-04 PASS 10/10** on both hosts, sha `42aded09…` matched; `/ready` 200; PONG, 3481-tok long, short eBPF NL content asserts, 5× session, 2× agent prefix; logs free of `tp_pair_lost`/mismatch/status5; only expected `q8_0_expanded` WARN (168 tensors) |
-| Review-fix validation | **2026-11-06 PASS 171 functional checks**, Q8 TP2 AR/MTP, sessions 2, context 524288, YaRN 2; actual MTP drafts, cache bypass/RAM/disk restart, budgeted reasoning and constraints. Release SHA above matches on both hosts. Evidence `artifacts/tp2-review-fixes-2026-11-06/validation-3/`. GPU operators **3/3**, CPU PR checks **80/80**. Timing remains advisory as detailed in §5. |
+| Review-fix validation | **2026-11-06 PASS 171 functional checks**, Q8 TP2 AR/MTP, sessions 2, context 524288, YaRN 2; actual MTP drafts, cache bypass/RAM/disk restart, budgeted reasoning and constraints. This predates the Q4 reader fix. Evidence `artifacts/tp2-review-fixes-2026-11-06/validation-3/`. GPU operators **3/3**, CPU PR checks **80/80**. Timing remains advisory as detailed in §5. |
 | Pre-fix GPU recheck | **2026-11-06 PASS 22/22**, same existing binary and matching launchers on both hosts. Q8 TP2 + MTP, sessions **2**, context **524288**, YaRN **2.0**, HTTP **8322**. PONG; **3877-token** prompt across 3 prefill chunks; short eBPF content assertions; 5 session-reuse requests; exact greedy agent replay with **85 cached tokens**; 3 concurrent requests with **2 active / 1 queued**; 9 tool/JSON/streaming/mixed-concurrency cases. Metrics: **811 proposed / 720 accepted MTP draft tokens**. `/ready` remained 200; both logs free of collective/peer/error failures; only expected `q8_0_expanded` WARN. Both owned ranks stopped; both GPUs idle and test/bootstrap/control ports released. |
 | Recheck evidence | **`artifacts/tp2-mtp-smoke-2026-11-06-134039/`**: metadata and both-host hashes, reproducible `run_smoke.py`, `report.json`, `constraints/report.json`, full rank logs, concurrency samples, metrics, cleanup record. Greedy, thinking off, disk cache off; configured context capacity is not a full-depth context qualification. This smoke predates the review fixes and does not qualify their reasoning or persistence controls. |
 | v0.26.0 smoke | **2026-10-29 PASS** on both hosts, sha `7b9c4e48…` matched; `/ready` 200; 10/10 requests (PONG, 3481-tok long, short eBPF NL w/ content asserts, 5× session, 2× agent prefix); logs free of `tp_pair_lost`/mismatch/status5; thinking off via `chat_template_kwargs` for asserts |
@@ -170,11 +172,27 @@ path. The previous main binary primes a real two-rank cache; the upgraded
 binary must miss and prefill all tokens. This and fresh AR/MTP seed/restart
 coverage pass in `final-cache-validation-1/`: **50** cache/upgrade checks and
 **9** MTP constraint checks, including the old-binary primer. The final release
-source is `a40b1616`, with the SHA above on both hosts. Linux PR checks pass
+source for that validation is `a40b1616`, SHA `37feeaad…` on both hosts. Linux PR checks pass
 **80/80** again. The four pre-existing format differences found by hosted CI
 are now compatible with clang-format **21 and 23**, both **723/723**.
 
-The user reports a completed Q4 re-download; current validation uses Q8.
+**Q4 re-download / reader incident (#26, 2026-11-06):** all four UD-Q4_K_XL
+shards on both hosts match the publisher's full SHA-256 hashes and sizes. The
+new first shard is metadata-only: **10,946,618 bytes, zero tensors**, with no
+trailing padding. Gufo incorrectly required six padding bytes and reported
+`Malformed or truncated GGUF`. `85ae8ce2` skips payload alignment only for
+zero-tensor shards after validating their metadata. Weight-bearing shards
+retain alignment and extent checks. No model files were modified.
+
+The new regression fails before the fix and passes after it. Tests cover
+GGUF v2/v3, split discovery through either shard, truncated metadata and
+missing padding on weight-bearing shards. The real set opens from all four
+entry shards with **1,224 tensors / 4 mappings**. Linux CPU/repository checks
+pass **80/80**, formatting passes with clang-format **21 and 23**, and the
+release build passes. Q4 TP2 + MTP validation through the actual llama-swap
+entry and backend passes as recorded in §2. Per-request timing is retained;
+the old binary cannot load this exact Q4 set, so this is a startup correctness
+fix without a matched generation-speed comparison or speed claim.
 
 **Executor-test relevance audit (2026-11-06): keep the test.** It runs the current
 production scheduler, pool, TCP channel, `TpMirroredRunner` and `TpExecutor` with

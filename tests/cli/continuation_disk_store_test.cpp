@@ -358,6 +358,8 @@ void TestDiskPrefillAlignment() {
   runner.prefill_alignment = 2;
   {
     ContinuationDiskStore writer({directory.path(), 1 << 20, 1 << 16});
+    Expect(SaveTokens(writer, runner, {1, 2}, FakeSnapshot(2, 2)).stored,
+           "save input-span fallback");
     Expect(SaveTokens(writer, runner, {1, 2, 3, 4}, FakeSnapshot(4, 4)).stored,
            "save aligned checkpoint");
     Expect(
@@ -373,6 +375,13 @@ void TestDiskPrefillAlignment() {
   Expect(longer.restored && longer.token_count == 4 &&
              RequireFakeState(*state).value == 4,
          "disk extension skips unaligned checkpoint for aligned fallback");
+  const std::vector<TextRunnerToken> prompt{1, 2, 3, 4, 5, 6};
+  auto span = reader.RestoreLongestPrefix(
+      runner, *state, prompt, {}, 0, {},
+      [](std::size_t position) { return position <= 2 || position >= 6; });
+  Expect(span.restored && span.token_count == 2 &&
+             RequireFakeState(*state).value == 2,
+         "native disk restore skips checkpoints inside an indivisible input");
 }
 
 void TestRestartRestoreAndCompatibilityIdentity() {

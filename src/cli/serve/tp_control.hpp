@@ -166,8 +166,10 @@ struct TpConstraintSource {
   /// ChatRequest::ToolChoice.
   std::uint8_t tool_choice{0};
   bool parallel_tool_calls{true};
-  /// The output starts in reasoning (the runner's initial output state).
-  bool reasoning{false};
+  /// ext::InitialOutputState: auto (0), reasoning (1), content (2).
+  std::uint8_t initial_output{2};
+  /// Whether auto output may open a reasoning block.
+  bool reasoning_enabled{true};
   bool operator==(const TpConstraintSource&) const = default;
 };
 

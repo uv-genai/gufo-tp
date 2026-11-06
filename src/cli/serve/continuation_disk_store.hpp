@@ -161,7 +161,8 @@ public:
       std::span<const TextRunnerToken> prompt,
       std::span<const std::uint8_t> input_identity = {},
       std::size_t stable_prefix_tokens = 0,
-      std::span<const ContinuationInputPrefix> input_prefixes = {});
+      std::span<const ContinuationInputPrefix> input_prefixes = {},
+      const std::function<bool(std::size_t)>& legal_stop = {});
 
   /// Prefix lengths that prompt shares with stored entries but that no entry
   /// holds exactly.

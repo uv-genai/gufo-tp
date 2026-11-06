@@ -102,19 +102,20 @@ of the release version.
 
 ## Release flow
 
-`version.txt` is the canonical release version. A daily GitHub workflow reads
-the Conventional Commit history after the latest release and opens or updates
-one release pull request. That pull request updates `version.txt`,
-`CHANGELOG.md` and the release manifest. It receives the same CI as any other
-change, plus the complete Devlab functional suite on Strix Halo (other pull
-requests run its smaller PR tier). The workflow waits up to 160 minutes for the
-pull request title, the repository checks and `devlab/functional`. If any of
-them fails, errors or is still pending, it leaves the pull request open without
-publishing a release and comments on it to notify the maintainers.
+`version.txt` is the canonical release version. A maintainer starts a release
+by running the *Release automation* workflow from the GitHub Actions tab ("Run
+workflow" on `main`); it has no schedule. The workflow reads the Conventional
+Commit history after the latest release and opens or updates one release pull
+request. That pull request updates `version.txt`, `CHANGELOG.md` and the
+release manifest. It receives the same CI as any other change, plus the
+complete Devlab functional suite on Strix Halo (other pull requests run its
+smaller PR tier). The workflow waits up to 160 minutes for the pull request
+title, the repository checks and `devlab/functional`. If any of them fails,
+errors or is still pending, it leaves the pull request open without publishing
+a release and comments on it to notify the maintainers.
 
 After the checks pass, the workflow squash-merges the release pull request and
-immediately creates the immutable tag and GitHub Release. A manually dispatched
-run follows the same process and is available for recovery. Do not edit the
+immediately creates the immutable tag and GitHub Release. Do not edit the
 version, changelog or release manifest in an ordinary feature or fix pull
 request.
 
@@ -245,12 +246,9 @@ development builds. `GUFO_EXTENSIONS` is also an exact semicolon list; `*`
 selects discovery and an explicitly empty list selects none. An explicit list
 and lock mode conflict, and an empty entry from a stray `;` is rejected.
 
-Bootstrap: the current lock contains no migrated extensions. Existing legacy
-models still build and serve through their existing routes in both modes; they
-are not falsely reported as extension providers. Lock mode controls discovered
-extension manifests only. The pilot and later model cards populate this list as
-providers move, while Card14 adds metadata for remaining models before code
-migration. `gufo --version` preserves the version line first, then reports API,
+The lock now lists the eight migrated model extensions. Discovery also includes
+supported unshipped extensions; lock mode selects exactly the recorded names.
+`gufo --version` preserves the version line first, then reports API,
 selection and extension provenance. `gufo diagnose --section extensions
 [--json]` inspects provenance without model loads/HIP probes; ordinary human
 `diagnose` also lists extensions. Existing diagnostic JSON schema is unchanged.

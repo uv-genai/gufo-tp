@@ -19,15 +19,48 @@
 
 namespace gufo::server {
 
+namespace {
+
+using Format = sampling::JsonConstraint::ToolFormat;
+
+// The built-in format behind a dialect identity; null for a provider syntax.
+struct SelectedToolDialect {
+  std::optional<Format> format;
+  const ext::ToolDialect* dialect{nullptr};
+};
+
+SelectedToolDialect SelectToolDialect(const std::string& id) {
+  SelectedToolDialect selected{.dialect = ext::FindToolDialect(id)};
+  if (selected.dialect != nullptr) {
+    if (!selected.dialect->syntax)
+      selected.format = selected.dialect->format;
+    return selected;
+  }
+  // Built-in grammars need no registration; a missing DeepSeek registration
+  // only leaves its calls unparsed.
+  for (const auto format : {Format::kJson, Format::kQwen, Format::kDeepSeek})
+    if (id == ext::BuiltinToolDialectId(format))
+      return {.format = format};
+  throw std::invalid_argument("text runner tool dialect '" + id +
+                              "' is not registered");
+}
+
+}  // namespace
+
 std::optional<ChatRequest> ConstrainChatRequest(
     const ChatRequest& request, const TextModelRunner& runner,
     sampling::SamplingConfig* sampling,
     std::optional<sampling::JsonConstraint::ToolFormat>* tool_format,
-    std::optional<TextGenerationBackend::InitialOutputState> initial) {
+    std::string* tool_dialect,
+    std::optional<TextGenerationBackend::InitialOutputState> initial_override) {
   // Output parsing needs the model's dialect even without tool constraints
   // (for example Qwen's whitespace boundary after </think>).
+  const auto dialect_id = runner.ToolDialectId();
+  const auto selected = SelectToolDialect(dialect_id);
   if (tool_format)
-    *tool_format = runner.ToolFormat();
+    *tool_format = selected.format;
+  if (tool_dialect)
+    *tool_dialect = dialect_id;
   if (!request.response_format &&
       (request.tools.empty() ||
        request.tool_choice == ChatRequest::ToolChoice::kNone))
@@ -41,7 +74,8 @@ std::optional<ChatRequest> ConstrainChatRequest(
     std::vector<sampling::JsonConstraint::Tool> tools;
     const bool required =
         request.tool_choice == ChatRequest::ToolChoice::kRequired;
-    auto format = runner.ToolFormat();
+    const auto* syntax = selected.format ? nullptr : &*selected.dialect->syntax;
+    const auto format = selected.format.value_or(Format::kJson);
     for (const auto& tool : request.tools) {
       const auto definition = tool.definition_json.empty()
                                   ? json::Value()
@@ -50,14 +84,20 @@ std::optional<ChatRequest> ConstrainChatRequest(
       const auto* strict = function ? function->find("strict") : nullptr;
       const bool enforce = strict && strict->as_bool();
       auto schema = json::parse(tool.parameters_json);
-      auto native =
-          sampling::JsonConstraint::ToolParameters(schema, enforce, format);
+      auto native = syntax ? sampling::JsonConstraint::ToolParameters(
+                                 schema, enforce, *syntax)
+                           : sampling::JsonConstraint::ToolParameters(
+                                 schema, enforce, format);
       tools.emplace_back(tool.name, std::move(native));
     }
-    grammar = sampling::JsonConstraint::WithTools(
-        grammar, std::move(tools), required,
-        !request.response_format && request.parallel_tool_calls, format);
-    if (format == sampling::JsonConstraint::ToolFormat::kJson)
+    const bool parallel =
+        !request.response_format && request.parallel_tool_calls;
+    grammar = syntax
+                  ? sampling::JsonConstraint::WithTools(
+                        grammar, std::move(tools), required, parallel, *syntax)
+                  : sampling::JsonConstraint::WithTools(
+                        grammar, std::move(tools), required, parallel, format);
+    if (!syntax && format == Format::kJson)
       instruction +=
           "\nIf a tool is needed, respond using the JSON tool-call form "
           "<tool_call>{\"name\":\"function_name\",\"arguments\":{...}}</"
@@ -83,14 +123,34 @@ std::optional<ChatRequest> ConstrainChatRequest(
     constrained.messages.insert(constrained.messages.begin(),
                                 std::move(message));
   }
-  if (initial.value_or(runner.InitialOutputState(request)) ==
-      TextGenerationBackend::InitialOutputState::kReasoning)
-    grammar = sampling::JsonConstraint::WithReasoning(grammar);
+  // The reasoning phase uses the provider's delimiters, as the response
+  // parsers do. Reasoning the prompt opened may still repeat the opener;
+  // otherwise the model may open it itself unless the request disabled it.
+  const auto initial =
+      initial_override.value_or(runner.InitialOutputState(request));
+  const auto reasoning = runner.ReasoningDelimiters();
+  if (initial == ext::InitialOutputState::kReasoning)
+    grammar = sampling::JsonConstraint::WithReasoning(grammar, reasoning.close);
+  else if (initial == ext::InitialOutputState::kAuto &&
+           request.reasoning.enabled.value_or(true) && !reasoning.open.empty())
+    grammar = sampling::JsonConstraint::WithReasoning(grammar, reasoning.close,
+                                                      reasoning.open);
   sampling->constraint = runner.BindConstraint(grammar);
   return constrained;
 }
 
 namespace {
+
+// Component adapters provide capture/fork without the optional native snapshot
+// API. Native TP runners must still explicitly advertise both capabilities.
+TextRunnerCapabilities ContinuationCapabilities(const TextModelRunner& runner) {
+  auto capabilities = runner.Descriptor().capabilities;
+  if (runner.UsesComponentCache()) {
+    capabilities.snapshot = true;
+    capabilities.fork = true;
+  }
+  return capabilities;
+}
 
 struct ValidatedRunner {
   std::shared_ptr<TextModelRunner> runner;
@@ -154,6 +214,17 @@ ValidatedRunner ValidateRunner(std::shared_ptr<TextModelRunner> runner,
           "text runner persistence payload version must be nonzero");
     }
   }
+
+  const auto reasoning = runner->ReasoningDelimiters();
+  if (reasoning.close.empty()) {
+    throw std::invalid_argument(
+        "text runner reasoning close delimiter must not be empty");
+  }
+  if (reasoning.open.find_first_of(" \t\r\n") == 0) {
+    throw std::invalid_argument(
+        "text runner reasoning open delimiter must not begin with whitespace");
+  }
+  (void)SelectToolDialect(runner->ToolDialectId());
 
   auto resources = runner->ResourceClaim();
   const auto per_state_reservation = PerStateReservationBytes(resources);
@@ -572,11 +643,17 @@ struct TextRunnerPool::Request::Impl {
         retain_fallback(cache_prefix_tokens != 0),
         overlap_snapshots(overlap_snapshots) {
     alignment = std::max<std::size_t>(
-        1, runner->Descriptor().capabilities.prefill_alignment);
+        1, ContinuationCapabilities(*runner).prefill_alignment);
     // On a warm continuation the reused frontier is already a safe fallback.
     // Freeze it before prefill, then retain this turn's own stable boundary
     // before mutable assistant framing.
     auto count = cache_prefix_tokens == 0 ? prompt.size() : cache_prefix_tokens;
+    // Neither snapshots nor any other planned stop may split an indivisible
+    // input. Without declared spans every position is unchanged.
+    // A stable boundary inside the first input leaves nothing to retain.
+    count = LegalStop(count, false);
+    if (count == 0)
+      count = prompt.size();
     // A newly consumed image needs its own stable checkpoint. Otherwise the
     // next assistant turn can invalidate the complete prompt's framing and
     // force the image through prefill again from the older text frontier.
@@ -613,7 +690,7 @@ struct TextRunnerPool::Request::Impl {
     // frontier is already the state this request continues. The complete
     // prompt stays exact: an unchanged retry continues it without prefill,
     // and a longer prompt never restores it (ComponentTextCache::Acquire).
-    if (alignment > 1) {
+    if (alignment > 1 || context) {
       for (auto& position : boundaries)
         position = Aligned(position);
       std::erase_if(boundaries, [&](std::size_t position) {
@@ -655,7 +732,7 @@ struct TextRunnerPool::Request::Impl {
           std::span<const TextRunnerToken>(prompt).first(prefill_offset));
     }
     ngram_baseline = runner->NgramRows(state);
-    const auto capabilities = runner->Descriptor().capabilities;
+    const auto capabilities = ContinuationCapabilities(*runner);
     // Component adapters supply their own pass boundaries below. Building the
     // generic plan first only repeats prefix lookups before discarding it.
     if (!lease.component() && capabilities.incremental_prefill &&
@@ -685,7 +762,7 @@ struct TextRunnerPool::Request::Impl {
     }
     if (lease.component())
       checkpoints = lease.PlannedCaptures(cache_prefix_tokens);
-    if (alignment > 1) {
+    if (alignment > 1 || context) {
       for (auto& position : checkpoints)
         position = Aligned(position);
       std::erase_if(checkpoints, [&](std::size_t position) {
@@ -697,8 +774,43 @@ struct TextRunnerPool::Request::Impl {
     }
   }
 
-  [[nodiscard]] std::size_t Aligned(std::size_t position) const noexcept {
-    return position - position % alignment;
+  /// The prompt context's stop for `position`. A hook moving the wrong way
+  /// would keep the loops below from ending.
+  [[nodiscard]] std::size_t LegalStop(std::size_t position, bool up) const {
+    if (!context)
+      return position;
+    const auto stop = context->PrefillStop(position, up);
+    if (up ? stop < position : stop > position)
+      throw std::logic_error(
+          "prompt context moved a prefill stop the wrong way");
+    return stop;
+  }
+
+  /// The nearest position at or before `position` where a pass may end: on
+  /// the prefill alignment and outside every indivisible input.
+  [[nodiscard]] std::size_t Aligned(std::size_t position) const {
+    for (;;) {
+      const auto next = LegalStop(position - position % alignment, false);
+      if (next == position)
+        return position;
+      position = next;
+    }
+  }
+
+  /// The nearest such position after `position`, or the prompt end.
+  [[nodiscard]] std::size_t NextStop(std::size_t position) const {
+    for (;;) {
+      if (position >= prompt.size())
+        return prompt.size();
+      auto next = position;
+      if (const auto over = next % alignment; over != 0)
+        next += alignment - over;
+      if (next < prompt.size())
+        next = LegalStop(next, true);
+      if (next == position)
+        return position;
+      position = next;
+    }
   }
 
   ~Impl() {
@@ -768,7 +880,7 @@ struct TextRunnerPool::Request::Impl {
 
     TextRunnerCapabilities capabilities;
     try {
-      capabilities = runner->Descriptor().capabilities;
+      capabilities = ContinuationCapabilities(*runner);
     } catch (...) {
       return;
     }
@@ -951,7 +1063,7 @@ struct TextRunnerPool::Request::Impl {
     bool reserved = false;
     bool failed = false;
     try {
-      const auto capabilities = runner->Descriptor().capabilities;
+      const auto capabilities = ContinuationCapabilities(*runner);
       if (!capabilities.prefix_reuse || !capabilities.snapshot ||
           !capabilities.fork)
         return;
@@ -1210,7 +1322,7 @@ std::size_t TextRunnerPool::Request::ShareCheckpoint(
     std::size_t common_tokens) {
   if (!*this || impl_->decode_ready || impl_->stopped)
     return 0;
-  const auto capabilities = impl_->runner->Descriptor().capabilities;
+  const auto capabilities = ContinuationCapabilities(*impl_->runner);
   if (!capabilities.incremental_prefill || !capabilities.prefix_reuse ||
       !capabilities.snapshot || !capabilities.fork)
     return 0;
@@ -1325,6 +1437,17 @@ TextPrefillStep TextRunnerPool::Request::Prefill(std::size_t max_input_tokens) {
                        impl_->prompt.size() - impl_->prefill_offset);
   }
 
+  // Nor does it end inside an indivisible input: it ends before one, or a
+  // step starting at one consumes it whole, beyond the budget. Every planned
+  // stop is legal already, so later clamps keep the step legal.
+  if (const auto end = impl_->prefill_offset + max_input_tokens;
+      impl_->context && end < impl_->prompt.size()) {
+    auto stop = impl_->Aligned(end);
+    if (stop <= impl_->prefill_offset)
+      stop = impl_->NextStop(impl_->prefill_offset + 1);
+    max_input_tokens = stop - impl_->prefill_offset;
+  }
+
   auto& state = dynamic_cast<TextRunnerState&>(impl_->lease.state());
   // Captures this chunk takes in place, ascending, without ending a pass
   // there: intermediate checkpoints and the prompt snapshot target. The
@@ -1339,7 +1462,7 @@ TextPrefillStep TextRunnerPool::Request::Prefill(std::size_t max_input_tokens) {
   std::size_t stop = impl_->prompt.size();
   const bool in_pass_capable =
       !impl_->disk_store &&
-      impl_->runner->Descriptor().capabilities.in_pass_checkpoint;
+      ContinuationCapabilities(*impl_->runner).in_pass_checkpoint;
   const bool prompt_pending = !impl_->prompt_snapshot_attempted &&
                               impl_->prefill_offset < snapshot_position &&
                               snapshot_position < impl_->prompt.size();
@@ -1364,7 +1487,7 @@ TextPrefillStep TextRunnerPool::Request::Prefill(std::size_t max_input_tokens) {
                                                  &InPassCapture::position),
                         {target, true});
     const auto max_in_pass = std::max<std::size_t>(
-        1, impl_->runner->Descriptor().capabilities.max_in_pass_checkpoints);
+        1, ContinuationCapabilities(*impl_->runner).max_in_pass_checkpoints);
     for (const auto& candidate : candidates) {
       if (candidate.position >= impl_->prefill_offset + max_input_tokens)
         break;
@@ -1476,7 +1599,7 @@ TextPrefillStep TextRunnerPool::Request::Prefill(std::size_t max_input_tokens) {
   };
   // A runner must either roll back an interrupted step or finish it before
   // cancellation can retain the completed conversation frontier.
-  const auto capabilities = impl_->runner->Descriptor().capabilities;
+  const auto capabilities = ContinuationCapabilities(*impl_->runner);
   const bool finish_step = capabilities.partial_prefill_retention &&
                            !capabilities.prefill_rollback && impl_->cancelled;
   struct Rearm {
@@ -1538,6 +1661,10 @@ TextPrefillStep TextRunnerPool::Request::Prefill(std::size_t max_input_tokens) {
   }
 
   impl_->prefill_offset += step.consumed_tokens;
+  if (impl_->LegalStop(impl_->prefill_offset, false) != impl_->prefill_offset) {
+    throw std::runtime_error(
+        "text runner stopped prefill inside an indivisible input");
+  }
   const bool reached_frontier = impl_->prefill_offset == impl_->prompt.size();
   if (step.decode_ready != (impl_->prefill_offset == model_prompt.size())) {
     throw std::runtime_error(
@@ -1708,7 +1835,7 @@ TextRunnerPool::Request::CommitMetrics TextRunnerPool::Request::Commit() {
         "text runner cannot commit before prefill completes");
   }
   if (impl_->pending_selection.has_value()) {
-    if (impl_->runner->Descriptor().capabilities.final_token_advance_required) {
+    if (ContinuationCapabilities(*impl_->runner).final_token_advance_required) {
       throw std::logic_error(
           "text runner cannot commit an unadvanced decode token");
     }
@@ -1718,12 +1845,12 @@ TextRunnerPool::Request::CommitMetrics TextRunnerPool::Request::Commit() {
   impl_->CapturePromptSnapshot();
   auto& state = dynamic_cast<TextRunnerState&>(impl_->lease.state());
   state.SetCancellationCheck({});
-  if (!impl_->runner->Descriptor().capabilities.prefix_reuse) {
+  if (!ContinuationCapabilities(*impl_->runner).prefix_reuse) {
     impl_->lease.Invalidate();
     impl_.reset();
     return {};
   }
-  const auto capabilities = impl_->runner->Descriptor().capabilities;
+  const auto capabilities = ContinuationCapabilities(*impl_->runner);
   std::vector<ContinuationToken> checkpoint = impl_->prompt;
   checkpoint.insert(checkpoint.end(), impl_->generated.begin(),
                     impl_->generated.end());
@@ -1780,7 +1907,7 @@ TextRunnerPool::Request::Cancel() noexcept {
       impl_->FinishSnapshot();
     auto& state = dynamic_cast<TextRunnerState&>(impl_->lease.state());
     state.SetCancellationCheck({});
-    const auto capabilities = impl_->runner->Descriptor().capabilities;
+    const auto capabilities = ContinuationCapabilities(*impl_->runner);
     if (!capabilities.prefix_reuse) {
       Invalidate();
       return {};
@@ -2095,6 +2222,9 @@ TextRunnerPool::Request TextRunnerPool::Acquire(
       context
           ? std::span<const ContinuationInputPrefix>(context->cache_prefixes)
           : std::span<const ContinuationInputPrefix>{};
+  const auto legal_stop = [&](std::size_t position) {
+    return !context || context->PrefillStop(position, false) == position;
+  };
   // Reuse full checkpoints as well as branching fallbacks. Both cache tiers
   // ensure unmarked legacy entries leave room for the stable boundary.
   ServingCacheLease lease = impl_->cache->Acquire(
@@ -2105,7 +2235,7 @@ TextRunnerPool::Request TextRunnerPool::Acquire(
         text_state.SetStopAtEos(stop_at_eos);
         impl_->validated.runner->SetPromptContext(text_state, context);
       },
-      reuse_prompt, cache_prefix_tokens, input_prefixes);
+      reuse_prompt, cache_prefix_tokens, input_prefixes, legal_stop);
   if (!lease) {
     return {};
   }
@@ -2171,7 +2301,7 @@ TextRunnerPool::Request TextRunnerPool::Acquire(
       const auto restored = impl_->disk_store->RestoreLongestPrefix(
           *impl_->validated.runner,
           dynamic_cast<TextRunnerState&>(lease.state()), prompt, identity,
-          cache_prefix_tokens, input_prefixes);
+          cache_prefix_tokens, input_prefixes, legal_stop);
       if (restored.restored) {
         if (context)
           impl_->validated.runner->SetPromptContext(

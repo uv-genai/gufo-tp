@@ -441,7 +441,8 @@ ContinuationCache::Lease ContinuationCache::Acquire(
     std::span<const std::uint8_t> input_identity,
     const std::function<void(ContinuationState&)>& prepare_state,
     bool reuse_prompt, std::size_t stable_prefix_tokens,
-    std::span<const ContinuationInputPrefix> input_prefixes) {
+    std::span<const ContinuationInputPrefix> input_prefixes,
+    const std::function<bool(std::size_t)>& legal_stop) {
   if (stable_prefix_tokens > prompt.size())
     throw std::invalid_argument("stable cache prefix exceeds prompt length");
   std::size_t previous = 0;
@@ -497,6 +498,7 @@ ContinuationCache::Lease ContinuationCache::Acquire(
         stable_prefix_tokens == 0 ||
         std::ranges::any_of(impl_->entries, [&](const auto& entry) {
           return entry->valid && impl_->SnapshotReusable(entry->snapshot) &&
+                 (!legal_stop || legal_stop(entry->tokens.size())) &&
                  impl_->SnapshotPositionReusable(entry->tokens.size(),
                                                  prompt.size()) &&
                  (entry->tokens.size() <= stable_prefix_tokens ||
@@ -525,6 +527,8 @@ ContinuationCache::Lease ContinuationCache::Acquire(
         skip_reason = "stable_prefix_boundary";
       else if (!IsPrefix(entry.tokens, prompt))
         skip_reason = "token_prefix";
+      else if (legal_stop && !legal_stop(entry.tokens.size()))
+        skip_reason = "indivisible_input";
       else if (!impl_->SnapshotPositionReusable(entry.tokens.size(),
                                                 prompt.size()))
         skip_reason = "prefill_alignment";
@@ -552,6 +556,7 @@ ContinuationCache::Lease ContinuationCache::Acquire(
         if (entry.available && !entry.live_tokens.empty() &&
             entry.live_tokens.size() >= cached_tokens &&
             can_reuse(entry.live_tokens.size()) &&
+            (!legal_stop || legal_stop(entry.live_tokens.size())) &&
             matches_input(entry.live_identity, entry.live_tokens.size()) &&
             IsPrefix(entry.live_tokens, prompt) &&
             impl_->StateReusable(*entry.state)) {

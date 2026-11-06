@@ -156,13 +156,15 @@ public:
 
   /// A nonzero stable prefix requires a fallback at or before that boundary
   /// before a later checkpoint can be reused (including exact retries).
+  /// legal_stop excludes frontiers inside an indivisible input of this prompt.
   [[nodiscard]] Lease Acquire(
       std::span<const ContinuationToken> prompt,
       const CancellationCheck& is_cancelled = {},
       std::span<const std::uint8_t> input_identity = {},
       const std::function<void(ContinuationState&)>& prepare_state = {},
       bool reuse_prompt = true, std::size_t stable_prefix_tokens = 0,
-      std::span<const ContinuationInputPrefix> input_prefixes = {});
+      std::span<const ContinuationInputPrefix> input_prefixes = {},
+      const std::function<bool(std::size_t)>& legal_stop = {});
 
   /// Drop all reuse state. Requires no outstanding leases or reservations.
   void Clear();

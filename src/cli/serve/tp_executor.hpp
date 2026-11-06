@@ -107,7 +107,12 @@ struct TpRequestContext final : TextPromptContext {
       : sequence(sequence), images(std::move(images)) {
     if (this->images != nullptr) {
       cache_identity = this->images->cache_identity;
+      cache_prefixes = this->images->cache_prefixes;
     }
+  }
+  [[nodiscard]] std::size_t PrefillStop(std::size_t position,
+                                        bool up) const override {
+    return images ? images->PrefillStop(position, up) : position;
   }
   std::uint64_t sequence;
   /// The request's own prompt context from `PreparePrompt` (its images), which
@@ -175,6 +180,8 @@ public:
   [[nodiscard]] DeviceProbeStatus PollDevice() const override;
   [[nodiscard]] bool DeviceUsable() const override;
   [[nodiscard]] ReasoningTags ReasoningBudgetTags() const override;
+  [[nodiscard]] std::string ToolDialectId() const override;
+  [[nodiscard]] ReasoningMarkup ReasoningDelimiters() const override;
   [[nodiscard]] std::uint32_t VocabularySize() const override;
   [[nodiscard]] std::vector<TextRunnerToken> TokenizeControl(
       std::string_view text) const override;

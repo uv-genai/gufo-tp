@@ -1622,6 +1622,40 @@ void TestFullChatCheckpointRestoresWithoutSuffixPrefill() {
   old.Invalidate();
 }
 
+void TestNativeIndivisibleInput() {
+  class ContextRunner final : public SnapshotRunner {
+  public:
+    using SnapshotRunner::SnapshotRunner;
+    void SetPromptContext(
+        TextRunnerState&,
+        std::shared_ptr<const gufo::server::TextPromptContext>) const override {
+    }
+  };
+  struct Context final : gufo::server::TextPromptContext {
+    std::size_t PrefillStop(std::size_t position, bool up) const override {
+      return position > 2 && position < 6 ? (up ? 6 : 2) : position;
+    }
+  };
+  auto runner = std::make_shared<ContextRunner>(std::make_shared<FakeStats>(),
+                                                64, 256, 1024);
+  TextRunnerPool pool(runner, 1);
+  {
+    auto text = pool.Acquire({1, 2, 3, 4}, {}, {}, {}, true, 2);
+    while (!text.prefill_complete())
+      (void)text.Prefill(64);
+    text.Commit();
+  }
+  auto input = pool.Acquire({1, 2, 3, 4, 5, 6, 7, 8}, {}, {},
+                            std::make_shared<Context>(), true, 4);
+  Expect(input.cached_prompt_tokens() == 2,
+         "native pool rejects a text checkpoint inside the new input span");
+  Expect(input.Prefill(1).consumed_tokens == 4 && input.prefill_position() == 6,
+         "native prefill consumes an indivisible span beyond the token budget");
+  while (!input.prefill_complete())
+    (void)input.Prefill(1);
+  input.Commit();
+}
+
 void TestNewImageGetsAStableCheckpoint() {
   class ContextRunner final : public SnapshotRunner {
   public:
@@ -2649,6 +2683,7 @@ int main() {
   gufo::platform::SetEnv("NO_COLOR", "1");
   TestInPassStableCheckpoint();
   TestInPassFailureRetainsOnlyCompletedCheckpoints();
+  TestNativeIndivisibleInput();
   TestNewImageGetsAStableCheckpoint();
   TestGeneratedFrontierForksBeforeMutation();
   TestGeneratedFrontierPersistsForForks();

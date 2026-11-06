@@ -1,10 +1,11 @@
 #include "src/cli/serve/text_model_runner.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <charconv>
 #include <chrono>
-#include <fstream>
 #include <future>
+#include <iomanip>
 #include <limits>
 #include <mutex>
 #include <sstream>
@@ -15,7 +16,6 @@
 #include "src/cli/serve/continuation_disk_store.hpp"
 #include "src/cli/serve/logging.hpp"
 #include "src/core/json.hpp"
-#include "src/core/platform/os_info.hpp"
 
 namespace gufo::server {
 
@@ -90,134 +90,6 @@ std::optional<ChatRequest> ConstrainChatRequest(
   return constrained;
 }
 
-std::optional<std::uint64_t> MeminfoAvailableBytes(std::string_view meminfo) {
-  std::optional<std::uint64_t> available_kib;
-  std::uint64_t cma_free_kib = 0;
-  std::istringstream lines{std::string(meminfo)};
-  for (std::string line; std::getline(lines, line);) {
-    std::istringstream fields(line);
-    std::string key;
-    std::uint64_t kib = 0;
-    if (!(fields >> key >> kib))
-      continue;
-    if (key == "MemAvailable:")
-      available_kib = kib;
-    else if (key == "CmaFree:")
-      cma_free_kib = kib;
-  }
-  if (!available_kib)
-    return std::nullopt;
-  return (*available_kib > cma_free_kib ? *available_kib - cma_free_kib : 0) *
-         1024;
-}
-
-std::uint64_t CgroupAvailableBytes(const std::filesystem::path& root,
-                                   std::string_view membership_text,
-                                   std::uint64_t host_available) {
-  std::uint64_t available = host_available;
-  // A cgroup limit can be much smaller than the host's available memory.
-  // Walk parents too: a child may say "max" beneath a limited ancestor.
-  std::istringstream membership{std::string(membership_text)};
-  for (std::string line; std::getline(membership, line);) {
-    if (!line.starts_with("0::/"))
-      continue;
-    const auto relative = std::filesystem::path(line.substr(4));
-    if (std::ranges::any_of(relative,
-                            [](const auto& part) { return part == ".."; }))
-      continue;
-    for (auto path = root / relative;; path = path.parent_path()) {
-      std::ifstream limit_file(path / "memory.max");
-      std::ifstream used_file(path / "memory.current");
-      std::uint64_t limit = 0, used = 0;
-      if ((limit_file >> limit) && (used_file >> used)) {
-        // memory.current includes page cache the kernel reclaims under
-        // pressure. Count inactive file pages as free; the active ones may
-        // still be in use, so they stay charged. Dirty and writeback pages
-        // cannot be dropped until written, so they stay charged too. A
-        // malformed memory.stat is ignored.
-        std::ifstream stat_file(path / "memory.stat");
-        std::uint64_t inactive_file = 0, unreclaimable = 0;
-        bool found = false, valid = true;
-        for (std::string key; stat_file >> key;) {
-          std::uint64_t value = 0;
-          if (!(stat_file >> value)) {
-            valid = false;
-            break;
-          }
-          if (key == "inactive_file") {
-            inactive_file = value;
-            found = true;
-          } else if (key == "file_dirty" || key == "file_writeback") {
-            unreclaimable += value;
-          }
-        }
-        if (found && valid)
-          used -= std::min(
-              used, inactive_file - std::min(inactive_file, unreclaimable));
-        available = std::min(available, limit > used ? limit - used : 0);
-      }
-      if (path == root)
-        break;
-    }
-    break;
-  }
-  return available;
-}
-
-namespace {
-
-/// Host RAM still available, after cgroup limits. Unified-memory device
-/// allocations draw from the same RAM, so HIP's device capacity is not used.
-std::uint64_t HostAvailableBytes() {
-  std::uint64_t available = platform::AvailableMemoryBytes();
-  std::ifstream meminfo("/proc/meminfo");
-  std::ostringstream meminfo_text;
-  meminfo_text << meminfo.rdbuf();
-  if (const auto parsed = MeminfoAvailableBytes(meminfo_text.str()))
-    available = *parsed;
-  std::ifstream membership("/proc/self/cgroup");
-  std::ostringstream membership_text;
-  membership_text << membership.rdbuf();
-  return CgroupAvailableBytes("/sys/fs/cgroup", membership_text.str(),
-                              available);
-}
-
-std::size_t ClampToSize(std::uint64_t bytes) {
-  return static_cast<std::size_t>(
-      std::min<std::uint64_t>(bytes, std::numeric_limits<std::size_t>::max()));
-}
-
-}  // namespace
-
-std::size_t HostSnapshotBudgetBytes() {
-  return ClampToSize(HostAvailableBytes() / 2);
-}
-
-std::size_t HostSnapshotCeilingBytes() {
-  const auto available = HostAvailableBytes();
-  return ClampToSize(available > kHostSnapshotHeadroomBytes
-                         ? available - kHostSnapshotHeadroomBytes
-                         : 0);
-}
-
-std::optional<TextRunnerRamCacheOptions> ParseRamCacheOption(
-    std::string_view text, std::string* error) {
-  if (text == "off")
-    return TextRunnerRamCacheOptions{.enabled = false};
-  std::size_t bytes = 0;
-  const auto end = text.data() + text.size();
-  const auto parsed = std::from_chars(text.data(), end, bytes);
-  if (text.empty() || parsed.ec != std::errc{} || parsed.ptr != end) {
-    if (error)
-      *error =
-          "--cache-ram-bytes must be off or a byte count (0 = auto), "
-          "not '" +
-          std::string(text) + "'";
-    return std::nullopt;
-  }
-  return TextRunnerRamCacheOptions{.capacity_bytes = bytes};
-}
-
 namespace {
 
 struct ValidatedRunner {
@@ -290,8 +162,28 @@ ValidatedRunner ValidateRunner(std::shared_ptr<TextModelRunner> runner,
     const std::size_t per_request = *per_state_reservation;
     const std::size_t capacity = *resources.state_capacity_bytes;
     if (per_request != 0 && state_count > capacity / per_request) {
-      throw std::invalid_argument(
-          "text runner request-state claim exceeds state capacity");
+      const auto describe = [](std::size_t bytes) {
+        std::ostringstream text;
+        text << bytes << " bytes (" << std::fixed << std::setprecision(1)
+             << static_cast<double>(bytes) / static_cast<double>(1ULL << 30)
+             << " GiB)";
+        return text.str();
+      };
+      const std::size_t fitting = capacity / per_request;
+      std::ostringstream message;
+      message << "text runner request-state claim exceeds state capacity: "
+              << state_count << " sessions at " << descriptor.max_context
+              << "-token context need " << describe(per_request)
+              << " each, but only " << describe(capacity)
+              << " of device memory is available; ";
+      if (fitting == 0) {
+        message << "no session fits at this context, reduce --context";
+      } else {
+        message << "at most " << fitting
+                << (fitting == 1 ? " session fits" : " sessions fit")
+                << " at this context, reduce --sessions or --context";
+      }
+      throw std::invalid_argument(message.str());
     }
   }
 
@@ -561,109 +453,6 @@ ContinuationCache::SnapshotSupport MakeSnapshotSupport(
 
 }  // namespace
 
-void TextModelRunner::AdvanceBatch(
-    std::span<const TextRunnerAdvance> advances) const {
-  for (const auto& advance : advances) {
-    try {
-      Advance(advance.state.get(), advance.token);
-    } catch (...) {
-      if (!advance.failure)
-        throw;
-      *advance.failure = std::current_exception();
-    }
-  }
-}
-
-TextDecodeStep TextModelRunner::DecodeStep(
-    TextRunnerState& state, std::size_t max_tokens,
-    sampling::SamplerState& sampler) const {
-  if (max_tokens == 0) {
-    throw std::invalid_argument(
-        "text runner decode step budget must be at least one token");
-  }
-  auto selection = SelectNext(state, sampler);
-  if (selection.stop) {
-    return {
-        .selections = {},
-        .draft_tokens = 0,
-        .draft_accepted_tokens = 0,
-        .stop = true,
-        .terminal_logprobs = std::move(selection.logprobs),
-    };
-  }
-  const TextRunnerToken token = selection.token;
-  Advance(state, token);
-  return {
-      .selections = {std::move(selection)},
-  };
-}
-
-std::vector<TextDecodeStep> TextModelRunner::DecodeBatch(
-    std::span<const TextRunnerDecode> decodes) const {
-  std::vector<TextDecodeStep> steps;
-  steps.reserve(decodes.size());
-  for (const auto& decode : decodes) {
-    try {
-      steps.push_back(DecodeStep(decode.state.get(), decode.max_tokens,
-                                 decode.sampler.get()));
-    } catch (...) {
-      TextDecodeStep failed;
-      failed.failure = std::current_exception();
-      steps.push_back(std::move(failed));
-    }
-  }
-  return steps;
-}
-
-std::unique_ptr<TextRunnerSnapshot> TextModelRunner::Snapshot(
-    const TextRunnerState&) const {
-  throw std::logic_error("text runner does not support snapshots");
-}
-
-std::unique_ptr<TextRunnerSnapshot> TextModelRunner::SnapshotForPersistence(
-    const TextRunnerState& state) const {
-  return Snapshot(state);
-}
-
-std::size_t TextModelRunner::SnapshotPayloadBytes(
-    const TextRunnerState&) const {
-  throw std::logic_error("text runner does not support snapshot sizing");
-}
-
-void TextModelRunner::RestoreOrFork(TextRunnerState&,
-                                    const TextRunnerSnapshot&) const {
-  throw std::logic_error("text runner does not support snapshot restore/fork");
-}
-
-std::size_t TextModelRunner::PersistentSnapshotPayloadBytes(
-    const TextRunnerSnapshot&) const {
-  throw std::logic_error("text runner does not support persistent snapshots");
-}
-
-std::size_t TextModelRunner::SerializePersistentSnapshot(
-    const TextRunnerSnapshot&, std::span<std::uint8_t>) const {
-  throw std::logic_error("text runner does not support persistent snapshots");
-}
-
-void TextModelRunner::RestorePersistentSnapshot(
-    TextRunnerState&, std::span<const std::uint8_t>) const {
-  throw std::logic_error("text runner does not support persistent snapshots");
-}
-
-std::unique_ptr<ComponentCacheResources>
-TextModelRunner::CreateComponentCacheResources(cache::ResourceLedger&,
-                                               std::size_t) const {
-  throw std::logic_error("text runner has no component cache provider");
-}
-std::unique_ptr<TextRunnerState> TextModelRunner::BindComponentState(
-    cache::Adapter&, cache::Slot&) const {
-  throw std::logic_error("text runner has no component execution facade");
-}
-void TextModelRunner::ReconcileComponentState(TextRunnerState&,
-                                              std::size_t) const {
-  throw std::logic_error("text runner has no component position binding");
-}
-
 struct TextRunnerPool::Impl {
   static constexpr std::size_t kIntermediateCheckpoints = 4;
   Impl(std::shared_ptr<TextModelRunner> model_runner, std::size_t state_count,
@@ -761,91 +550,6 @@ struct TextRunnerPool::Impl {
   std::size_t shared_prefix_max_boundaries{0};
 };
 
-std::shared_ptr<const sampling::TokenConstraint>
-TextModelRunner::BindConstraint(
-    std::shared_ptr<const sampling::JsonConstraint> grammar) const {
-  const std::lock_guard lock(constraint_mutex_);
-  for (const auto& binding : constraints_)
-    if (binding->grammar == grammar)
-      return binding;
-  if (!constraint_vocabulary_)
-    constraint_vocabulary_ = BuildConstraintVocabulary();
-  if (!constraint_vocabulary_)
-    throw std::invalid_argument("model does not support structured output");
-  auto binding = std::make_shared<sampling::TokenConstraint>();
-  binding->grammar = std::move(grammar);
-  binding->vocabulary = constraint_vocabulary_;
-  if (constraints_.size() >= 4)
-    constraints_.erase(constraints_.begin());
-  constraints_.push_back(binding);
-  return binding;
-}
-
-std::size_t TextModelRunner::PrepareConstraintVocabulary() const {
-  const std::lock_guard lock(constraint_mutex_);
-  if (!constraint_vocabulary_)
-    constraint_vocabulary_ = BuildConstraintVocabulary();
-  return constraint_vocabulary_ ? constraint_vocabulary_->size() : 0;
-}
-
-std::shared_ptr<const sampling::ReasoningBudget>
-TextModelRunner::BuildReasoningBudget(
-    std::size_t tokens, std::span<const TextRunnerToken> prompt) const {
-  const auto tags = ReasoningBudgetTags();
-  const auto start = TokenizeControl(tags.start);
-  auto forced = TokenizeControl(tags.forced_end);
-  if (start.size() != 1 || forced.empty())
-    return nullptr;
-  auto budget = std::make_shared<sampling::ReasoningBudget>();
-  budget->tokens = tokens;
-  budget->forced.assign(forced.begin(), forced.end());
-  for (const auto end : tags.ends) {
-    const auto token = TokenizeControl(end);
-    if (token.size() != 1)
-      return nullptr;
-    budget->ends.push_back(token.front());
-  }
-  // llama.cpp counts the generation prompt after the start tag, such as the
-  // newline after Qwen's <think>.
-  const auto opened =
-      std::ranges::find(prompt.rbegin(), prompt.rend(), start.front());
-  if (opened != prompt.rend())
-    budget->prompt.assign(opened.base(), prompt.end());
-  const std::lock_guard lock(constraint_mutex_);
-  if (!partial_utf8_ && VocabularySize() != 0) {
-    auto partial = std::make_shared<std::vector<bool>>(VocabularySize());
-    for (TextRunnerToken token = 0; token < partial->size(); ++token) {
-      // As llama.cpp common_utf8_is_complete: the last lead byte within the
-      // final four bytes must have all of its continuation bytes.
-      const auto text = Decode(std::span(&token, 1));
-      bool complete = text.empty();
-      for (std::size_t i = 1; i <= std::min<std::size_t>(4, text.size()); ++i) {
-        const auto byte = static_cast<unsigned char>(text[text.size() - i]);
-        if ((byte & 0xC0U) != 0x80U) {
-          complete = i >= (byte >= 0xF0U   ? 4U
-                           : byte >= 0xE0U ? 3U
-                           : byte >= 0xC0U ? 2U
-                                           : 1U);
-          break;
-        }
-      }
-      (*partial)[token] = !complete;
-    }
-    partial_utf8_ = std::move(partial);
-  }
-  budget->partial_utf8 = partial_utf8_;
-  return budget;
-}
-
-void TextModelRunner::StreamPersistentSnapshot(
-    const TextRunnerSnapshot& snapshot, const SnapshotSink& sink) const {
-  std::vector<std::uint8_t> payload(PersistentSnapshotPayloadBytes(snapshot));
-  if (SerializePersistentSnapshot(snapshot, payload) != payload.size()) {
-    throw std::runtime_error("persistent snapshot byte count mismatch");
-  }
-  sink(payload);
-}
-
 struct TextRunnerPool::Request::Impl {
   Impl(std::shared_ptr<TextModelRunner> model_runner,
        std::shared_ptr<ContinuationDiskStore> persistent_store,
@@ -866,6 +570,8 @@ struct TextRunnerPool::Request::Impl {
         context(std::move(prompt_context)),
         retain_fallback(cache_prefix_tokens != 0),
         overlap_snapshots(overlap_snapshots) {
+    alignment = std::max<std::size_t>(
+        1, runner->Descriptor().capabilities.prefill_alignment);
     // On a warm continuation the reused frontier is already a safe fallback.
     // Freeze it before prefill, then retain this turn's own stable boundary
     // before mutable assistant framing.
@@ -901,6 +607,41 @@ struct TextRunnerPool::Request::Impl {
     // immutable fallback and freeze the complete prompt before decoding.
     if (lease.component() && prefill_offset > count)
       count = prompt.size();
+    // Capture the aligned boundary at or before each later target instead:
+    // only it continues the prompt exactly (prefill_alignment). A reused
+    // frontier is already the state this request continues. The complete
+    // prompt stays exact: an unchanged retry continues it without prefill,
+    // and a longer prompt never restores it (ComponentTextCache::Acquire).
+    if (alignment > 1) {
+      for (auto& position : boundaries)
+        position = Aligned(position);
+      std::erase_if(boundaries, [&](std::size_t position) {
+        return position <= prefill_offset;
+      });
+      boundaries.erase(std::ranges::unique(boundaries).begin(),
+                       boundaries.end());
+      stable_prefix_position = Aligned(stable_prefix_position);
+      if (stable_prefix_position <= prefill_offset)
+        stable_prefix_position = 0;
+      // Raw completions have no earlier stable chat boundary. Retain the
+      // aligned prompt tail too, or a longer request loses all reuse when
+      // Acquire rejects the exact unaligned prompt checkpoint. Advancing this
+      // target still captures the complete prompt for unchanged retries.
+      if (count > prefill_offset && count < prompt.size()) {
+        count = std::max(Aligned(count), prefill_offset);
+      } else if (const auto aligned = Aligned(count);
+                 aligned > prefill_offset && aligned < count &&
+                 (!lease.component() ||
+                  lease.TryReserveSnapshot(
+                      lease.CaptureBytes(aligned), aligned, retain_fallback,
+                      SnapshotPurpose::kContinuation,
+                      std::span<const TextRunnerToken>(prompt).first(
+                          aligned)))) {
+        // A disabled cache (or a refused disk-only capture) must not prepare
+        // checkpoint scratch or split a pass for a fallback it cannot keep.
+        count = aligned;
+      }
+    }
     snapshot_tokens.reserve(prompt.size());
     snapshot_tokens.assign(prompt.begin(), prompt.begin() + count);
     // A live continuation can already be beyond the desired snapshot point.
@@ -943,6 +684,20 @@ struct TextRunnerPool::Request::Impl {
     }
     if (lease.component())
       checkpoints = lease.PlannedCaptures(cache_prefix_tokens);
+    if (alignment > 1) {
+      for (auto& position : checkpoints)
+        position = Aligned(position);
+      std::erase_if(checkpoints, [&](std::size_t position) {
+        return position <= prefill_offset;
+      });
+      std::ranges::sort(checkpoints);
+      checkpoints.erase(std::ranges::unique(checkpoints).begin(),
+                        checkpoints.end());
+    }
+  }
+
+  [[nodiscard]] std::size_t Aligned(std::size_t position) const noexcept {
+    return position - position % alignment;
   }
 
   ~Impl() {
@@ -1288,6 +1043,8 @@ struct TextRunnerPool::Request::Impl {
   bool retain_fallback{false};
   bool overlap_snapshots{false};
   std::size_t fallback_position{0};
+  /// TextRunnerCapabilities::prefill_alignment.
+  std::size_t alignment{1};
   /// This turn's stable boundary when the reused frontier sits before it, so
   /// the boundary is checkpointed after the frozen fallback instead of being
   /// skipped. Zero once taken, or when the two positions coincide.
@@ -1426,7 +1183,8 @@ std::size_t TextRunnerPool::Request::ShareCheckpoint(
     return 0;
   // The complete prompt is retained only after decoding starts; share the
   // last prefill position instead so peers can start sooner.
-  const auto target = std::min(common_tokens, impl_->prompt.size() - 1);
+  const auto target =
+      impl_->Aligned(std::min(common_tokens, impl_->prompt.size() - 1));
   const auto offset = impl_->prefill_offset;
   if (target <= offset)
     return 0;
@@ -1499,6 +1257,11 @@ TextPrefillStep TextRunnerPool::Request::Prefill(std::size_t max_input_tokens) {
         "text runner prefill budget must be at least one token");
   }
 
+  // A step after this request's own steps starts on the alignment: a pass
+  // continuing an unaligned prompt pass would not match one pass over the
+  // prompt (Flash-Next's sparse tiles group queries from the pass start).
+  assert(impl_->prefill_offset == impl_->lease.cached_tokens() ||
+         impl_->prefill_offset % impl_->alignment == 0);
   // Stop exactly on the next shared-prefix boundary so it can be persisted.
   // Direct callers join any capture before mutating its borrowed state.
   impl_->CapturePromptSnapshot();
@@ -1517,6 +1280,19 @@ TextPrefillStep TextRunnerPool::Request::Prefill(std::size_t max_input_tokens) {
   if (!impl_->checkpoints.empty())
     max_input_tokens = std::min(
         max_input_tokens, impl_->checkpoints.front() - impl_->prefill_offset);
+  // A budget-limited pass ends on an aligned position, so the next pass
+  // continues the prompt exactly: shorter, or a budget below the alignment
+  // runs to the next one. Every capture boundary is aligned already, so
+  // neither crosses one.
+  if (const auto end = impl_->prefill_offset + max_input_tokens;
+      end < impl_->prompt.size() && end % impl_->alignment != 0) {
+    const auto over = end % impl_->alignment;
+    max_input_tokens =
+        max_input_tokens > over
+            ? max_input_tokens - over
+            : std::min(max_input_tokens + impl_->alignment - over,
+                       impl_->prompt.size() - impl_->prefill_offset);
+  }
 
   auto& state = dynamic_cast<TextRunnerState&>(impl_->lease.state());
   bool in_pass = false;
@@ -1793,6 +1569,16 @@ TextRunnerPool::Request::CommitMetrics TextRunnerPool::Request::Commit() {
         " generated=" + std::to_string(impl_->generated.size()));
   }
   checkpoint.resize(position);
+  // As in Cancel: an unaligned prefill frontier is not kept live. The lease
+  // drops a component state after publishing the prompt snapshot, which
+  // reads its positions; other states are reset here.
+  if (position % impl_->alignment != 0 &&
+      position > impl_->lease.cached_tokens() &&
+      position <= impl_->prefill_offset) {
+    checkpoint.clear();
+    if (!impl_->lease.component())
+      state.Invalidate();
+  }
   if (capabilities.snapshot && capabilities.fork) {
     CommitMetrics metrics = impl_->snapshot_metrics;
     metrics.snapshot_bytes += impl_->lease.Commit(
@@ -1851,6 +1637,16 @@ TextRunnerPool::Request::Cancel() noexcept {
         throw std::runtime_error(
             "cancelled checkpoint is outside completed work");
       checkpoint.resize(position);
+      // This request's prefill frontier off the alignment cannot continue the
+      // prompt exactly; a decoded or reused frontier is kept there. As in
+      // Commit, the lease drops a component state after publishing.
+      if (position % impl_->alignment != 0 &&
+          position > impl_->lease.cached_tokens() &&
+          position <= impl_->prefill_offset) {
+        checkpoint.clear();
+        if (!impl_->lease.component())
+          state.Invalidate();
+      }
     } else {
       state.Invalidate();
     }

@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <gufo/ext/text.hpp>
 #include <string>
 
 namespace gufo::models::qwen38_flash_next::rocm {
@@ -20,7 +21,7 @@ namespace gufo::models::qwen38_flash_next::rocm {
 /// The communicator adds and validates an operation ordinal for every
 /// exchange, so a collective cannot be silently associated with a different
 /// request.
-class Communicator {
+class Communicator : public ext::TextTpTransport {
 public:
   virtual ~Communicator() = default;
   [[nodiscard]] virtual std::uint32_t rank() const noexcept { return 0; }

@@ -5,14 +5,14 @@
 #include <chrono>
 #include <cmath>
 #include <cstring>
+#include <gufo/ext/gguf_reader.hpp>
 #include <limits>
 #include <optional>
 #include <type_traits>
 
-#include "src/core/gguf_reader.hpp"
+#include "src/families/qwen/draft_vocab/draft_vocab.hpp"
 #include "src/models/qwen38_flash_next/continuation_hooks.hpp"
 #include "src/models/qwen38_flash_next/distributed/tp_partition.hpp"
-#include "src/models/qwen38_flash_next/draft_vocab.hpp"
 #include "src/models/qwen38_flash_next/kernels/rocm/communicator.hpp"
 #include "src/models/qwen38_flash_next/kernels/rocm/device_model.hpp"
 #include "src/models/qwen38_flash_next/kernels/rocm/executor.hpp"
@@ -25,10 +25,11 @@ namespace gufo::models::qwen38_flash_next {
 namespace {
 
 // gfx1151, served repository prompts: 4096-token chunks prefill 24K-102K
-// tokens 6-11% faster than 2048 (pp4096 +5% at d0, +6% at d32K). Each
-// chunk's n-gram gather doubles; next-chunk prefetch overlaps that read.
-// Prefill logits do not depend on the chunk size
-// (pre-budget queries always take the dense attention tiles).
+// tokens 6-11% faster than 2048 (pp4096 +5% at d0, +6% at d32K). 16,384-row
+// passes prefill long prompts 3-5% faster, but their scratch holds 4.1 GiB
+// more device memory from load (#952). Each chunk's n-gram gather grows with
+// it; next-chunk prefetch overlaps that read. Prefill logits do not depend on
+// the chunk size (pre-budget queries always take the dense attention tiles).
 constexpr std::uint32_t kPrefillChunkTokens = 4096;
 // A prompt ending this close past a chunk finishes in that chunk: a separate
 // tail pass costs about as much as this many more chunk rows.
@@ -55,7 +56,8 @@ struct SessionSnapshotHeader {
   MtpLengthState draft_policy;
   std::uint32_t image_identity_bytes;
   std::uint32_t policy_concurrency;
-  std::uint32_t reserved{0};
+  /// Dynamic YaRN factor the saved keys are rotated with (1: native).
+  float yarn_factor{1.0F};
   speculative::PromptLookup<>::State lookup;
 };
 static_assert(std::is_trivially_copyable_v<SessionSnapshotHeader>);
@@ -193,18 +195,19 @@ std::shared_ptr<Model> Model::Load(const std::string& model_path,
   if (!m->device_) {
     return nullptr;
   }
-  if (m->mtp_weights_ && m->device_->output().rows > kMtpDraftVocab) {
+  if (m->mtp_weights_ &&
+      m->device_->output().rows > speculative::kDraftVocabPrefix) {
     std::vector<std::int32_t> specials;
-    for (std::uint32_t id = kMtpDraftVocab; id < m->device_->output().rows;
-         ++id)
+    for (std::uint32_t id = speculative::kDraftVocabPrefix;
+         id < m->device_->output().rows; ++id)
       if (m->tokenizer_->IsSpecialToken(id))
         specials.push_back(static_cast<std::int32_t>(id));
     // A vocabulary with more special tokens than table rows drafts over the
     // full head.
-    if (specials.size() < kMtpDraftExtraRows) {
+    if (specials.size() < speculative::kDraftVocabExtraRows) {
       m->draft_specials_ = static_cast<std::uint32_t>(specials.size());
-      if (!m->device_->SetDraftVocab(kMtpDraftVocab, std::move(specials),
-                                     error_msg))
+      if (!m->device_->SetDraftVocab(speculative::kDraftVocabPrefix,
+                                     std::move(specials), error_msg))
         return nullptr;
       m->draft_subset_ = true;
     }
@@ -313,6 +316,10 @@ std::uint32_t Model::PrefillThroughCapacity() const noexcept {
                   options_.max_context);
 }
 
+std::uint32_t Model::PrefillCheckpointTail() const noexcept {
+  return executor_->PrefillCheckpointTail();
+}
+
 bool Model::HasMtp() const noexcept {
   return device_->has_mtp();
 }
@@ -326,9 +333,10 @@ std::size_t Model::ExpandedQ8_0Tensors() const noexcept {
 }
 
 bool Model::InDraftSubset(std::int32_t token) const {
-  return token >= 0 && (static_cast<std::uint32_t>(token) < kMtpDraftVocab ||
-                        tokenizer_->IsSpecialToken(
-                            static_cast<tokenization::TokenId>(token)));
+  return token >= 0 &&
+         (static_cast<std::uint32_t>(token) < speculative::kDraftVocabPrefix ||
+          tokenizer_->IsSpecialToken(
+              static_cast<tokenization::TokenId>(token)));
 }
 
 std::string Model::ModelName() const {
@@ -362,6 +370,10 @@ std::size_t Model::DeferredScratchBytes() const {
   return executor_->DeferredScratchBytes();
 }
 
+void Model::LimitCopyRows(std::uint32_t rows) noexcept {
+  executor_->LimitCopyRows(rows);
+}
+
 std::size_t Session::AllocatedBytes() const noexcept {
   return session_->AllocatedBytes();
 }
@@ -380,7 +392,8 @@ Session::Session(std::shared_ptr<Model> model,
       session_(std::move(session)),
       draft_length_(model_->options_.max_draft_tokens,
                     model_->DecodeConcurrency()),
-      draft_vocab_(kMtpDraftExtraRows - model_->draft_specials_) {
+      draft_vocab_(speculative::kDraftVocabExtraRows -
+                   model_->draft_specials_) {
   logits_.resize(model_->VocabSize());
 }
 
@@ -413,6 +426,8 @@ void Session::ResetDraftPolicy() {
   // A fully reused prompt can start decoding without SyncImpl. It still
   // starts a new request: do not inherit a copy cursor or widen its first step.
   lookup_.BeginRequest();
+  copy_rows_ = 0;
+  copy_streak_ = 0;
 }
 
 std::uint32_t Session::Position() const noexcept {
@@ -527,6 +542,7 @@ std::unique_ptr<SessionSnapshot> Session::SaveSnapshotImpl(
       .draft_policy = draft_length_.State(),
       .image_identity_bytes = static_cast<std::uint32_t>(identity.size()),
       .policy_concurrency = model_->DecodeConcurrency(),
+      .yarn_factor = model_->executor_->YarnFactor(state),
       .lookup = lookup_.Save(),
   };
   std::memcpy(out, &header, sizeof(header));
@@ -663,6 +679,9 @@ bool Session::RestoreSnapshotImpl(std::span<const std::uint8_t> payload,
   draft_length_ = restored_policy;
   stats_ = {};
   valid_ = true;
+  // The restored keys keep the factor they were saved with; the next Feed or
+  // decode moves the session to the factor its positions need.
+  model_->executor_->AdoptYarnFactor(*session_, header.yarn_factor);
   return true;
 }
 
@@ -774,29 +793,49 @@ bool Session::Feed(std::span<const std::int32_t> tokens, std::string* error_msg,
                    double* capture_ms, std::span<const std::int32_t> after,
                    const PrefillCapture& consume) {
   rocm::Executor& exec = *model_->executor_;
-  // The final pass may take the prompt's tail; earlier ones whole chunks.
+  const std::size_t ratio =
+      std::max<std::uint32_t>(1, model_->config().compress_ratio);
+  // Keep the paired-prefill capacity and predict exactly the next aligned
+  // pass for n-gram prefetch, including a short final tail.
   const std::size_t widest = prefill ? exec.PrefillChunk() : exec.max_batch();
-  const auto chunk_size = [&](std::size_t remaining) {
-    return remaining <= widest
-               ? remaining
-               : std::min<std::size_t>(model_->PrefillCapacity(), widest);
+  const auto chunk_size = [&](std::size_t remaining, std::size_t start) {
+    std::size_t n =
+        remaining <= widest
+            ? remaining
+            : std::min<std::size_t>(model_->PrefillCapacity(), widest);
+    if (const auto end = start + n;
+        prefill && n < remaining && end % ratio != 0 && n > end % ratio)
+      n -= end % ratio;
+    return n;
   };
   for (std::size_t off = 0; off < tokens.size();) {
-    std::size_t n = chunk_size(tokens.size() - off);
+    std::size_t n = chunk_size(tokens.size() - off, tokens_.size());
+    const bool captures = (checkpoint || consume) && boundary > tokens_.size();
     // Extended-context attention can fall back from WMMA to the per-token
     // kernel. Its checkpoint must end a pass: the fused in-pass path requires
     // WMMA for both query groups. Preserve ordinary split-pass arithmetic on
     // either side of the boundary. Use the actual launch capability rather
     // than the model's independently configured native context length.
-    if ((checkpoint || consume) && boundary > tokens_.size() &&
-        boundary < tokens_.size() + n &&
+    if (captures && boundary < tokens_.size() + n &&
         tokens_.size() + n >
             rocm::WmmaCausalAttentionContextLimit(
                 model_->config().num_heads, model_->config().num_kv_heads,
                 model_->config().head_dim, model_->config().compress_ratio)) {
       n = boundary - tokens_.size();
     }
+    // Without device room for the checkpoint arena, end the pass at the
+    // boundary and capture the live session there instead: split-pass rows
+    // are the same as in-pass rows.
+    const bool live = captures && boundary <= tokens_.size() + n &&
+                      !exec.ReservePrefillCheckpoint(*session_);
+    if (live)
+      n = boundary - tokens_.size();
     const auto chunk = tokens.subspan(off, n);
+    if (exec.DynamicYarn() &&
+        !exec.SetYarnFactor(*session_, exec.YarnLevelFor(tokens_.size() + n),
+                            error_msg)) {
+      return false;
+    }
     if (MtpEnabled() && !tokens_.empty() &&
         !DraftCatchUp(chunk[0], false, error_msg)) {
       return false;
@@ -804,8 +843,7 @@ bool Session::Feed(std::span<const std::int32_t> tokens, std::string* error_msg,
     const auto mode = prefill ? rocm::Executor::ForwardMode::kPrefill
                               : rocm::Executor::ForwardMode::kDecode;
     std::unique_ptr<rocm::PrefillCheckpoint> capture;
-    if ((checkpoint || consume) && boundary > tokens_.size() &&
-        boundary <= tokens_.size() + n) {
+    if (captures && !live && boundary <= tokens_.size() + n) {
       capture = exec.MakePrefillCheckpoint(
           *session_, chunk,
           static_cast<std::uint32_t>(boundary - tokens_.size()), error_msg);
@@ -814,7 +852,7 @@ bool Session::Feed(std::span<const std::int32_t> tokens, std::string* error_msg,
     }
     // The chunk this loop, or the following Sync, takes next.
     const auto rest = off + n < tokens.size() ? tokens.subspan(off + n) : after;
-    const auto next = rest.first(chunk_size(rest.size()));
+    const auto next = rest.first(chunk_size(rest.size(), tokens_.size() + n));
     if (!exec.Forward(*session_, chunk, 1, logits_.data(), mode, error_msg,
                       capture.get(), next)) {
       return false;
@@ -829,15 +867,17 @@ bool Session::Feed(std::span<const std::int32_t> tokens, std::string* error_msg,
         tokens_.size() + n -
         std::min<std::size_t>(kept, exec.max_speculative()));
     tokens_.insert(tokens_.end(), chunk.begin(), chunk.end());
-    if (capture) {
+    if (capture || live) {
       const auto started = std::chrono::steady_clock::now();
       if (consume) {
-        consume(*capture);
+        consume(capture.get());
       } else {
         *checkpoint = SaveSnapshotImpl(
-            *capture->state,
+            capture ? *capture->state : *session_,
             std::span<const std::int32_t>(tokens_).first(boundary),
-            capture->logits, capture->hidden_rows, error_msg,
+            capture ? std::span<const float>(capture->logits)
+                    : std::span<const float>(logits_),
+            capture ? capture->hidden_rows : KeptHiddenRows(), error_msg,
             SnapshotMode::kBorrowed);
         if (capture_ms)
           *capture_ms += std::chrono::duration<double, std::milli>(
@@ -866,7 +906,8 @@ bool Session::SyncThrough(std::span<const std::int32_t> prompt,
   if (continuation_hooks_)
     continuation_hooks_->BeforeExecution();
   if (!checkpoint || boundary == 0 || boundary > prompt.size() ||
-      prompt.size() - boundary > 8 || boundary <= tokens_.size()) {
+      prompt.size() - boundary > model_->PrefillCheckpointTail() ||
+      boundary <= tokens_.size()) {
     AssignError(error_msg,
                 "checkpoint must extend the frontier in the text tail");
     return false;
@@ -884,7 +925,8 @@ bool Session::SyncThroughComponents(std::span<const std::int32_t> prompt,
   if (continuation_hooks_)
     continuation_hooks_->BeforeExecution();
   if (!capture || boundary == 0 || boundary > prompt.size() ||
-      prompt.size() - boundary > 8 || boundary <= tokens_.size()) {
+      prompt.size() - boundary > model_->PrefillCheckpointTail() ||
+      boundary <= tokens_.size()) {
     AssignError(
         error_msg,
         "component checkpoint must extend the frontier in the text tail");
@@ -907,6 +949,8 @@ bool Session::SyncImpl(std::span<const std::int32_t> prompt,
     return false;
   }
   lookup_.BeginRequest();
+  copy_rows_ = 0;
+  copy_streak_ = 0;
   if (!valid_)
     Reset();
   // Recurrent state cannot be rewound, so any divergence restarts the
@@ -974,6 +1018,8 @@ struct Session::PendingDecode {
   /// request's first speculative step.
   std::size_t lookup_cap{0};
   std::uint32_t policy_concurrency{0};
+  /// A copy-only cycle here may verify more than max_speculative() rows.
+  bool wide{false};
 };
 
 bool Session::GateStops(const PendingDecode& pending) {
@@ -1064,12 +1110,17 @@ bool Session::PrepareDecode(const DecodeRequest& request,
   const std::size_t room = ContextSize() - tokens_.size();
   const std::size_t cap =
       std::min<std::size_t>({max_tokens, room, exec.max_speculative()});
-  // Head eligibility is MtpDraftSubsetAllowed. Sampled cohorts are never
-  // jointly planned (DecodeBatchImpl), so a sampled request decides the same
-  // way alone and in any batch. A greedy request decoding alone has no
+  if (exec.DynamicYarn() &&
+      !exec.SetYarnFactor(
+          *session_, exec.YarnLevelFor(tokens_.size() + cap + 1), error_msg)) {
+    return false;
+  }
+  // Head eligibility is speculative::DraftSubsetAllowed. Sampled cohorts are
+  // never jointly planned (DecodeBatchImpl), so a sampled request decides the
+  // same way alone and in any batch. A greedy request decoding alone has no
   // peers to delay, so it drafts as on one session. Every request keeps the
   // established length controller and AR backoff.
-  const bool allow_subset = MtpDraftSubsetAllowed(
+  const bool allow_subset = speculative::DraftSubsetAllowed(
       sampler.config().uses_random_sampling(), model_->DecodeConcurrency(),
       occupancy, batch_drafts.has_value());
   pending->policy_concurrency = MtpPolicyConcurrency(
@@ -1155,6 +1206,24 @@ bool Session::PrepareDecode(const DecodeRequest& request,
   if (pending->lookup_cap != 0) {
     lookup_.Extend(tokens_, sampled);
   }
+  // A session decoding alone may verify a copy wider than the MTP
+  // chain (Executor::ForwardWide): the shared projections read their
+  // weights once for every row. The width grows only while whole copies
+  // are accepted, so a copy that diverges costs at most the last width.
+  // Sampled requests qualify when nothing replays them (no seed) and their
+  // rows verify compactly on the device.
+  pending->wide = !defer_head && pending->lookup_cap != 0 &&
+                  (gpu_greedy || (sampled && sampler.config().seed < 0 &&
+                                  rocm::Executor::CanCompactWideVerification(
+                                      sampler, exec.max_copy_rows())));
+  const std::size_t wide_rows =
+      pending->wide
+          ? std::min<std::size_t>(
+                {max_tokens, room, exec.max_copy_rows(),
+                 std::max<std::size_t>(copy_rows_, exec.max_speculative())})
+          : 0;
+  if (wide_rows > pending->lookup_cap)
+    pending->lookup_cap = wide_rows;
   // A sampled copy can skip the neural head only after an accepted copy
   // established its source and a full sampled match still holds. New or
   // short matches retain the neural proposal: replacing it based only on
@@ -1162,6 +1231,7 @@ bool Session::PrepareDecode(const DecodeRequest& request,
   if (AppendLookup(*pending, stop_at_eos, 3, sampled)) {
     return defer_head || DraftCatchUp(anchor, false, error_msg);
   }
+  pending->lookup_cap = std::min(pending->lookup_cap, cap);
   // The small-head path scores a local draft table and skips TP2's split
   // argmax all-reduce; the full-head greedy path performs that all-reduce.
   // Ranks that disagree on `draft_subset` therefore hang in verbs. Keep the
@@ -1245,7 +1315,7 @@ bool Session::FinishDecode(const DecodeRequest& request,
     return true;
   }
   sampler.Accept(static_cast<sampling::TokenId>(anchor));
-  std::array<rocm::ArgmaxCandidate, kMaxMtpDraftTokens> greedy{};
+  std::array<rocm::ArgmaxCandidate, rocm::Executor::kWideRows - 1> greedy{};
   if (gpu_greedy &&
       !exec.GreedyMtpPredictions(std::span(greedy).first(k - 1), sampler,
                                  std::span(chain).subspan(1), error_msg)) {
@@ -1256,7 +1326,8 @@ bool Session::FinishDecode(const DecodeRequest& request,
   std::optional<std::int32_t> stop_token;
   bool cpu_rows = false;
   const auto download_remaining = [&](std::uint32_t first) {
-    verify_logits_.resize(exec.max_speculative() * vocab);
+    verify_logits_.resize(std::max<std::size_t>(exec.max_speculative(), k) *
+                          vocab);
     auto rows =
         std::span(verify_logits_).subspan(first * vocab, (k - first) * vocab);
     if (!exec.ReadVerificationRows(first, rows, error_msg))
@@ -1264,12 +1335,15 @@ bool Session::FinishDecode(const DecodeRequest& request,
     cpu_rows = true;
     return true;
   };
-  std::array<std::span<const sampling::LogitCandidate>, kMaxMtpDraftTokens>
+  std::array<std::span<const sampling::LogitCandidate>,
+             rocm::Executor::kWideRows - 1>
       candidates{};
   if (gpu_verification && !gpu_greedy) {
     // Accepting the anchor may activate a tool grammar, reasoning budget,
     // or exceed the bounded penalty workspace. Keep the complete-row path.
-    if (!rocm::Executor::CanCompactMtpVerification(sampler)) {
+    if (!rocm::Executor::CanCompactMtpVerification(sampler) ||
+        (k > exec.max_speculative() &&
+         !rocm::Executor::CanCompactWideVerification(sampler, k))) {
       if (!download_remaining(0))
         return false;
     } else if (!exec.SampledMtpCandidates(std::span(candidates).first(k - 1),
@@ -1390,6 +1464,20 @@ bool Session::FinishDecode(const DecodeRequest& request,
   if (pending.lookup != 0) {
     lookup_.Observe(pending.lookup_start, pending.lookup,
                     keep - 1 - mtp_accepted);
+    // Only a copy-only cycle that may verify wide sets the width
+    // (PrepareDecode): two whole copies in a row at the current width
+    // double it, and any rejected copy returns it to the ordinary width.
+    if (mtp_drafts == 0 && pending.wide) {
+      const auto width = std::max(copy_rows_, exec.max_speculative());
+      if (keep < k) {
+        copy_rows_ = exec.max_speculative();
+        copy_streak_ = 0;
+      } else if (k >= width && ++copy_streak_ >= 2) {
+        copy_rows_ = std::min(
+            2 * width, std::max(exec.max_copy_rows(), exec.max_speculative()));
+        copy_streak_ = 0;
+      }
+    }
   }
   const bool mtp_all = mtp_accepted == mtp_drafts;
   const std::uint32_t observed = mtp_all ? keep - 1 : mtp_accepted;
@@ -1402,6 +1490,17 @@ bool Session::FinishDecode(const DecodeRequest& request,
   // The next call knows the next sampled anchor. Defer draft catch-up until
   // then, retaining this session's target hidden rows across interleaving.
   exec.MtpRewind(*session_, base);
+  if (keep > exec.max_speculative()) {
+    // Snapshots and batched cycles keep at most max_speculative() hidden
+    // rows. Catch the draft block up to the last kept row now (K/V only,
+    // as for prompt rows) and keep that row's hidden.
+    const std::vector<std::int32_t> replay(tokens_.begin() + base + 1,
+                                           tokens_.begin() + base + keep);
+    if (!exec.MtpForward(*session_, replay, 0, {.kv_only = true}, error_msg) ||
+        !exec.KeepHiddenRow(*session_, keep - 1, error_msg))
+      return false;
+    hidden_base_ = base + keep - 1;
+  }
   if (correction) {
     // Evaluate the residual as the next cycle's anchor, avoiding a separate
     // target pass. Preserve the actual draw: resampling p would be biased.
@@ -1439,11 +1538,23 @@ bool Session::DecodeStep(std::size_t max_tokens,
   float* logits = !pending.speculative       ? logits_.data()
                   : pending.gpu_verification ? nullptr
                                              : verify_logits_.data();
-  if (!model_->executor_->Forward(
-          *session_, pending.chain, pending.chain.size(), logits,
-          pending.speculative ? rocm::Executor::ForwardMode::kVerify
-                              : rocm::Executor::ForwardMode::kDecode,
-          error_msg)) {
+  auto& exec = *model_->executor_;
+  if (pending.chain.size() > exec.max_speculative()) {
+    // A wide copy (PrepareDecode).
+    if (!pending.gpu_verification)
+      verify_logits_.resize(std::max(
+          verify_logits_.size(), pending.chain.size() * model_->VocabSize()));
+    if (!exec.ForwardWide(*session_, pending.chain, error_msg) ||
+        !exec.SelectBatchLogits(
+            0, static_cast<std::uint32_t>(pending.chain.size()),
+            pending.gpu_verification ? nullptr : verify_logits_.data(),
+            error_msg))
+      return false;
+  } else if (!exec.Forward(
+                 *session_, pending.chain, pending.chain.size(), logits,
+                 pending.speculative ? rocm::Executor::ForwardMode::kVerify
+                                     : rocm::Executor::ForwardMode::kDecode,
+                 error_msg)) {
     return false;
   }
   const bool ok = FinishDecode(request, pending, error_msg);

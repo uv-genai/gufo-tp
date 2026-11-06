@@ -3566,7 +3566,7 @@ struct InferenceBackend::Impl {
       const CancellationCheck& is_cancelled, bool stream_output,
       const std::string& client_id, std::vector<std::string> stop_sequences,
       InitialOutputState initial, Clock::time_point request_start,
-      bool cache_prompt, std::size_t cache_prefix_tokens,
+      bool cache_prompt, bool cache_persist, std::size_t cache_prefix_tokens,
       std::shared_ptr<const TextPromptContext> context, bool return_progress,
       std::optional<sampling::JsonConstraint::ToolFormat> tool_format,
       bool stop_at_eos = true,
@@ -3659,6 +3659,7 @@ struct InferenceBackend::Impl {
               .prompt_context = std::make_shared<TpRequestContext>(
                   begin.sequence, std::move(context)),
               .cache_prompt = cache_prompt,
+              .cache_persist = cache_persist,
               .cache_prefix_tokens = cache_prefix_tokens,
               .stop_at_eos = stop_at_eos,
               .stop_sequences = std::move(stop_sequences),
@@ -3701,8 +3702,8 @@ struct InferenceBackend::Impl {
       auto generation = StartTpRequest(
           current, std::move(prompt_tokens), max_tokens, sampling, is_cancelled,
           static_cast<bool>(on_token), client_id, stop_sequences, initial,
-          request_start, cache_prompt, cache_prefix_tokens, std::move(context),
-          false, std::nullopt);
+          request_start, cache_prompt, cache_persist, cache_prefix_tokens,
+          std::move(context), false, std::nullopt);
       return generation->Wait(on_token, {}, {});
     }
 
@@ -4751,8 +4752,9 @@ InferenceBackend::start_complete(
         state, std::move(prompt_tokens), max_tokens, sampling_config,
         is_cancelled, stream_output,
         client_id.empty() ? "anonymous" : std::string(client_id),
-        stop_sequences, InitialOutputState::kContent, request_start, true, 0,
-        nullptr, return_progress, std::nullopt, !ignore_eos);
+        stop_sequences, InitialOutputState::kContent, request_start,
+        cache_prompt, cache_persist, 0, nullptr, return_progress, std::nullopt,
+        !ignore_eos);
   }
   auto scheduled_request = state->scheduler->Submit(
       std::move(prompt_tokens), max_tokens, sampling_config, is_cancelled,
@@ -4839,8 +4841,9 @@ InferenceBackend::start_chat(const ChatRequest& request, std::size_t max_tokens,
         state, std::move(prompt->tokens), max_tokens, effective_sampling,
         is_cancelled, stream_output, client_id, request.stop_sequences,
         state->scheduler->runner().InitialOutputState(effective_request),
-        request_start, request.cache_prompt, prompt->cache_prefix_tokens,
-        std::move(prompt->context), request.return_progress, tool_format, true,
+        request_start, request.cache_prompt, request.cache_persist,
+        prompt->cache_prefix_tokens, std::move(prompt->context),
+        request.return_progress, tool_format, true,
         std::move(constraint_source));
   }
   auto scheduled_request = state->scheduler->Submit(

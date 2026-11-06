@@ -643,12 +643,13 @@ if (BUILD_TESTING)
     tests/cli/tp_executor_test.cpp
     src/cli/serve/continuation_cache.cpp
     src/cli/serve/continuation_disk_store.cpp
+    src/cli/serve/component_text_cache.cpp
     src/cli/serve/text_model_runner.cpp
     src/cli/serve/text_generation_scheduler.cpp
     src/cli/serve/tp_executor.cpp
     src/cli/serve/tp_disk_store.cpp)
   target_link_libraries(tp_executor_test PRIVATE
-    gufo_logging gufo_core gufo_tp_control)
+    gufo_logging gufo_core gufo_tp_control gufo_cache)
   add_test(NAME tp_executor_test COMMAND tp_executor_test)
   set_tests_properties(tp_executor_test PROPERTIES LABELS "cpu;tp2" TIMEOUT 60)
 

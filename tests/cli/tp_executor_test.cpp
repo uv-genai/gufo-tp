@@ -258,6 +258,22 @@ public:
       std::string_view text) const override {
     return {static_cast<TextRunnerToken>(text.size())};
   }
+  [[nodiscard]] ReasoningTags ReasoningBudgetTags() const override {
+    return {"<think>", "\n</think>", {"</think>", "<tool_call>"}};
+  }
+  [[nodiscard]] std::uint32_t VocabularySize() const override { return kVocab; }
+  [[nodiscard]] std::vector<TextRunnerToken> TokenizeControl(
+      std::string_view text) const override {
+    if (text == "<think>")
+      return {27};
+    if (text == "\n</think>")
+      return {28, 29};
+    if (text == "</think>")
+      return {29};
+    if (text == "<tool_call>")
+      return {30};
+    return Tokenize(text);
+  }
   [[nodiscard]] std::optional<std::vector<TextRunnerToken>> RenderAndTokenize(
       const ChatRequest&) const override {
     return std::nullopt;
@@ -451,6 +467,7 @@ private:
       }
       toy.tokens.push_back(token);
       step.selections.push_back({.token = token, .piece = Piece(token)});
+      working.Accept(token);
       produced += " " + std::to_string(token);
     }
     if (!step.stop && sampler.config().uses_random_sampling()) {
@@ -878,7 +895,8 @@ std::vector<std::pair<std::string_view, std::size_t>> CapabilityFields(
                final_token_advance_required, incremental_text_is_exact,
                multi_token_decode, batched_multi_token_decode,
                batched_multi_token_decode_max_width, prefix_reuse,
-               in_pass_checkpoint] = capabilities;
+               in_pass_checkpoint, partial_prefill_retention,
+               prefill_rollback] = capabilities;
   return {{"incremental_prefill", incremental_prefill},
           {"snapshot", snapshot},
           {"fork", fork},
@@ -889,13 +907,16 @@ std::vector<std::pair<std::string_view, std::size_t>> CapabilityFields(
           {"batched_multi_token_decode_max_width",
            batched_multi_token_decode_max_width},
           {"prefix_reuse", prefix_reuse},
-          {"in_pass_checkpoint", in_pass_checkpoint}};
+          {"in_pass_checkpoint", in_pass_checkpoint},
+          {"partial_prefill_retention", partial_prefill_retention},
+          {"prefill_rollback", prefill_rollback}};
 }
 
 /// Capabilities TP2 turns off because rank 1 cannot mirror them yet. Each is
 /// a way a TP2 pair falls behind one host; closing one removes it here.
-constexpr std::array<std::string_view, 1> kTp2CapabilityGaps{
+constexpr std::array<std::string_view, 2> kTp2CapabilityGaps{
     "in_pass_checkpoint",  // PrefillThrough: an in-pass prompt checkpoint
+    "prefill_rollback",    // Cancellation acts between mirrored calls.
 };
 
 gufo::sampling::SamplingConfig Sampled() {
@@ -927,9 +948,19 @@ int main() {
         .batched_multi_token_decode_max_width = 8,
         .prefix_reuse = true,
         .in_pass_checkpoint = true,
+        .partial_prefill_retention = true,
+        .prefill_rollback = true,
     };
     auto toy = std::make_shared<ToyRunner>(ToyOptions{.capabilities = every});
     const TpMirroredRunner runner(toy, std::make_shared<CaptureSink>());
+    const std::vector<TextRunnerToken> reasoning_prompt{27, 1};
+    const auto budget = runner.BuildReasoningBudget(3, reasoning_prompt);
+    Require(budget && budget->tokens == 3 &&
+                budget->forced == std::vector<TextRunnerToken>({28, 29}) &&
+                budget->ends == std::vector<TextRunnerToken>({29, 30}) &&
+                budget->prompt == std::vector<TextRunnerToken>({1}) &&
+                budget->partial_utf8 && budget->partial_utf8->size() == kVocab,
+            "the wrapper preserves the model's reasoning tags and vocabulary");
     const auto inner = CapabilityFields(toy->Descriptor().capabilities);
     const auto wrapped = CapabilityFields(runner.Descriptor().capabilities);
     for (std::size_t i = 0; i < inner.size(); ++i) {
@@ -943,6 +974,37 @@ int main() {
         Require(wrapped[i].second == inner[i].second,
                 "TP2 drops " + name +
                     ": mirror it on rank 1 or list it in kTp2CapabilityGaps");
+      }
+    }
+  }
+
+  // Budgeted AR and MTP must agree through the wire, with greedy and sampled
+  // choices, complete forced ends, and prompt tokens charged to the budget.
+  for (const bool mtp : {false, true}) {
+    for (const bool sampled : {false, true}) {
+      Pair pair({.mtp = mtp, .cache = true}, {.mtp = mtp, .cache = true});
+      for (const std::size_t limit : {0U, 3U}) {
+        auto budget = std::make_shared<gufo::sampling::ReasoningBudget>();
+        budget->tokens = limit;
+        budget->forced = {29, 30};
+        if (limit != 0)
+          budget->prompt = {1};
+        auto config = sampled ? Sampled() : gufo::sampling::SamplingConfig{};
+        config.reasoning_budget = budget;
+        const auto first = pair.Run(prompt, 7, config, {}, {}, true);
+        const auto again = pair.Run(prompt, 7, config, {}, {}, true);
+        const auto begin = limit == 0 ? 0U : 2U;
+        Require(
+            first.worker_error.empty() && again.worker_error.empty(),
+            "budgeted ranks agree: " + first.worker_error + again.worker_error);
+        Require(first.result.tokens.size() > begin + 1 &&
+                    first.result.tokens[begin] == 29 &&
+                    first.result.tokens[begin + 1] == 30,
+                "the entire reasoning end is forced at the budget");
+        Require(first.result.tokens == again.result.tokens &&
+                    again.result.cached_prompt_tokens == prompt.size(),
+                "budgeted cached replay preserves output");
+        pair.RequireSameCalls("budgeted reasoning");
       }
     }
   }

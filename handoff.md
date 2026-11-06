@@ -6,7 +6,7 @@ redirect until that copy is removed).
 **When state changes** (merge, tag, push, script/config change, incident): **replace
 or edit this file in full** — do not leave stale tips, shas, or “untested” claims.
 
-Last updated: **2026-11-04** (session: **v0.28.1 merged via PR #20, smoke 10/10 + user llama-swap PASS; tagged & released** — see §1. Project is **Gufo-TP**; repo `uv-genai/gufo-tp`).
+Last updated: **2026-11-06** (session: **issues #21/#22/#23 opened; fixes on `codex/fix-tp2-review-findings`; CPU regression/PR checks PASS, candidate GPU validation pending** — baseline recheck in §2. Project is **Gufo-TP**; repo `uv-genai/gufo-tp`).
 
 ---
 
@@ -27,10 +27,10 @@ Historical dated handoffs in `~/gufo-merge-handoff/HANDOFF-*.md` are **archive o
 | | |
 | --- | --- |
 | Tree | `/home/ugo/projects/gufo` |
-| Branch | **`main`** |
+| Branch | **`codex/fix-tp2-review-findings`** from `main` → `uv-genai/main`; merge through a PR after validation |
 | Push | **`uv-genai` only** → https://github.com/uv-genai/gufo-tp.git |
 | Upstream | `origin` → gufo-org/gufo; local track **`gufo-org`** — **never push** |
-| Tip | **`2a7c0262`** = tag **`tp2-rdma-merge-v0.28.1-2026-11-04`** (PR #20 squash; `main` == `uv-genai/main`) |
+| Tip | **`78d8a4bf`** on `main`; documentation changes only since binary/tag revision **`2a7c0262`** = **`tp2-rdma-merge-v0.28.1-2026-11-04`** (PR #20 squash) |
 | Upstream merged through | **v0.28.1** (`12effe36`); README tracks through v0.28.1; released |
 | v0.27.0 tag | `tp2-rdma-merge-v0.27.0-2026-10-31` — https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.27.0-2026-10-31 |
 | Release notes | **https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.28.1-2026-11-04** (v0.27.0: …/tp2-rdma-merge-v0.27.0-2026-10-31) |
@@ -51,6 +51,8 @@ directive 2026-10-29) so the tag row shows the notes link.
 | sha256 | **`42aded09e711ab88ea41152360949d6e96034a4e8323da3b6a0e027a5c95a577`** (v0.28.1) — both hosts |
 | Built from | tip **`2a7c0262`** (PR #20 squash of merge-upstream-v0.28.1); format clean |
 | TP2 smoke | **2026-11-04 PASS 10/10** on both hosts, sha `42aded09…` matched; `/ready` 200; PONG, 3481-tok long, short eBPF NL content asserts, 5× session, 2× agent prefix; logs free of `tp_pair_lost`/mismatch/status5; only expected `q8_0_expanded` WARN (168 tensors) |
+| Latest GPU recheck | **2026-11-06 PASS 22/22**, same existing binary and matching launchers on both hosts. Q8 TP2 + MTP, sessions **2**, context **524288**, YaRN **2.0**, HTTP **8322**. PONG; **3877-token** prompt across 3 prefill chunks; short eBPF content assertions; 5 session-reuse requests; exact greedy agent replay with **85 cached tokens**; 3 concurrent requests with **2 active / 1 queued**; 9 tool/JSON/streaming/mixed-concurrency cases. Metrics: **811 proposed / 720 accepted MTP draft tokens**. `/ready` remained 200; both logs free of collective/peer/error failures; only expected `q8_0_expanded` WARN. Both owned ranks stopped; both GPUs idle and test/bootstrap/control ports released. |
+| Recheck evidence | **`artifacts/tp2-mtp-smoke-2026-11-06-134039/`**: metadata and both-host hashes, reproducible `run_smoke.py`, `report.json`, `constraints/report.json`, full rank logs, concurrency samples, metrics, cleanup record. Greedy, thinking off, disk cache off; configured context capacity is not a full-depth context qualification. Review findings below remain unresolved. |
 | v0.26.0 smoke | **2026-10-29 PASS** on both hosts, sha `7b9c4e48…` matched; `/ready` 200; 10/10 requests (PONG, 3481-tok long, short eBPF NL w/ content asserts, 5× session, 2× agent prefix); logs free of `tp_pair_lost`/mismatch/status5; thinking off via `chat_template_kwargs` for asserts |
 | User llama-swap (Q8-tp2) | **2026-10-29 PASS** (v0.26.0); **2026-10-31 PASS** (v0.27.0): “works well”; **2026-11-04 PASS** (v0.28.1): prose eBPF tutorial prompt 9,877 / gen 379, prefill **947.91 t/s**, gen **51.79 t/s**, tutorial 50% longer than previous — speed and quality both good |
 | Three-way spot bench | **2026-10-29** sha `7b9c4e48…`; artifact `artifacts/three-way-2026-10-29.json`; driver `tools/bench/three_way_q4_q8.py` **on strix-halo-1**; REPS medians, unique salts, `cached=0`, `--think off`, ctx 32768 |
@@ -126,6 +128,29 @@ Prompt lookup type: **`speculative::PromptLookup<>`** (moved in v0.22), payload 
 ---
 
 ## 5. Known failures (do not regress)
+
+**Review scope (user directive, 2026-11-06): Windows is out of scope.**
+
+**Review findings being fixed (2026-11-06):** the TP control protocol
+does not transfer `reasoning_budget` (CPU round trip reproduced different token
+choices); TP2 drops `cache_persist` and raw completions force `cache_prompt=true`;
+and `tp_executor_test` does not compile (10 capability names vs 12 fields) and is
+absent from the hosted PR suite. Tracked in **[#21](https://github.com/uv-genai/gufo-tp/issues/21)** (reasoning), **[#22](https://github.com/uv-genai/gufo-tp/issues/22)** (cache controls), and **[#23](https://github.com/uv-genai/gufo-tp/issues/23)** (executor test). The development branch now carries fixes and CPU regressions; GPU qualification is pending. Four baseline focused CPU tests passed (`tp_control`,
+scheduler, TP partition and RDMA GID). The GPU smoke above does not qualify
+reasoning budgets or disk-persistence controls. The earlier Windows build
+finding is excluded from this review's actionable scope.
+
+**Executor-test relevance audit (2026-11-06): keep the test.** It runs the current
+production scheduler, pool, TCP channel, `TpMirroredRunner` and `TpExecutor` with
+a deterministic CPU model. Production still instantiates both executor classes.
+Commit `d1235f23` (2026-10-07, the test's last change) deliberately added the
+compile-time capability guard. `partial_prefill_retention` (2026-10-13) and
+`prefill_rollback` (2026-10-21) subsequently expanded the interface without a
+corresponding TP2-test audit. The test remains registered as `cpu;tp2` in CTest;
+there is no history of it being added to `cmake/Checks.cmake`. Its divergence,
+rejected-cache dependency, cancellation and disk-restart checks add coverage
+beyond the passing GPU smoke. Repair requires auditing the new capabilities
+and restoring the test/build integration. The branch now restores this test and its cache dependencies, adds it to Linux PR checks, and explicitly disables in-pass rollback on the mirrored wrapper.
 
 | Symptom | Cause | Fix / policy |
 | --- | --- | --- |

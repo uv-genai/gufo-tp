@@ -664,6 +664,9 @@ TextRunnerDescriptor TpMirroredRunner::Descriptor() const {
   // An in-pass checkpoint would capture inside a call rank 1 cannot mirror
   // yet; the scheduler then splits the pass at the boundary and snapshots.
   descriptor.capabilities.in_pass_checkpoint = false;
+  // Cancellation is checked between mirrored calls; the inner state never
+  // receives a cancellation callback and cannot roll back an interrupted pass.
+  descriptor.capabilities.prefill_rollback = false;
   if (descriptor.persistence.has_value()) {
     // Rank 0's files hold its half and name rank 1's: neither a one-host
     // server nor a lone rank can restore them.
@@ -708,6 +711,19 @@ TextModelRunner::DeviceProbeStatus TpMirroredRunner::PollDevice() const {
 
 bool TpMirroredRunner::DeviceUsable() const {
   return inner_->DeviceUsable();
+}
+
+TextModelRunner::ReasoningTags TpMirroredRunner::ReasoningBudgetTags() const {
+  return inner_->ReasoningBudgetTags();
+}
+
+std::uint32_t TpMirroredRunner::VocabularySize() const {
+  return inner_->VocabularySize();
+}
+
+std::vector<TextRunnerToken> TpMirroredRunner::TokenizeControl(
+    std::string_view text) const {
+  return inner_->TokenizeControl(text);
 }
 
 std::vector<TextRunnerToken> TpMirroredRunner::Tokenize(

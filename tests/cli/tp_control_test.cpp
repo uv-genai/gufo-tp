@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <limits>
 #include <memory>
 #include <string>
 #include <thread>
@@ -135,6 +136,49 @@ int main() {
           "TP control command round trip");
   Require(received.prompt_context.empty(),
           "a text-only request carries no prompt context");
+
+  // A zero budget forces the end immediately; a spent budget that ends in
+  // partial UTF-8 waits for the next complete token. Both ranks must make the
+  // same choices, including when the mask spans more than one packed byte.
+  for (const std::size_t limit : {0U, 1U, 7U}) {
+    TpControlCommand budgeted = command;
+    auto budget = std::make_shared<gufo::sampling::ReasoningBudget>();
+    budget->tokens = limit;
+    budget->forced = {3, 4};
+    budget->ends = {4, 9};
+    if (limit != 0)
+      budget->prompt = {5};
+    auto partial = std::make_shared<std::vector<bool>>(10);
+    (*partial)[5] = (*partial)[9] = true;
+    budget->partial_utf8 = partial;
+    budgeted.sampling.reasoning_budget = budget;
+    Require(server->SendCommand(budgeted, &server_error), server_error);
+    TpControlCommand got;
+    Require(client->ReceiveCommand(&got, &client_error), client_error);
+    const auto& actual = got.sampling.reasoning_budget;
+    Require(
+        actual && actual->tokens == limit && actual->forced == budget->forced &&
+            actual->ends == budget->ends && actual->prompt == budget->prompt &&
+            actual->partial_utf8 && *actual->partial_utf8 == *partial,
+        "reasoning budget survives the control channel");
+    Require(!got.sampling.can_use_unmodified_argmax(),
+            "a reasoning budget disables raw greedy choice checks");
+    gufo::sampling::SamplerState left(budgeted.sampling);
+    gufo::sampling::SamplerState right(got.sampling);
+    const std::vector<float> logits{0, 9, 0, 0, 0, 0, 0, 0, 0, 0};
+    for (std::size_t step = 0; step < 10; ++step) {
+      const auto token = left.Sample(logits);
+      Require(right.Sample(logits) == token,
+              "budgeted ranks select the same token from identical logits");
+      if (limit == 0 && step < 2)
+        Require(token == 3 + step, "zero budget forces the entire end");
+      if (limit == 1 && step < 3)
+        Require(token == (step == 0 ? 1 : 2 + step),
+                "partial UTF-8 completes before forcing the end");
+      left.Accept(token);
+      right.Accept(token);
+    }
+  }
 
   // A request with images carries its prompt context, byte for byte, and a
   // large one (pixels) crosses the channel in one frame.
@@ -441,6 +485,11 @@ int main() {
   refuses("a client id", with([](auto& bad) { bad.client_id = "probe"; }));
   refuses("a prompt context",
           with([](auto& bad) { bad.prompt_context = {1, 2, 3}; }));
+  refuses("a reasoning budget", with([](auto& bad) {
+            auto budget = std::make_shared<gufo::sampling::ReasoningBudget>();
+            budget->forced = {3};
+            bad.sampling.reasoning_budget = std::move(budget);
+          }));
   refuses("a file key outside the disk cache",
           with([](auto& bad) { bad.instruction.file_key = 5; }));
   refuses("a persist without a file key", with([](auto& bad) {
@@ -629,6 +678,27 @@ int main() {
                   [](auto& bad) { bad.cache_prefix_tokens = 4; });
   invalid_request("an oversized client id",
                   [](auto& bad) { bad.client_id.assign(4097, 'x'); });
+  const auto invalid_budget = [&](const std::string& what, auto change) {
+    invalid_request(what, [&](auto& bad) {
+      auto budget = std::make_shared<gufo::sampling::ReasoningBudget>();
+      budget->forced = {3};
+      change(*budget);
+      bad.sampling.reasoning_budget = std::move(budget);
+    });
+  };
+  invalid_budget("an empty forced reasoning end",
+                 [](auto& budget) { budget.forced.clear(); });
+  invalid_budget("an oversized reasoning budget",
+                 [](auto& budget) { budget.tokens = std::size_t{1} << 31; });
+  invalid_budget("an invalid reasoning token", [](auto& budget) {
+    budget.ends = {std::numeric_limits<std::uint32_t>::max()};
+  });
+  invalid_budget("an oversized reasoning token list",
+                 [](auto& budget) { budget.prompt.resize((1U << 20) + 1); });
+  invalid_budget("an oversized reasoning UTF-8 mask", [](auto& budget) {
+    budget.partial_utf8 =
+        std::make_shared<const std::vector<bool>>((1U << 20) + 1);
+  });
   {
     TpControlCommand too_long = command;
     too_long.sequence = 19;

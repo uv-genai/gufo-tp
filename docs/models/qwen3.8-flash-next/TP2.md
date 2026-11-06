@@ -116,6 +116,8 @@ Limits:
     stops at the checkpoint boundary and snapshots there.
     `tp_executor_test` fails when the TP2 wrapper turns off a runner
     capability that is not listed there as such a gap.
+  - No in-pass prefill cancellation (`prefill_rollback`): cancellation takes
+    effect between mirrored calls, after both ranks finish the same pass.
   - A paired prefill chunk computes every row of the final layer, where one
     host skips the rows nothing reads.
 
@@ -170,6 +172,9 @@ configuration and prepared images) and closes with `kEnd`. Mirrored calls:
   and rank 1 builds the same constraint with the same code, so it judges
   drafts as rank 0 does; a constraint without that source decodes one token
   at a time;
+- reasoning budgets, including the forced end, early ends, prompt tokens
+  already charged to the budget, and the UTF-8 completion mask, travel with
+  the request so both ranks make the same forced-token decisions;
 - state resets, and binding a state to its request's prompt context (images
   can reset the state);
 - snapshot, restore, prefix reuse and cancellation preparation, each
@@ -235,6 +240,15 @@ request's states and snapshots are not reused.
 - `tp_control_test`, `tp_executor_test` (label `tp2`, in the CPU suite): the
   protocol, and the real scheduler and pool on rank 0 against an executor on
   rank 1 with a toy model, for every request kind, divergence and reuse rule.
+  Both run in the Linux hosted PR checks. The executor test's capability
+  binding deliberately fails compilation when the runner interface grows;
+  audit each new capability before updating the binding.
+- `tests/functional/tp2_controls.py`: buffered and streamed Chat/Completions
+  cache lookup bypass, RAM reuse, and per-request disk-persistence opt-out
+  across a restart of both ranks. `cache_persist: false` applies on rank 0
+  before either half is queued for persistence; rank 1 follows those mirrored
+  persistence instructions. The SDK's `reasoning-budget` suite covers the
+  budgeted Chat, Responses and Messages transports against an existing pair.
 - `qwen38_flash_next.tp_partition` and the attention, projection and routed
   operator tests: the split against the full kernels.
 - `qwen38_flash_next_tp_probe` (`gpu-tp2`): prompt, decode and logit

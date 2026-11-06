@@ -71,8 +71,12 @@ same tokens. When a feature must work under TP, **mirror the full decision**
 
 - [ ] **No `gufo`** on either host (`pgrep -ax gufo`)
 - [ ] **Ship the same binary** to `strix-halo-1.local`; **sha256 must match**
-- [ ] Start pair (rank0 then rank1 ≤30s, or `tools/tp2/swap.sh` via llama-swap;
+- [ ] Start pair (rank0 then rank1 ≤30s, or deployed `tools/llama-swap/tp2.sh` via llama-swap;
       **not** port 8080 for raw gufo metrics)
+- [ ] Discover llama-swap's backend through `/running`; its assigned port is
+      not fixed. Preserve any user session already running on the GPUs.
+- [ ] Verify complete model files on both hosts. A small metadata-only Q4
+      first shard is valid; compare publisher hashes before re-downloading.
 - [ ] `/ready` OK
 - [ ] **Generation text**, prompt **>1024 tokens**
 - [ ] One **short natural-language** prompt (e.g. sample eBPF code) with
@@ -82,7 +86,12 @@ same tokens. When a feature must work under TP, **mirror the full decision**
 - [ ] `GET /metrics` on gufo HTTP: `requests_processing` / `deferred` move;
       no `tp_pair_lost` / size mismatch / `status 5` in the server log
 - [ ] User **llama-swap** run (their Q8-tp2 path) before tagging
-- [ ] Only then: push `uv-genai`, replace any `-untested` tag
+- [ ] Only then: push `uv-genai` and create a new immutable release tag
+
+Create a GitHub Release with written notes for every published dated tag;
+never move an already published tag. Record the compiled revision/SHA
+separately when documentation-only commits follow the validated binary.
+See [RELEASING.md](RELEASING.md).
 
 ## 5. What “green” is not
 

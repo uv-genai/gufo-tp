@@ -1,5 +1,13 @@
 # TP2 Q4 vs Q8 — spot check
 
+**Current status (November 6, 2026):** the tables below are historical and do
+not rank the current binaries. After the Q8 prefill correction, the user
+reported about 45 tok/s generation and up to 1,550 tok/s prefill, with Q8
+prefill ahead of Q4 in their workload. This was an interactive observation,
+not a matched Q4/Q8 benchmark. See the [release notes](../../releases/2026-11-06-tp2-fixes.md)
+and [controlled timing results](BENCHMARKS.md#q8-regression-controls-november-6-2026)
+for the evidence and remaining uncertainty.
+
 > **Unqualified measurement.** This answers a practical question ("which
 > quantisation should I use on the TP2 pair?"). It is **not** a qualified
 > benchmark and is deliberately **not** part of [BENCHMARKS.md](BENCHMARKS.md)

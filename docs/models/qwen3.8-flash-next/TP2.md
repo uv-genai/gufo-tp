@@ -18,6 +18,8 @@ strided SSM vs TP2 half width, draft-subset single-host only, n-gram
 
 ```sh
 # Release binary with TP2 (native ROCm toolchain; see AGENTS.md for flags)
+unset ROCM_PATH
+export PATH=/opt/rocm/bin:/opt/rocm/core/lib/llvm/bin:$PATH
 cmake --preset release -DGUFO_ENABLE_TP2_RDMA=ON \
   -DCMAKE_HIP_COMPILER=/opt/rocm/core/lib/llvm/bin/clang++ \
   -DCMAKE_CXX_FLAGS="-include format" -DCMAKE_HIP_FLAGS="-include format"
@@ -27,7 +29,9 @@ cmake --build --preset release --parallel 4
 ## Run
 
 Canonical launchers: [tools/tp2/](../../../tools/tp2/) (`rank0-q4.sh`,
-`rank1-q4.sh`, `rank0-q8.sh`, `rank1-q8.sh`, `swap.sh`). They use
+`rank1-q4.sh`, `rank0-q8.sh`, `rank1-q8.sh`). The deployed llama-swap wrapper
+is [tools/llama-swap/tp2.sh](../../../tools/llama-swap/tp2.sh); the older
+`tools/tp2/swap.sh` is not the active service entry. The rank launchers use
 `build/release/gufo` on both hosts; copy that binary to `strix-halo-1.local`
 first. Start rank 0 first, and rank 1 within 30 s. `RANK0_ADDRESS` is where
 rank 1 reaches rank 0's TCP bootstrap. Both ranks need the same model files
@@ -35,17 +39,29 @@ and the same `--tp-control-token`, `--context`, `--prefill-chunk`,
 `--sessions`, MTP settings and `--mmproj` use; the handshake names any setting
 that differs.
 
+Control protocol **21** includes the mirrored reasoning budget. Upgrade both
+hosts together; mixed protocol/binary revisions are unsupported. Snapshot
+payload remains **v18**. The Q8 numerical cache epoch invalidates states from
+the earlier paired expert path, causing a fresh prefill after upgrade.
+
+Checked-in rank launchers default to `--sessions 2 --context 524288
+--enable-yarn` on both hosts (YaRN factor 2). Manual servers default to port
+8000; llama-swap assigns a backend port and serves clients on 8080. Read
+llama-swap's `/running` to locate the active backend before inspecting Gufo's
+`/metrics` or `/slots`.
+
 ```sh
 # rank 0: public HTTP server (see tools/tp2/rank0-q4.sh)
 build/release/gufo serve llm --model "$MODEL" --speculative mtp --mtp-model "$MTP" \
   --tp-world-size 2 --tp-rank 0 --tp-bootstrap-port 18515 \
-  --tp-control-port 18516 --tp-control-token SHARED_TOKEN --sessions 4
+  --tp-control-port 18516 --tp-control-token SHARED_TOKEN --sessions 2 \
+  --context 524288 --enable-yarn
 
 # rank 1: worker only, no public HTTP port
 build/release/gufo serve llm --model "$MODEL" --speculative mtp --mtp-model "$MTP" \
   --tp-world-size 2 --tp-rank 1 --tp-bootstrap-host RANK0_ADDRESS \
   --tp-bootstrap-port 18515 --tp-control-port 18516 \
-  --tp-control-token SHARED_TOKEN --sessions 4
+  --tp-control-token SHARED_TOKEN --sessions 2 --context 524288 --enable-yarn
 ```
 
 The link uses port 1 of the host's only RDMA device; `--tp-rdma-device NAME`
@@ -69,7 +85,8 @@ it reaches 44 Gbit/s one way. Load it with an IPv4 address on its
 sudo ip link add tbv0 type dummy
 sudo ip addr add 10.77.0.1/24 dev tbv0 && sudo ip link set tbv0 up   # .2 on rank 1
 sudo modprobe thunderbolt_ibverbs profile=linux_perf tbnet=prefer_rdma \
-  lanes=2 register_verbs=1 roce_netdev=tbv0 native_write_striping=1
+  lanes=2 bind_services=1 allocate_rings=1 start_rings=1 negotiate_native=1 \
+  enable_tunnels=1 register_verbs=1 roce_netdev=tbv0 native_write_striping=1
 ibv_devices                        # usb4_rdma0 .. usb4_rdma3 with two cables
 build/gpu-tp2/gufo serve llm ... --tp-rdma-device usb4_rdma0
 ```

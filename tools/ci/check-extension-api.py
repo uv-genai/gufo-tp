@@ -173,9 +173,16 @@ def check_diff(read_old, read_new, labels, old_records=None, new_records=None):
     if not added: errors.append("extension API changes require a new permanent change record")
     try:
         version = computed_version(read_new(SERIES), new_records)
-        # One-time transition from the old manually maintained version header.
-        old_version = (computed_version(read_old(SERIES), old_records) if read_old(SERIES)
-                       else api_version(read_old(VERSION)))
+        # A downstream merge may introduce the whole extension API at once.
+        # Only a base without any API metadata is an initial introduction;
+        # incomplete metadata for an existing API must still fail validation.
+        if read_old(SERIES):
+            old_version = computed_version(read_old(SERIES), old_records)
+        elif not old_surface and not old_records and not read_old(VERSION):
+            old_version = "0.0.0"
+        else:
+            # Transition from the old manually maintained version header.
+            old_version = api_version(read_old(VERSION))
         if tuple(map(int, version.split('.'))) <= tuple(map(int, old_version.split('.'))):
             errors.append("extension API version must increase")
         major, minor, base = series_values(read_new(SERIES))

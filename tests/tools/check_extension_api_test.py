@@ -168,6 +168,20 @@ class ApiPolicyTests(unittest.TestCase):
         self.assertEqual(api.check_diff(lambda p: old.get(p, ""), lambda p: new.get(p, ""),
                                         ["ext-api"], {}, records), [])
 
+    def test_first_introduction_requires_label_and_active_series_record(self):
+        new = self.fixture()
+        records = {f"{api.RECORDS}/0.1/introduction.md": "Introduce the extension API"}
+        self.assertEqual(api.check_diff(lambda p: "", lambda p: new.get(p, ""),
+                                        ["ext-api"], {}, records), [])
+        errors = api.check_diff(lambda p: "", lambda p: new.get(p, ""), [], {}, records)
+        self.assertTrue(any("ext-api" in e for e in errors))
+        errors = api.check_diff(lambda p: "", lambda p: new.get(p, ""), ["ext-api"])
+        self.assertTrue(any("new permanent change record" in e for e in errors))
+        old = {api.SURFACE: new[api.SURFACE]}
+        errors = api.check_diff(lambda p: old.get(p, ""), lambda p: new.get(p, ""),
+                                ["ext-api"], {}, records)
+        self.assertIn("missing extension API kApiVersion", errors)
+
     def test_migration_cannot_reuse_existing_revision_numbers(self):
         old = self.fixture(); del old[api.SERIES]
         old[api.VERSION] = 'inline constexpr auto kApiVersion = "0.1.10";'

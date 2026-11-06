@@ -1,5 +1,40 @@
 # Releasing
 
+## Gufo-TP releases
+
+Development and publication use `uv-genai/gufo-tp`, local `main` tracking
+`uv-genai/main`. `origin` is read-only upstream. Code fixes go through a
+separate branch and a validated pull request before tagging merged `main`.
+
+TP2 releases use dated annotated tags:
+
+- `tp2-rdma-merge-vX.Y.Z-YYYY-MM-DD` for an upstream merge.
+- `tp2-rdma-fixes-vX.Y.Z-YYYY-MM-DD` for fixes on the existing upstream base.
+
+Keep `version.txt`, `CHANGELOG.md` and upstream `vX.Y.Z` tags under the upstream
+release workflow described below. A dated TP2 release does not imply another
+upstream version was merged. Never move a published tag. Push only the intended
+branch/tag to `uv-genai`, and create a GitHub Release with written notes for
+every published tag.
+
+Before publication, reconcile README, the native build/setup guides, API and
+model docs, AGENTS and the canonical handoff. Verify links and the applicable
+CPU/GPU checks. The two hosts must run byte-identical binaries. Record both
+the tagged source and the compiled binary's revision/SHA-256: documentation-only
+commits can follow the validated build without replacing a running server.
+State which evidence used that binary and which predates it. Use an existing
+pair for non-disruptive checks when appropriate; never load a second model
+on either GPU host.
+
+Release notes cover changes since the prior TP2 tag, linked issues/PRs,
+validation, deployment settings and known limits. Keep user-reported speeds
+separate from matched benchmarks; retain inconclusive timing and numerical
+qualification limits. Current TP2 qualification is Linux-only. A source release
+does not provide an installable binary unless binary assets are explicitly
+attached. See [the November 6 release](releases/2026-11-06-tp2-fixes.md).
+
+## Upstream release policy
+
 Gufo uses squash merges and Conventional Commit pull request titles to keep
 `main` machine-readable. A pull request may contain arbitrary work-in-progress
 commits; its title becomes the single commit retained on `main`.

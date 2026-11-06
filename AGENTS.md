@@ -1,5 +1,9 @@
 # AGENTS.md
 
+Read [handoff.md](handoff.md) first for current deployment, release and validation
+state. Development tracks `uv-genai/main`; upstream tags alone do not indicate
+that their code has been merged here.
+
 ## Platform and build
 
 Production packages target Linux x86-64 AMD Strix Halo (`gfx1151`); Windows
@@ -25,7 +29,7 @@ Pass these three flags at every `cmake --preset` invocation:
 | `-DCMAKE_HIP_FLAGS="-include format"` | same collision on the HIP side |
 
 ```sh
-cmake --preset release \
+cmake --preset release -DGUFO_ENABLE_TP2_RDMA=ON \
   -DCMAKE_HIP_COMPILER=/opt/rocm/core/lib/llvm/bin/clang++ \
   -DCMAKE_CXX_FLAGS="-include format" \
   -DCMAKE_HIP_FLAGS="-include format"
@@ -129,6 +133,10 @@ quality; successful optimizations become the default, without extra switches.
   **`gufo-org`** (`git fetch origin && git switch gufo-org && git merge
   --ff-only origin/main`). Never push to `origin` / `gufo-org`.
 - Work and publishes go on fork **`main`**, remote **`uv-genai`** only.
+- Every published TP2 tag needs a GitHub Release with written notes. Follow
+  [docs/RELEASING.md](docs/RELEASING.md) for dated TP2 tags, source/binary
+  identity and validation scope. Current TP2 release qualification is Linux;
+  Windows is outside this work's scope.
 - **`AGENTS.md` is fork-owned.** Do not merge upstream `AGENTS.md` changes
   that reintroduce the packaged environment. Before any commit, count case-
   insensitive matches of that environment's name in this file; the count must

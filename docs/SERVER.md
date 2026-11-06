@@ -122,9 +122,10 @@ DeepSeek's 0.95 top-p is its agentic recommendation; neutral penalties and
 disabled unspecified filters are Gufo defaults.
 
 ```sh
-nix build
+# Build with the native toolchain: see ../BUILD-LOCAL.md.
+cmake --build --preset release --parallel 4
 
-./result/bin/gufo serve \
+./build/release/gufo serve \
   --host 127.0.0.1 \
   --port 8080 \
   --sessions 1 \
@@ -511,7 +512,7 @@ Qwen3-TTS serving is enabled with a dedicated model process. All three 12Hz
 fields that are required:
 
 ```sh
-./result/bin/gufo serve --port 8080 tts \
+./build/release/gufo serve --port 8080 tts \
   --model /persist/models/audio/Qwen3-TTS-12Hz-1.7B-CustomVoice
 ```
 
@@ -537,7 +538,7 @@ so clients select a speaker by name instead of uploading a reference clip on
 every request:
 
 ```sh
-./result/bin/gufo serve tts \
+./build/release/gufo serve tts \
   --model /persist/models/audio/Qwen3-TTS-12Hz-1.7B-Base \
   --voice narrator_eng=/persist/models/audio/clear-english-voice.wav \
   --voice narrator_ita=/persist/models/audio/clear-italian-voice.wav
@@ -548,7 +549,7 @@ every request:
 appear before or after its matching `--voice`:
 
 ```sh
-./result/bin/gufo serve tts \
+./build/release/gufo serve tts \
   --model /persist/models/audio/Qwen3-TTS-12Hz-1.7B-Base \
   --voice narrator_ita=/persist/models/audio/clear-italian-voice.wav \
   --voice-text "narrator_ita=Questo racconto e' cresciuto..." \
@@ -599,7 +600,7 @@ event, while WebSocket speech reports an error without `audio.done`.
 Qwen3-ASR serving uses its own model process:
 
 ```sh
-./result/bin/gufo serve asr \
+./build/release/gufo serve asr \
   --model /var/llms/huggingface/hub/models--Qwen--Qwen3-ASR-1.7B/snapshots/<revision>
 ```
 
@@ -647,7 +648,7 @@ atomic publication.
 EmbeddingGemma 2 (`google/embeddinggemma-2`) serves text, image, video and audio embeddings from its own model process.  It is a 768-dimension, BF16, 8192-token-context encoder:
 
 ```sh
-./result/bin/gufo serve --port 8080 embedding --model /persist/models/embeddinggemma-2
+./build/release/gufo serve --port 8080 embedding --model /persist/models/embeddinggemma-2
 ```
 
 `--model` must name an EmbeddingGemma 2 checkpoint directory, and `--served-model-name` overrides the default model ID `embeddinggemma-2`.  The process refuses to start on any other directory and in a build without the HIP backend.  There is no `--sessions` or `--context` option, because requests share one encoder.  Requests that wait for the device share batches of up to 8,192 tokens, except that a request with an image, video or audio runs in a batch of its own.  When the device is free, the oldest waiting request runs one batch for itself and the requests behind it.  The batch takes whole requests in arrival order until the next one does not fit or has an image, video or audio.  A lone request runs at once.  A request that fits in one batch never spans two.  A request larger than one batch is split, and after each of its batches it goes behind the requests that arrived meanwhile, so a short request waits for at most one batch of a long one.  Route this process through llama-swap when one public URL should offer embeddings alongside text, speech, or images.
@@ -802,7 +803,7 @@ text/reasoning deltas and terminal status. Local reasoning is exposed as
 Disconnects cancel generation through the same scheduler as Chat Completions.
 
 The official [OpenAI Python SDK](https://github.com/openai/openai-python) is
-included in `nix develop`. Use the model name from `/v1/models`
+available as the Python `openai` package. Use the model name from `/v1/models`
 (for example, `qwen` with `--served-model-name qwen`):
 
 ```python
@@ -1265,6 +1266,13 @@ runs this server and rank 1 executes the same model calls on its half of the
 weights. It needs the optional `GUFO_ENABLE_TP2_RDMA` build; see
 [TP2](models/qwen3.8-flash-next/TP2.md).
 
+TP2 mirrors reasoning-budget controls to the worker. `cache_prompt: false`
+bypasses continuation lookup on Chat and raw Completions; `cache_persist: false`
+keeps request snapshots out of both ranks' disk stores while allowing RAM
+reuse. Upgrade both binaries together: control protocol 21 is required for
+the November 6 fixes. Old Flash-Next disk states from before the Q8 projection
+correction are cache misses and are prefilled again.
+
 `GET /health` reports process liveness. `GET /ready` returns 503 until a model
 service is ready, then reports `status` and the active model. Both read the
 recorded device state without performing GPU work on each poll. HTTP model replacement and persistent Responses
@@ -1607,5 +1615,5 @@ DSpark's short boundary check is available without the complete serving suite:
 
 ```sh
 # Set GUFO_DEEPSEEK_V4_FLASH_MODEL and GUFO_DEEPSEEK_V4_FLASH_DSPARK_MODEL first.
-nix develop -c build/gpu-test/tests/models/deepseek_v4_flash/ds4_serving_test --dspark-eos
+build/gpu-test/tests/models/deepseek_v4_flash/ds4_serving_test --dspark-eos
 ```

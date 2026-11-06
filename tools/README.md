@@ -1,8 +1,9 @@
 # Developer tools
 
-Use the Nix development environment for these tools. Production inference and
-speed measurements use `nix build` binaries under `result/bin` or the
-`release` CMake preset with the same toolchain. Tools are not part of the
+Use the system ROCm toolchain and the host flags in [AGENTS.md](../AGENTS.md).
+Production inference and speed measurements use `build/release/gufo` from the
+`release` CMake preset. Preserve compiler and dependency versions between
+comparisons; see [BUILD-LOCAL.md](../BUILD-LOCAL.md). Tools are not part of the
 production install. `gpu-test` enables `GUFO_BUILD_TOOLS` for the compiled
 benchmark/tuning executables; Python tools run from this source tree.
 

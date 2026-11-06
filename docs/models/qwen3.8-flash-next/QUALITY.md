@@ -1,5 +1,17 @@
 # Qwen3.8 Flash-Next quality
 
+## Release serving qualification, November 6, 2026
+
+The [November 6 release](../../releases/2026-11-06-tp2-fixes.md) combines the
+paired Q8 correction below with mirrored request controls and the metadata-only
+Q4 GGUF reader repair. Q8 AR/MTP coverage includes 171 functional checks,
+followed by the numerical cache-epoch upgrade/restart checks. The final deployed
+binary (`85ae8ce2`, SHA-256 `653edd21…`) additionally passes the actual Q4
+llama-swap launch, 15 generation/reuse/concurrency requests, 9 MTP constraint
+checks, and five post-merge Q8 generation checks. Both hosts run the same binary.
+The user confirmed long Q8 regeneration succeeds. This serving evidence does
+not change the numerical limits or matched-timing conclusions below.
+
 ## Paired Q8 expert projections, November 6, 2026
 
 The paired Q8 gate/up path now preserves its signed-byte codes and scale,

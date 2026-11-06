@@ -35,6 +35,12 @@ parallelism across two hosts** on top.
 > [gufo-org/gufo](https://github.com/gufo-org/gufo/releases). Gufo-TP publishes
 > from [uv-genai/gufo-tp](https://github.com/uv-genai/gufo-tp) (`main` only).
 
+Current TP2 release: **[v0.28.1 fixes, November 6, 2026](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-fixes-v0.28.1-2026-11-06)**.
+It fixes mirrored reasoning and cache controls, Q8 expert prefill, and loading
+Q4 GGUF sets with a metadata-only first shard. Q4 and Q8 TP2 + MTP serving
+passed validation; [release notes](docs/releases/2026-11-06-tp2-fixes.md)
+describe the checks and remaining numerical/timing limits.
+
 ## Why this project
 
 On one host, Flash-Next decode and prefill are already excellent. **TP2 is
@@ -43,9 +49,9 @@ and the full Q8 model that do not fit a single 128 GiB APU. After merging
 upstream through v0.28.1, one-host Flash-Next reports **1,801.01 tok/s AR
 prefill** and up to **116.93 tok/s tg** (see [Benchmarks](docs/models/qwen3.8-flash-next/BENCHMARKS.md)).
 The matched TP2 series below is from the v0.15.0-era binary (Q4 MTP,
-`pp2048 / tg128`, 2026-10-14). TP2 **runtime** was requalified on
-`tp2-rdma-merge-v0.28.1-2026-11-04` (smoke 10/10 + user llama-swap approved);
-the table numbers below have **not** been re-benchmarked on v0.28.1:
+`pp2048 / tg128`, 2026-10-14). TP2 **runtime** was requalified with the
+November 6 fixes on Q4 and Q8, including user llama-swap runs; the historical
+table below has **not** been re-benchmarked for this release:
 
 | Depth (tokens) | 1-host pp | **TP2 pp** | 1-host tg | **TP2 tg** |
 | ---: | ---: | ---: | ---: | ---: |
@@ -79,7 +85,7 @@ All model documentation lives under [docs/models](docs/models/README.md):
 | Model | Inference modes | Hugging Face weights | Benchmarks | Quality |
 | --- | --- | --- | --- | --- |
 | [Qwen3.8 27B](docs/models/qwen3.8-27b/README.md) | Q4/Q8, images, AR, DFlash2 | Unsloth [Q4_K_XL](https://huggingface.co/unsloth/Qwen3.8-27B-GGUF/blob/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q4_K_XL.gguf) / [Q8_K_XL](https://huggingface.co/unsloth/Qwen3.8-27B-GGUF/blob/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q8_K_XL.gguf) · [DFlash2 Q4_K_M](https://huggingface.co/z-lab/Qwen3.8-27B-DFlash2-GGUF/blob/2d9571f8ce46e151f61c6499c99dee6079e1d610/Qwen3.8-27B-DFlash2-Q4_K_M.gguf) | Q4: **648.89 tok/s pp**; up to **71.55 tok/s tg** single user and **128.42 aggregated tok/s** on 8 concurrent requests with DFlash2 · [Benchmarks](docs/models/qwen3.8-27b/BENCHMARKS.md) | [Quality](docs/models/qwen3.8-27b/QUALITY.md) |
-| [Qwen3.8 Flash-Next](docs/models/qwen3.8-flash-next/README.md) | Q4/Q8, images, AR, MTP, **TP2** | Unsloth [Q4_K_XL](https://huggingface.co/unsloth/Qwen3.8-Flash-Next-GGUF/tree/38bb39ee97821de2c9009abb7e93950eec396e66/UD-Q4_K_XL) · [MTP Q8_0](https://huggingface.co/unsloth/Qwen3.8-Flash-Next-GGUF/blob/38bb39ee97821de2c9009abb7e93950eec396e66/MTP/mtp-Qwen3.8-Flash-Next-shared-Q8_0.gguf) | One host: **1,801.01 tok/s pp** (AR); up to **116.93 tok/s tg** and **245.81 aggregated tok/s** · **TP2** up to **1,860 tok/s pp** and **79 tok/s tg**, **181 tok/s** sum at 6 users · [Benchmarks](docs/models/qwen3.8-flash-next/BENCHMARKS.md) · [TP2 series](docs/models/qwen3.8-flash-next/2026-10-14-tp2-depth-series.md) | [Quality](docs/models/qwen3.8-flash-next/QUALITY.md) |
+| [Qwen3.8 Flash-Next](docs/models/qwen3.8-flash-next/README.md) | Q4/Q8, images, AR, MTP, **TP2** | Unsloth [Q4_K_XL](https://huggingface.co/unsloth/Qwen3.8-Flash-Next-GGUF/tree/d96201194f103c906994f283f504209dc8d2a10c/UD-Q4_K_XL) · [MTP Q8_0](https://huggingface.co/unsloth/Qwen3.8-Flash-Next-GGUF/blob/d96201194f103c906994f283f504209dc8d2a10c/MTP/mtp-Qwen3.8-Flash-Next-shared-Q8_0.gguf) | One host: **1,801.01 tok/s pp** (AR); up to **116.93 tok/s tg** and **245.81 aggregated tok/s** · **TP2** up to **1,860 tok/s pp** and **79 tok/s tg**, **181 tok/s** sum at 6 users · [Benchmarks](docs/models/qwen3.8-flash-next/BENCHMARKS.md) · [TP2 series](docs/models/qwen3.8-flash-next/2026-10-14-tp2-depth-series.md) | [Quality](docs/models/qwen3.8-flash-next/QUALITY.md) |
 | [DeepSeek V4 Flash](docs/models/deepseek-v4-flash/README.md) | AR, DSpark | [antirez Flash 0731 IQ2XXS](https://huggingface.co/antirez/deepseek-v4-gguf/blob/1cd7b564460821938add0475a60b942c409295e0/DeepSeek-V4-Flash-IQ2XXS-w2Q2K-AProjQ8-SExpQ8-OutQ8-chat-v2-imatrix-0731.gguf) · [DSpark](https://huggingface.co/antirez/deepseek-v4-gguf/blob/e7f04037032990db0346398d249baf9fb9df1ccc/DeepSeek-V4-Flash-DSpark-support-0731.gguf) | **484.62 tok/s pp**; up to **26.62 tok/s tg** single user and **54.74 aggregated tok/s** on 8 concurrent requests with DSpark · [Benchmarks](docs/models/deepseek-v4-flash/BENCHMARKS.md) | [Quality](docs/models/deepseek-v4-flash/QUALITY.md) |
 | [Qwen3-ASR 1.7B](docs/models/qwen3-asr/README.md) | Speech recognition | [BF16](https://huggingface.co/Qwen/Qwen3-ASR-1.7B/tree/7278e1e70fe206f11671096ffdd38061171dd6e5) | **15.27× realtime** · [Benchmarks](docs/models/qwen3-asr/BENCHMARKS.md) | [Quality](docs/models/qwen3-asr/QUALITY.md) |
 | [EmbeddingGemma 2](docs/models/embeddinggemma-2/README.md) | Text and image embeddings | [BF16](https://huggingface.co/google/embeddinggemma-2/tree/914f7f89142e33e77833254d9c9b90c3cef7303b) | Up to **41.5k tokens/s** over HTTP; **13.0 ms** for a 404-token request · [Benchmarks](docs/models/embeddinggemma-2/BENCHMARKS.md) | [Quality](docs/models/embeddinggemma-2/QUALITY.md) |
@@ -100,8 +106,12 @@ the only multi-host model so far. The binary needs libibverbs and
 `-DGUFO_ENABLE_TP2_RDMA=ON`.
 
 ```sh
-# After the shared CMake configure in “Build from source”:
-cmake --preset release -DGUFO_ENABLE_TP2_RDMA=ON
+# Native toolchain on the Strix Halo hosts; details in BUILD-LOCAL.md:
+unset ROCM_PATH
+export PATH=/opt/rocm/bin:/opt/rocm/core/lib/llvm/bin:$PATH
+cmake --preset release -DGUFO_ENABLE_TP2_RDMA=ON \
+  -DCMAKE_HIP_COMPILER=/opt/rocm/core/lib/llvm/bin/clang++ \
+  -DCMAKE_CXX_FLAGS="-include format" -DCMAKE_HIP_FLAGS="-include format"
 cmake --build --preset release --parallel 4
 ```
 
@@ -116,8 +126,11 @@ tools/tp2/rank0-q4.sh 8000
 tools/tp2/rank1-q4.sh
 ```
 
-`tools/tp2/swap.sh` drives both ranks for llama-swap. Ports, control token and
-RDMA device selection are in the scripts. From bare metal to striped USB4:
+The deployed llama-swap entry uses `tools/llama-swap/tp2.sh run ${PORT} q4`
+or `q8`. Both rank scripts default to two sessions and context 524288 with
+YaRN enabled. Model files and binaries must match on both hosts. llama-swap
+serves clients on port 8080 and assigns the backend port; inspect `/running`
+before reading Gufo's `/metrics` or `/slots`. From bare metal to striped USB4:
 [TP2-SETUP.md](TP2-SETUP.md). Protocol, cache rules and qualification:
 [TP2.md](docs/models/qwen3.8-flash-next/TP2.md).
 
@@ -227,6 +240,10 @@ Windows x86-64 is a supported native build target for development; see
 one production configuration for ordinary Linux builds. Tests, profilers,
 tuning executables and Python reference runners are not installed with the
 production package. No `build.sh` wrapper is needed.
+
+On the twin CachyOS hosts, follow [BUILD-LOCAL.md](BUILD-LOCAL.md): the compiler
+path and both `-include format` flags are required on every configure there.
+The generic Debian/Ubuntu example below does not include those host workarounds.
 
 Install a C++20 compiler, CMake 3.21+, Ninja, pkg-config and the
 following development libraries. The pinned Nix toolchain uses GCC

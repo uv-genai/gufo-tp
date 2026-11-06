@@ -3,10 +3,12 @@
 From bare twin CachyOS Strix Halo hosts to TP=2 tensor-parallel serving of
 Qwen3.8-Flash-Next over RDMA striped across **two** Thunderbolt/USB4 cables.
 
-Everything here is what was actually done on `strix-halo-1` (rank 0) and
-`strix-halo-2` (rank 1). Both hosts are identical: CachyOS, kernel
-7.2.8-2-cachyos (Clang-built), gcc 16.2.1, ROCm via `rocm-gfx1151-bin`,
-`rdma-core` 65, user `ugo` with sudo.
+This guide combines the original network provisioning record with the current
+launch procedure on `strix-halo-1` (rank 0) and `strix-halo-2` (rank 1).
+The provisioning record used CachyOS kernel 7.2.8-2-cachyos, GCC 16.2.1,
+ROCm via `rocm-gfx1151-bin`, and `rdma-core` 65. Installed versions can change;
+record them for a rebuild or comparison. Current deployment and qualification
+are recorded in [handoff.md](handoff.md).
 
 ```
 strix-halo-1 (rank 0)  ==USB4 cable A==  strix-halo-2 (rank 1)
@@ -15,9 +17,12 @@ strix-halo-1 (rank 0)  ==USB4 cable A==  strix-halo-2 (rank 1)
    (OpenAI-compatible API)
 ```
 
-Model files must be identical on both hosts:
-`~/.cache/models/Qwen3.8-Flash-Next/` containing `Q8_0/` (6 shards),
+Model files must be complete and identical on both hosts:
+`~/.cache/models/Qwen3.8-Flash-Next/` containing `UD-Q4_K_XL/` (4 shards) or `Q8_0/` (6 shards),
 `MTP/mtp-Qwen3.8-Flash-Next-shared-Q8_0.gguf`, `mmproj-BF16.gguf`.
+The current Q4 set has a small metadata-only first shard. Verify hashes and
+sizes against the publisher before treating its size as a truncated download;
+see the [model guide](docs/models/qwen3.8-flash-next/README.md#metadata-only-q4-shard).
 
 ---
 
@@ -27,9 +32,14 @@ Full details and rationale: [BUILD-LOCAL.md](BUILD-LOCAL.md) in this repo.
 The short version (identical on both hosts):
 
 ```sh
-cd ~/software/gufo
-./build-gufo.sh          # configure + build + gufo diagnose
-./build-gufo.sh --clean  # from scratch
+cd /home/ugo/projects/gufo
+unset ROCM_PATH
+export PATH=/opt/rocm/bin:/opt/rocm/core/lib/llvm/bin:$PATH
+cmake --preset release -DGUFO_ENABLE_TP2_RDMA=ON \
+  -DCMAKE_HIP_COMPILER=/opt/rocm/core/lib/llvm/bin/clang++ \
+  -DCMAKE_CXX_FLAGS="-include format" -DCMAKE_HIP_FLAGS="-include format" \
+  -DGUFO_REVISION="$(git rev-parse HEAD)"
+cmake --build --preset release --parallel 4
 ```
 
 The script encapsulates three toolchain workarounds you must not lose:
@@ -44,8 +54,9 @@ The script encapsulates three toolchain workarounds you must not lose:
 by default). Verify with `./build/release/gufo diagnose` and
 `./build/release/gufo serve llm --help | grep tp-`.
 
-Repo location on both hosts: `~/software/gufo`, branch `rdma`, same commit.
-Build output: `~/software/gufo/build/release/gufo` (both hosts, byte-identical).
+Repo location on both hosts: `/home/ugo/projects/gufo`. Develop on local `main`
+tracking `uv-genai/main`; preserve unrelated changes in the peer checkout.
+Deploy the same `build/release/gufo` to both hosts and compare SHA-256 hashes.
 
 ---
 
@@ -184,8 +195,7 @@ sudo udevadm control --reload
 
 **The full option set matters.** `bind_services=1 allocate_rings=1
 start_rings=1 negotiate_native=1 enable_tunnels=1` are all needed on this
-module version (defaults are off); the shorter snippet in gufo's TP2.md is
-outdated. `native_write_striping=1` is what stripes one QP across all cables.
+module version (defaults are off); keep the setup guide and TP2.md snippets in sync. `native_write_striping=1` is what stripes one QP across all cables.
 
 ### 5. RoCE GID netdev (`tbv0`)
 
@@ -229,24 +239,35 @@ before starting gufo.
 
 ## Part D — Running the two-host server
 
-Two scripts, one per host (same in content, mirrored roles):
+Use the checked-in rank launchers for a manual pair:
 
 | Role | Host | Script |
 |---|---|---|
-| rank 0 — public HTTP server on `:8000` | `strix-halo-1` | `~/opt/llama.cpp-cli/tp2-rank0.sh` |
-| rank 1 — worker (no public port) | `strix-halo-2` | `~/opt/llama.cpp-cli/tp2-rank1.sh` |
+| rank 0 — public HTTP server on `:8000` | `strix-halo-1` | `tools/tp2/rank0-q8.sh` |
+| rank 1 — worker (no public port) | `strix-halo-2` | `tools/tp2/rank1-q8.sh` |
 
 ```sh
 # 1. rank 0 first
-ssh strix-halo-1 '~/opt/llama.cpp-cli/tp2-rank0.sh'
+ssh strix-halo-1.local '/home/ugo/projects/gufo/tools/tp2/rank0-q8.sh 8000'
 # 2. rank 1 within 30 seconds
-~/opt/llama.cpp-cli/tp2-rank1.sh
+/home/ugo/projects/gufo/tools/tp2/rank1-q8.sh
 ```
 
-Both scripts use: Q8_0 model (6 shards) + MTP draft + mmproj, `--sessions 4`,
-native 262k context, shared control token, bootstrap/control ports 18515/18516
+Both scripts use: Q8_0 model (6 shards) + MTP draft + mmproj, `--sessions 2`,
+`--context 524288 --enable-yarn` (factor 2), shared control token, bootstrap/control ports 18515/18516
 over the LAN (192.168.1.22 — the Thunderbolt IPs don't exist in Stage 2),
 RDMA over the auto-picked `usb4_rdma*` device.
+Use the matching `rank0-q4.sh` / `rank1-q4.sh` for Q4. A manual rank-0 command
+stays in the foreground; start rank 1 from another terminal.
+
+The deployed llama-swap entries use `tools/llama-swap/tp2.sh run ${PORT} q4`
+or `q8` on strix-halo-1 and `tools/llama-swap/tp2.sh stop` as `cmdStop`.
+Client model IDs are `gufo-qwen3.8-flash-next-tp2-q4` and
+`gufo-qwen3.8-flash-next-tp2-q8`, on `http://192.168.1.22:8080/v1`.
+The backend port is assigned by llama-swap: inspect `GET /running`, then use
+that backend's `/metrics` and `/slots`. Do not assume a fixed 5801/5802/5809 port.
+The launcher starts rank 1 shortly before foreground rank 0; both pair within
+the 30-second window. Only one model process may run on each GPU host.
 
 Success looks like (both logs):
 
@@ -280,7 +301,9 @@ Restart needs both ranks again (rank 0 first).
 | `version 'IBVERBS_PRIVATE_59' not found` | same — the prebuilt provider is too old for rdma-core 65 |
 | `no usb4_rdma device found` from the scripts | links re-negotiating after a re-plug (wait 15 s), or stale peers: reload the module |
 | `text runner request-state claim exceeds state capacity` | single-host runs with 4 full-context sessions: add `--context 32768` (TP2 splits state, so 4 sessions are fine there) |
-| `model_not_found` from the API | model id is `Qwen3.8 Flash Next` (spaces) |
+| `model_not_found` from the API | Use `/v1/models`; manual defaults and llama-swap IDs differ (Part D) |
+| Q4 `Malformed or truncated GGUF` with publisher-matching hashes | Update both binaries to the November 6 fixes; the metadata-only first shard needs no tensor padding |
+| `TP worker handshake failed: ... peer closed the channel` | Inspect rank 1's log first; a missing model file there can cause this secondary error on rank 0 |
 | `TP worker response receive failed` / `tp_pair_lost` | the other rank died or was killed — expected; restart both |
 | decode ~20 tok/s, prefill ~900 | you're on RXE Stage 1, not usb4_rdma — check `--tp-rdma-device` and that `thunderbolt_net` is blacklisted |
 | links train at `10.0 Gb/s × 2` | per cable that's 20 Gb/s, not 40. Need 40 Gb/s-rated cables; otherwise try re-plugging (sometimes trains at 20 after several attempts); check BIOS Thunderbolt settings |
@@ -314,7 +337,7 @@ reboot with the module removed restores normal operation.
 | Transport | prefill tok/s | decode tok/s |
 |---|---|---|
 | RXE over one cable (Stage 1) | 860–930 | ~21.7 |
-| usb4_rdma striped, 2× 20 Gb/s cables (Stage 2, current) | 1260–1280 | ~43 |
+| usb4_rdma striped, 2× 20 Gb/s cables (Stage 2) | 1260–1280 | ~43 |
 | usb4_rdma striped, 2× 40 Gb/s cables (projected) | higher — link-bound | higher |
 
 SMT on/off makes no measurable difference on these workloads (tested

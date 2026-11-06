@@ -10,16 +10,20 @@ Original unquantized-model and GGUF-conversion parity remain unqualified.
 
 ## Load and run
 
+Configure the native build using [BUILD-LOCAL.md](../../../BUILD-LOCAL.md).
+Run the following commands from the repository root.
+
 ```sh
-nix develop -c hf download unsloth/Qwen3.8-Flash-Next-GGUF \
-  --revision 38bb39ee97821de2c9009abb7e93950eec396e66 \
+hf download unsloth/Qwen3.8-Flash-Next-GGUF \
+  --revision d96201194f103c906994f283f504209dc8d2a10c \
   --include "UD-Q4_K_XL/*" "MTP/mtp-Qwen3.8-Flash-Next-shared-Q8_0.gguf" "mmproj-BF16.gguf" \
   --local-dir models/qwen3.8-flash-next
-nix build
+# After the native configure:
+cmake --build --preset release --parallel 4
 MODEL=/path/to/first-target-shard.gguf
 MTP=/path/to/mtp-Qwen3.8-Flash-Next-shared-Q8_0.gguf
-./result/bin/gufo chat --model "$MODEL"
-./result/bin/gufo serve llm --model "$MODEL" --speculative mtp \
+./build/release/gufo chat --model "$MODEL"
+./build/release/gufo serve llm --model "$MODEL" --speculative mtp \
   --mtp-model "$MTP" --sessions 2 --context 32768
 ```
 
@@ -27,7 +31,7 @@ To run across two hosts over InfiniBand, RoCE v2 or USB4, see [TP2](TP2.md).
 The loader discovers the remaining shards. Omit the speculative options for AR;
 AR sessions allocate no predictor state even if a shared model has MTP loaded.
 Adaptive MTP is default, with `--draft-tokens` capping 1–7 proposals. Eligible
-requests draft over the first 98,304 token IDs plus a 1,024-row table containing
+single-host requests draft over the first 98,304 token IDs plus a 1,024-row table containing
 special tokens and other tokens already used by the request. The full head
 remains the fallback when the anchor or two of the last 32 committed tokens
 fall outside this vocabulary.
@@ -48,7 +52,9 @@ planner and may use measured cycle costs. Each request keeps private caches,
 rollback and RNG; snapshots preserve the learned acceptance history.
 See [MTP qualification](QUALITY.md).
 
-MTP decoding also proposes copies from the context, with one to eight sessions.
+On a single host, MTP decoding also proposes copies from the context, with one
+to eight sessions. TP2 disables both prompt-lookup copies and the smaller draft
+head; both ranks use the neural draft path with rank 0 mirroring the draft count.
 The context (committed tokens plus the chain so far) is matched against the
 session's own earlier tokens by its last three tokens; when the best of the 16
 most recent occurrences matches at least 12 tokens back for greedy requests
@@ -109,6 +115,28 @@ context and selected rollback depth (about 27.5 KiB per context token with
 MTP, measured on gfx1151); admission reserves the configured capacity before
 creating sessions.
 
+## Metadata-only Q4 shard
+
+The November 6 qualification uses revision
+`d96201194f103c906994f283f504209dc8d2a10c`. Its first Q4 shard contains metadata
+and zero tensors; the other three contain all 1,224 tensors. Its small size
+is intentional. The reader accepts an unpadded metadata-only shard and still
+checks complete metadata, tensor alignment and payload extents.
+
+Both hosts must have the complete set. Verified sizes and SHA-256 hashes:
+
+| Shard suffix | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `00001-of-00004.gguf` | 10,946,618 | `acc44040f74d0e55fb89c3967056cce5dbda1bcc52e909c3ba6fc72b5e9c0858` |
+| `00002-of-00004.gguf` | 49,720,539,552 | `45792ae869072d8229384c51c7c73dd959e191505252b41dd71852d9746f5ce4` |
+| `00003-of-00004.gguf` | 32,803,030,176 | `8c76e79d444b16a663d9c8db54e585ed3b1da13eebd2619c37b0c355da803c82` |
+| `00004-of-00004.gguf` | 28,800,138,432 | `5de8b5dbf89409acc39468decafd4a4a95b13c29d88a14b0356107897829ec36` |
+
+If these match but an older binary reports `Malformed or truncated GGUF`,
+upgrade both binaries to the [November 6 fixes](../../releases/2026-11-06-tp2-fixes.md).
+No padding edit or model re-download is needed for this reader defect.
+The earlier one-host benchmark tables retain their original model revision.
+
 ## Full Q8
 
 The loader also reads the `Q8_0` checkpoint (six shards, about 188 GB), whose
@@ -142,7 +170,7 @@ hidden states and mRoPE. Image snapshots require matching prompt attachment.
 Model tests are in `tests/models/qwen38_flash_next`, focused microbenchmarks in
 `tools/qwen-flash`. [Quality](QUALITY.md) summarizes qualification and focused checks.
 Build a microbenchmark with
-`nix develop -c tools/bench/build.sh tools/qwen-flash/projection_plans.hip`;
+`tools/bench/build.sh tools/qwen-flash/projection_plans.hip`;
 `dense_blaslt_sweep.hip` times hipBLASLt on the dense prefill shapes.
 No historical logit dump is required. New retained result summaries belong in
 `artifacts/`; generated traces stay in the ignored top-level `artifacts/` tree.

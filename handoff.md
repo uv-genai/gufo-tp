@@ -1,7 +1,7 @@
 # LIVE HANDOFF — Gufo-TP
 
 Canonical file: `/home/ugo/projects/gufo/handoff.md`. Updated **2026-11-06** for
-the v0.29.0 upstream integration. Latest published release remains
+the v0.30.0 upstream integration. Latest published release remains
 `tp2-rdma-fixes-v0.28.1-2026-11-06`. Edit this file after deployment,
 merge, release or incident changes; dated files under `~/gufo-merge-handoff/`
 are archives, and its lowercase `handoff.md` is only a pointer here.
@@ -21,12 +21,12 @@ are archives, and its lowercase `handoff.md` is only a pointer here.
 | Development | `/home/ugo/projects/gufo`, `main` tracks **`uv-genai/main`** |
 | Publish remote | **`uv-genai` only**, `https://github.com/uv-genai/gufo-tp.git` |
 | Upstream | `origin` → `gufo-org/gufo`, local tracking branch `gufo-org`; never push there |
-| Upstream merged through | **v0.29.0** (`883f67b6`); v0.30.0 and v0.31.0 remain queued for separate validated PRs |
+| Upstream merged through | **v0.30.0** (`f801b8ca`); v0.31.0 remains queued for a separate validated PR |
 | Latest release | [tp2-rdma-fixes-v0.28.1-2026-11-06](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-fixes-v0.28.1-2026-11-06) |
 | Previous release | [tp2-rdma-merge-v0.28.1-2026-11-04](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.28.1-2026-11-04), code `2a7c0262` |
 | Review fixes | [PR #25](https://github.com/uv-genai/gufo-tp/pull/25), merged **`ba1ab427`**, closes #21–#24 |
 | Q4 reader fix | [PR #27](https://github.com/uv-genai/gufo-tp/pull/27), merged **`ae8a93c3`**, closes #26 |
-| Package version | `version.txt` is **0.29.0** from the upstream tag; the latest dated TP2 release remains based on v0.28.1 |
+| Package version | `version.txt` is **0.30.0** from the upstream tag; the latest dated TP2 release remains based on v0.28.1 |
 
 Separate branches and validated PRs precede code merges. Every published tag
 must have a GitHub Release with written notes. Do not move published tags or
@@ -39,12 +39,14 @@ scope for this release.
 
 Both hosts have `/home/ugo/projects/gufo/build/release/gufo`:
 
-- Compiled revision **`3ea5054d6256266d9e48199e0665897019a5859f`**.
-- SHA-256 **`43be578145df68a7cf15a7e391910269fdc9763fbde3d8a251a122970f549da4`**.
-- Production code includes the v0.29.0 extension migration and TP snapshot
-  alignment repair; later commits change CI policy and documentation only.
-- The binary reports `gufo version development (3ea5054d...)`. Do not confuse
+- Compiled revision **`7f0d93f232ae2337e851706bc8479ed5db9563dc`**.
+- SHA-256 **`9ad8a5a3b4d81a53f2eb6bed136e97a2f894da661c1cd45bd70826bcdee54f7a`**.
+- Production code includes the v0.30.0 multi-checkpoint integration and the
+  retained mirrored TP snapshot path; later commits change documentation only.
+- The binary reports `gufo version development (7f0d93f2...)`. Do not confuse
   its compiled revision with the squash commit or the release documentation commit.
+- The v0.29.0 baseline `3ea5054d…` (SHA `43be5781…`) is retained on both
+  hosts at `artifacts/upstream-2026-11-06/gufo-main-v0.29.0`.
 - The v0.28.1 baseline `85ae8ce2…` (SHA `653edd21…`) is retained on both
   hosts at `artifacts/upstream-2026-11-06/gufo-main-v0.28.1`.
 - Previous binary `37feeaad…` is retained on both hosts at
@@ -99,9 +101,10 @@ Q4 file on rank 1; inspect both rank logs before diagnosing a collective bug.
 
 ## Current upstream validation
 
-See the [merge record](docs/MERGE-UPSTREAM-2026-11-06.md) for the v0.29.0
+See the [merge record](docs/MERGE-UPSTREAM-2026-11-06.md) for the v0.29.0 and v0.30.0
 build, CPU/GPU tests, four TP2 modes and per-request timing controls. Raw
-evidence is retained under `artifacts/upstream-2026-11-06/v0.29.0/`.
+evidence is retained under the corresponding version directories in
+`artifacts/upstream-2026-11-06/`.
 TP protocol is 22, snapshot payload is 20, and TP2 retains its mirrored
 snapshot path with component caching disabled. Static YaRN has a distinct
 persistence identity. Older peers or persisted states must not be mixed.

@@ -150,6 +150,7 @@ public:
               std::to_string(static_cast<unsigned>(e.action)) +
               " reason=" + std::to_string(static_cast<unsigned>(e.reason)) +
               " tokens=" + std::to_string(e.boundary) +
+              " purpose=" + std::to_string(static_cast<unsigned>(e.purpose)) +
               " rank=" + std::to_string(e.rank) +
               " unique_bytes_freed=" + std::to_string(e.unique_bytes_freed) +
               " ledger_bytes=" + std::to_string(e.ledger_bytes));
@@ -976,7 +977,7 @@ std::size_t ComponentTextCache::capacity() const noexcept {
 
 std::unique_ptr<ComponentTextCache::Lease> ComponentTextCache::Acquire(
     std::span<const ContinuationToken> prompt,
-    const ContinuationCache::CancellationCheck& cancelled,
+    const std::function<bool()>& cancelled,
     std::shared_ptr<const TextPromptContext> context, bool reuse,
     std::size_t stable, bool stop_at_eos, bool persist) {
   if (cancelled && cancelled())
@@ -1820,11 +1821,6 @@ std::vector<std::size_t> ComponentTextCache::Lease::PlannedCaptures(
       boundaries.push_back(capture.boundary);
   return boundaries;
 }
-std::vector<std::size_t> ServingCacheLease::PlannedCaptures(
-    std::size_t stable) const {
-  return component_->PlannedCaptures(stable);
-}
-
 ComponentCacheMetrics ComponentTextCache::Lease::Metrics() const {
   auto report = impl_->metrics;
   report.ledger = impl_->cache->ledger.Snapshot();
@@ -1843,6 +1839,12 @@ ComponentCacheMetrics ComponentTextCache::Lease::Metrics() const {
   }
   return report;
 }
+
+std::vector<std::size_t> ServingCacheLease::PlannedCaptures(
+    std::size_t stable) const {
+  return component_->PlannedCaptures(stable);
+}
+
 std::optional<ComponentCacheMetrics> ServingCacheLease::Metrics() const {
   return component_ ? std::optional(component_->Metrics()) : std::nullopt;
 }

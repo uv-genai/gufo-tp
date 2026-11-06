@@ -44,16 +44,17 @@ public:
     [[nodiscard]] bool restored_from_disk() const noexcept;
     [[nodiscard]] ContinuationLookup lookup() const noexcept;
     [[nodiscard]] bool HasSnapshotFor(std::span<const ContinuationToken>) const;
-    [[nodiscard]] bool TryReserveSnapshot(std::size_t, std::size_t, bool,
-                                          SnapshotPurpose,
-                                          std::span<const ContinuationToken>);
+    [[nodiscard]] bool TryReserveSnapshot(
+        std::size_t, std::size_t, bool = false,
+        SnapshotPurpose = SnapshotPurpose::kContinuation,
+        std::span<const ContinuationToken> = {});
     void SkipSnapshot(SnapshotEventReason, std::size_t, std::size_t) noexcept;
     std::size_t PublishSnapshot(std::vector<ContinuationToken>,
                                 std::shared_ptr<const ContinuationSnapshot>,
-                                bool);
+                                bool = false);
     std::size_t Commit(std::vector<ContinuationToken>,
-                       std::shared_ptr<const ContinuationSnapshot>,
-                       std::vector<ContinuationToken>);
+                       std::shared_ptr<const ContinuationSnapshot> = {},
+                       std::vector<ContinuationToken> = {});
     void Invalidate() noexcept;
     [[nodiscard]] std::size_t CaptureBytes() const;
     [[nodiscard]] std::size_t CaptureBytes(std::size_t boundary) const;
@@ -79,8 +80,7 @@ public:
                      bool ram_enabled = true);
   ~ComponentTextCache();
   [[nodiscard]] std::unique_ptr<Lease> Acquire(
-      std::span<const ContinuationToken>,
-      const ContinuationCache::CancellationCheck&,
+      std::span<const ContinuationToken>, const std::function<bool()>&,
       std::shared_ptr<const TextPromptContext>, bool, std::size_t, bool,
       bool persist = true);
   // A disk job is writing a prefix of the prompt much deeper than any

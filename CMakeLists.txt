@@ -243,12 +243,17 @@ if (ENGINE_ENABLE_HIP)
   add_library(gufo_cache_hip STATIC
     src/core/hip/committed_backing.cpp
     src/core/hip/component_cache_resources.cpp
+    src/core/hip/snapshot_copy.hip
     src/core/hip/staging.cpp
     src/core/hip/transfer_pool.cpp)
   target_link_libraries(gufo_cache_hip PUBLIC gufo_cache gufo_hip_host hip::host)
   if (BUILD_TESTING)
     target_compile_options(gufo_cache_hip PRIVATE -UNDEBUG)
   endif()
+  # The link contract for extension adapters. It carries no include path: the
+  # headers come from the audited public surface of gufo_ext_runtime.
+  add_library(gufo_ext_cache INTERFACE)
+  target_link_libraries(gufo_ext_cache INTERFACE $<LINK_ONLY:gufo_cache_hip>)
   if (GUFO_BUILD_TOOLS)
     add_executable(cache_idle_spill_bench tests/cache/idle_spill_bench.cpp)
     target_link_libraries(cache_idle_spill_bench PRIVATE gufo_cache_hip)
@@ -330,7 +335,6 @@ endif()
 
 if (ENGINE_ENABLE_HIP)
   target_sources(gufo_core PRIVATE
-    src/core/hip/snapshot_copy.hip
     src/core/hip/weight_upload.cpp
     src/core/speculative/speculative_verifier.cpp
   )
@@ -952,8 +956,20 @@ endfunction()
   set_tests_properties(component_text_cache_test PROPERTIES
     LABELS "cpu;server;cache;state;lifecycle" COST 70)
 
+  # TP2 retains mirrored native snapshots; exercise them independently of
+  # upstream's component-owned single-host fixtures.
+  add_executable(tp_snapshot_runner_test tests/cli/tp_snapshot_runner_test.cpp)
+  target_link_libraries(tp_snapshot_runner_test PRIVATE gufo_serving ${GUFO_QWEN_LIBRARIES})
+  add_test(NAME tp_snapshot_runner_test COMMAND tp_snapshot_runner_test)
+  set_tests_properties(tp_snapshot_runner_test PROPERTIES LABELS "cpu;server;cache;tp2")
+
+  add_executable(tp_snapshot_scheduler_test tests/cli/tp_snapshot_scheduler_test.cpp)
+  target_link_libraries(tp_snapshot_scheduler_test PRIVATE gufo_serving ${GUFO_QWEN_LIBRARIES})
+  add_test(NAME tp_snapshot_scheduler_test COMMAND tp_snapshot_scheduler_test)
+  set_tests_properties(tp_snapshot_scheduler_test PROPERTIES LABELS "cpu;server;cache;tp2")
+
   add_executable(text_model_runner_test tests/cli/text_model_runner_test.cpp)
-  target_link_libraries(text_model_runner_test PRIVATE gufo_serving
+  target_link_libraries(text_model_runner_test PRIVATE gufo_cache_fake gufo_serving
     ${GUFO_QWEN_LIBRARIES})
   add_test(NAME text_model_runner_test COMMAND text_model_runner_test)
   set_tests_properties(text_model_runner_test PROPERTIES
@@ -978,7 +994,8 @@ endfunction()
 
   add_executable(text_generation_scheduler_test
     tests/cli/text_generation_scheduler_test.cpp)
-  target_link_libraries(text_generation_scheduler_test PRIVATE gufo_serving)
+  target_link_libraries(text_generation_scheduler_test PRIVATE gufo_cache_fake
+    gufo_serving)
   add_test(NAME text_generation_scheduler_test
     COMMAND text_generation_scheduler_test)
   set_tests_properties(text_generation_scheduler_test PROPERTIES

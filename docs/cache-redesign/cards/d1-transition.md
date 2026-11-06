@@ -1,5 +1,10 @@
 # D1 · One cache at a time, one switch-over
 
+
+Gufo-TP integration note: the upstream single-host retirement below does not
+remove the fork's mirrored TP2 snapshot path. TP2 retains native snapshot RAM
+and disk stores plus independent regression suites until a component adapter
+can mirror all state and collective operations.
 **Type:** decision · **Blocks:** 19 · **Status:** agreed
 
 ## Decision
@@ -50,4 +55,9 @@ unreviewable PR.
   other modes and `--cache-disk` lose reuse until later cards.
 
 ## Review notes
+
+Serving did not follow this plan. Runners opt in through
+`TextModelRunner::UsesComponentCache()`, so each model moved on its own and both
+caches run side by side until the last runner migrates. Issue #1002 removes the
+legacy cache after that.
 

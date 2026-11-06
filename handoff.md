@@ -30,7 +30,8 @@ Historical dated handoffs in `~/gufo-merge-handoff/HANDOFF-*.md` are **archive o
 | Development | **`main` → `uv-genai/main`**; review branch **`codex/fix-tp2-review-findings`**, validated before PR merge |
 | Push | **`uv-genai` only** → https://github.com/uv-genai/gufo-tp.git |
 | Upstream | `origin` → gufo-org/gufo; local track **`gufo-org`** — **never push** |
-| Review code | **`c1e4cc38`** contains the request-control and Q8 fixes; main control is **`78d8a4bf`**; previous release code **`2a7c0262`** = **`tp2-rdma-merge-v0.28.1-2026-11-04`** (PR #20 squash) |
+| Review PR | [#25](https://github.com/uv-genai/gufo-tp/pull/25) |
+| Review code | **`a40b1616`** contains the request-control/Q8 fixes and cache epoch; numerical kernel source **`c1e4cc38`**; main control is **`78d8a4bf`**; previous release code **`2a7c0262`** = **`tp2-rdma-merge-v0.28.1-2026-11-04`** (PR #20 squash) |
 | Upstream merged through | **v0.28.1** (`12effe36`); README tracks through v0.28.1; released |
 | v0.27.0 tag | `tp2-rdma-merge-v0.27.0-2026-10-31` — https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.27.0-2026-10-31 |
 | Release notes | **https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.28.1-2026-11-04** (v0.27.0: …/tp2-rdma-merge-v0.27.0-2026-10-31) |
@@ -48,8 +49,8 @@ directive 2026-10-29) so the tag row shows the notes link.
 | | |
 | --- | --- |
 | Path | `build/release/gufo` on **both** hosts |
-| sha256 | **`a023022c3c36df856cbbfb07e3a05f7fa9be3bdd17869c337ba4ac9fa6093000`** — validated on both hosts |
-| Built from | **`c1e4cc38`** (request controls and paired Q8 expert fix); original v0.28.1 binary (`42aded09…`, source `2a7c0262`) retained on both hosts at `artifacts/tp2-review-fixes-2026-11-06/gufo-main` |
+| sha256 | **`37feeaadddc1e870eb48427e8239c445106ec8e203363731de2c1642c5d909f1`** — validated on both hosts |
+| Built from | **`a40b1616`** (request controls, paired Q8 expert fix and persistence numerical epoch); original v0.28.1 binary (`42aded09…`, source `2a7c0262`) retained on both hosts at `artifacts/tp2-review-fixes-2026-11-06/gufo-main` |
 | TP2 smoke | **2026-11-04 PASS 10/10** on both hosts, sha `42aded09…` matched; `/ready` 200; PONG, 3481-tok long, short eBPF NL content asserts, 5× session, 2× agent prefix; logs free of `tp_pair_lost`/mismatch/status5; only expected `q8_0_expanded` WARN (168 tensors) |
 | Review-fix validation | **2026-11-06 PASS 171 functional checks**, Q8 TP2 AR/MTP, sessions 2, context 524288, YaRN 2; actual MTP drafts, cache bypass/RAM/disk restart, budgeted reasoning and constraints. Release SHA above matches on both hosts. Evidence `artifacts/tp2-review-fixes-2026-11-06/validation-3/`. GPU operators **3/3**, CPU PR checks **80/80**. Timing remains advisory as detailed in §5. |
 | Pre-fix GPU recheck | **2026-11-06 PASS 22/22**, same existing binary and matching launchers on both hosts. Q8 TP2 + MTP, sessions **2**, context **524288**, YaRN **2.0**, HTTP **8322**. PONG; **3877-token** prompt across 3 prefill chunks; short eBPF content assertions; 5 session-reuse requests; exact greedy agent replay with **85 cached tokens**; 3 concurrent requests with **2 active / 1 queued**; 9 tool/JSON/streaming/mixed-concurrency cases. Metrics: **811 proposed / 720 accepted MTP draft tokens**. `/ready` remained 200; both logs free of collective/peer/error failures; only expected `q8_0_expanded` WARN. Both owned ranks stopped; both GPUs idle and test/bootstrap/control ports released. |
@@ -140,7 +141,7 @@ Prompt lookup type: **`speculative::PromptLookup<>`** (moved in v0.22), payload 
 - [#24](https://github.com/uv-genai/gufo-tp/issues/24): larger Q8 prefills exposed a pre-existing paired expert bug. Layer 0's MoE input matched but output differed; the independent operator test found zero paired gate/up results. The kernel now decodes signed Q8 code halves with their scale and supports 64-element K stages. Byte-exact TP/full-width route tests and numerical/operator checks pass.
 
 CPU regressions **2/2**, Linux PR checks **80/80**, GPU attention/projection/routed
-operator suites **3/3**, formatting **723 C++ files** and documentation links
+operator suites **3/3**, formatting **723 C++ files with clang-format 21 and 23** and documentation links
 pass. Candidate serving runs and all failed investigations are retained under
 `artifacts/tp2-review-fixes-2026-11-06/`. `validation-3/summary.json` passes:
 **96** reasoning-budget checks (48 each in AR/MTP), **18** long-context and
@@ -164,6 +165,15 @@ See `docs/models/qwen3.8-flash-next/QUALITY.md` for that retained diagnostic
 and the added grouped/single-query operator check. This is not a claim of
 full-model byte-identical sparse logits across chunk layouts. Both owned ranks
 are stopped after validation; test ports are released.
+The final identity epoch rejects disk states computed by the old Q8 projection
+path. The previous main binary primes a real two-rank cache; the upgraded
+binary must miss and prefill all tokens. This and fresh AR/MTP seed/restart
+coverage pass in `final-cache-validation-1/`: **50** cache/upgrade checks and
+**9** MTP constraint checks, including the old-binary primer. The final release
+source is `a40b1616`, with the SHA above on both hosts. Linux PR checks pass
+**80/80** again. The four pre-existing format differences found by hosted CI
+are now compatible with clang-format **21 and 23**, both **723/723**.
+
 The user reports a completed Q4 re-download; current validation uses Q8.
 
 **Executor-test relevance audit (2026-11-06): keep the test.** It runs the current

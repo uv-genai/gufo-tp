@@ -705,6 +705,11 @@ bool GgufReader::ParseHeaders(std::string* error_msg) {
     tensors_.push_back(std::move(info));
   }
 
+  // Metadata-only shards have no tensor payload to align. Writers may end
+  // these files immediately after metadata, without trailing padding.
+  if (tensors_.empty())
+    return true;
+
   // Align data payload base to alignment boundary
   const auto padding = (alignment_ - offset % alignment_) % alignment_;
   if (offset > size_ || padding > size_ - offset)

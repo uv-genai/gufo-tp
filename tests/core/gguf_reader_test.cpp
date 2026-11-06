@@ -134,6 +134,10 @@ public:
       AppendPod(t.offset);
     }
 
+    // Metadata-only shards may end without a tensor data section or padding.
+    if (tensors_to_write_.empty() && payload_bytes == 0)
+      return buffer_;
+
     // Align to 32 bytes
     std::size_t rem = buffer_.size() % 32;
     if (rem != 0) {
@@ -330,6 +334,75 @@ void WriteBinaryFile(const std::filesystem::path& path,
   out.write(reinterpret_cast<const char*>(data.data()),
             static_cast<std::streamsize>(data.size()));
   Expect(out.good(), "Write GGUF test shard");
+}
+
+void TestMetadataOnlyGguf() {
+  for (const auto version : {2U, 3U}) {
+    auto empty = GgufBuilder(version).Build(0);
+    auto reader =
+        gufo::core::GgufReader::OpenMemory(empty.data(), empty.size());
+    Expect(reader && reader->GetTensorCount() == 0,
+           "Empty GGUF needs no data padding");
+
+    GgufBuilder builder(version);
+    builder.AddMetadataString("general.architecture", "qwen35");
+    auto bytes = builder.Build(0);
+    Expect(bytes.size() % 32 != 0, "Metadata fixture has no alignment padding");
+    reader = gufo::core::GgufReader::OpenMemory(bytes.data(), bytes.size());
+    Expect(reader && reader->GetTensorCount() == 0 &&
+               reader->GetMetadataString("general.architecture") == "qwen35",
+           "Unpadded metadata-only GGUF retains metadata");
+
+    bytes.pop_back();
+    std::string error;
+    Expect(!gufo::core::GgufReader::OpenMemory(bytes.data(), bytes.size(),
+                                               &error) &&
+               !error.empty(),
+           "Truncated metadata is still rejected without tensors");
+  }
+}
+
+void TestMetadataOnlySplitShard() {
+  const auto temp_dir =
+      std::filesystem::temp_directory_path() /
+      ("gufo-gguf-metadata-" + std::to_string(static_cast<long>(getpid())));
+  std::filesystem::create_directories(temp_dir);
+  const auto first_path = temp_dir / "model-00001-of-00002.gguf";
+  const auto second_path = temp_dir / "model-00002-of-00002.gguf";
+
+  GgufBuilder first;
+  first.AddMetadataString("general.architecture", "qwen35");
+  first.AddMetadataUint32("split.no", 0);
+  first.AddMetadataUint32("split.count", 2);
+  first.AddMetadataInt32("split.tensors.count", 1);
+  const auto metadata = first.Build(0);
+  Expect(metadata.size() % 32 != 0, "First shard ends before data alignment");
+  WriteBinaryFile(first_path, metadata);
+
+  GgufBuilder second;
+  second.AddMetadataUint32("split.no", 1);
+  second.AddMetadataUint32("split.count", 2);
+  second.AddMetadataInt32("split.tensors.count", 1);
+  second.AddTensor("output_norm.weight", {4}, gufo::core::GgmlType::kF32, 0);
+  WriteBinaryFile(second_path, second.Build(16));
+
+  for (const auto& path : {first_path, second_path}) {
+    std::string error;
+    const auto reader = gufo::core::GgufReader::OpenFile(path, &error);
+    Expect(reader != nullptr,
+           "Metadata-only split opens from either shard: " + error);
+    Expect(reader->GetTensorCount() == 1 &&
+               reader->GetMetadataString("general.architecture") == "qwen35",
+           "Split reader combines metadata and tensor shards");
+    const auto* tensor = reader->FindTensor("output_norm.weight");
+    Expect(tensor && tensor->size_bytes == 16, "Weight tensor has full extent");
+    const auto* data = static_cast<const std::uint8_t*>(tensor->data);
+    Expect(data[0] == 0xAB && data[15] == 0xAB,
+           "Tensor payload remains readable from the weight shard");
+    Expect(reader->GetMappedRegions().size() == 2,
+           "Both metadata and weight mappings remain alive");
+  }
+  std::filesystem::remove_all(temp_dir);
 }
 
 void TestSplitGgufDiscovery() {
@@ -534,6 +607,9 @@ void TestHostileHeaders() {
     bytes.pop_back();
     rejects(bytes);  // Tensor start fits, final byte does not.
     bytes = original;
+    bytes.resize(57);  // Tensor descriptor fits, but data padding is absent.
+    rejects(bytes);
+    bytes = original;
     patch(bytes, 37, UINT64_MAX);  // Dimension/product overflow.
     rejects(bytes);
     bytes = original;
@@ -673,6 +749,8 @@ int main() {
   std::cout << "Running GgufReader unit tests...\n";
   TestBasicGgufParsing();
   TestQwen38_27BParsing();
+  TestMetadataOnlyGguf();
+  TestMetadataOnlySplitShard();
   TestSplitGgufDiscovery();
   TestVisionExclusionValidation();
   TestQuantizationLabel();

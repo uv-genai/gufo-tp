@@ -422,7 +422,8 @@ std::vector<double> Fp64Attention(
 /// cache and reports the worst absolute error of the gated context.
 double Compare(std::uint32_t n_tokens, std::uint32_t start_pos, bool masked,
                std::uint32_t seed, bool sparse = false, bool bounded = false,
-               std::uint32_t mask_words_override = 0) {
+               std::uint32_t mask_words_override = 0,
+               bool check_chunks = false) {
   const std::uint32_t n_kv = start_pos + n_tokens;
   const std::uint32_t max_blocks = (n_kv + kRatio - 1) / kRatio;
   const std::uint32_t mask_words =
@@ -536,6 +537,34 @@ double Compare(std::uint32_t n_tokens, std::uint32_t start_pos, bool masked,
 
   const auto ref = Download(&d_ref, q_count);
   const auto out = Download(&d_wmma, q_count);
+  if (check_chunks) {
+    for (std::uint32_t t = 0; t < n_tokens; ++t) {
+      const auto offset = std::size_t(t) * kQWidth;
+      if (!q::WmmaCausalAttention(
+              d_q.get() + offset, d_gate.get() + offset, d_k.get(), d_v.get(),
+              mask_ptr + std::size_t(t) * mask_words, mask_words,
+              d_wmma.get() + offset, 1, start_pos + t, kHeads, kKvHeads, kDim,
+              kRatio, nullptr))
+        throw std::runtime_error(
+            "single-query sparse attention rejected geometry");
+    }
+    const auto chunked = Download(&d_wmma, q_count);
+    double difference = 0.0, error = 0.0;
+    for (std::size_t i = 0; i < q_count; ++i) {
+      if (!std::isfinite(chunked[i]))
+        throw std::runtime_error("single-query sparse attention is not finite");
+      difference = std::max(difference, std::abs(double(out[i] - chunked[i])));
+      error = std::max(error, std::abs(double(ref[i] - chunked[i])));
+    }
+    std::cout << "sparse query grouping: max difference " << difference
+              << ", single-query reference error " << error << '\n';
+    // Sparse query groups compact a different union of keys, changing the
+    // FP16 probability-rounding boundaries. Both geometries retain the
+    // existing WMMA envelope against the independently qualified reference.
+    if (error >= 2e-2)
+      throw std::runtime_error(
+          "single-query sparse attention exceeds its envelope");
+  }
   if (!q::WmmaCausalAttention(d_q.get(), d_gate.get(), d_k.get(), d_v.get(),
                               mask_ptr, mask_words, d_wmma.get(), n_tokens,
                               start_pos, kHeads, kKvHeads, kDim, kRatio,
@@ -1043,6 +1072,9 @@ void CheckWmmaLiveExtent() {
 
 int main() {
   try {
+    if (Compare(7, 2829, true, 0xC811U, true, true, 0, true) >= 2e-2)
+      throw std::runtime_error("grouped sparse attention exceeds its envelope");
+    CheckRankSlices(7, 2829, true, true, 0xC811U);
     CheckChunks(136, 94);
     CheckChunks(2048, 1025);
     CheckRankSlices(100, 0, false, false, 0x51C3U);

@@ -252,10 +252,13 @@ request's states and snapshots are not reused.
 - `qwen38_flash_next.tp_partition` and the attention, projection and routed
   operator tests: the split against the full kernels.
 - `qwen38_flash_next_tp_probe` (`gpu-tp2`): prompt, decode and logit
-  comparison on both ranks; `--split N` checks that a prefill does not depend
-  on its steps (every layer's MoE input and output, and the logits, bit for
-  bit), `--decode-tail K` compares decoding the last K tokens with
-  prefilling them.
+  comparison on both ranks; `--split N` reports MoE row hashes and logit
+  differences across prefill steps, and `--decode-tail K` compares decoding
+  the last K tokens with prefilling them. Sparse attention compacts a union
+  of query selections and rounds queries/probabilities to FP16: changing
+  query groups can change rounding. Its independent operator envelope is
+  documented in [QUALITY.md](QUALITY.md); full-model sparse logits need not
+  be byte-identical across chunk layouts.
 - `qwen38_flash_next_tp_batched_probe` (`gpu-tp2`): batched against serial
   decoding on both ranks without the serving stack; `--allreduce-bench N`
   times the exchange.

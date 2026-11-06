@@ -38,11 +38,11 @@ class Check:
                     row['response'] = result
                     choice = result['choices'][0]
                     text = (choice.get('message') or {}).get('content', choice.get('text', '')) or ''
-                    usage = result['usage']
+                    usage, timings = result['usage'], result.get('timings')
                     echo = result.get('cache_persist')
                     finish = choice['finish_reason']
                 else:
-                    chunks, text, usage, echo, finish, done = [], '', None, None, None, False
+                    chunks, text, usage, timings, echo, finish, done = [], '', None, None, None, None, False
                     row['chunks'] = chunks
                     for line in response:
                         if not line.startswith(b'data: '):
@@ -55,6 +55,8 @@ class Check:
                         chunks.append(chunk)
                         if chunk.get('usage'):
                             usage = chunk['usage']
+                        if chunk.get('timings'):
+                            timings = chunk['timings']
                         if 'cache_persist' in chunk:
                             echo = chunk['cache_persist']
                         for choice in chunk.get('choices', []):
@@ -63,10 +65,17 @@ class Check:
                     assert done and usage and finish, 'incomplete SSE response'
             assert text.strip(), 'empty completion'
             assert echo is body.get('cache_persist', True), ('cache_persist echo', echo)
-            assert usage['cached_tokens'] + usage['gufo']['prefill_tokens'] == usage['prompt_tokens'], usage
-            row.update(text=text, usage=usage, finish=finish, passed=True)
+            if endpoint == '/v1/chat/completions':
+                metrics = usage['gufo']
+            else:
+                # Raw Completions reports prefill/cache work in timings. Disk
+                # hits and persistence are verified by cached work after restart.
+                assert timings['cache_n'] == usage['cached_tokens'], (timings, usage)
+                metrics = {'prefill_tokens': timings['prompt_n']}
+            assert usage['cached_tokens'] + metrics['prefill_tokens'] == usage['prompt_tokens'], usage
+            row.update(text=text, usage=usage, metrics=metrics, finish=finish, passed=True)
             print(f"PASS {name}: prompt={usage['prompt_tokens']} cached={usage['cached_tokens']} "
-                  f"disk={usage['gufo']['cache_disk_hit']} drafts={usage['draft_tokens']}", flush=True)
+                  f"disk={metrics.get('cache_disk_hit', 'unreported')} drafts={usage['draft_tokens']}", flush=True)
             return row
         except urllib.error.HTTPError as error:
             row.update(error=error.read().decode(), status=error.code, passed=False)
@@ -104,18 +113,22 @@ def seed(check):
             key = ('chat' if chat else 'raw') + ('-stream' if stream else '-buffered')
             private = {**payload('PRIVATE_' + key, chat, stream), 'cache_persist': False}
             first = check.call(key + '-private', endpoint, private)
+            assert first['text'].strip() == 'BETA', first
             assert first['usage']['prompt_tokens'] > 2048, first
-            assert first['usage']['gufo']['cache_disk_queued_bytes'] == 0, first
+            if chat:
+                assert first['metrics']['cache_disk_queued_bytes'] == 0, first
             again = check.call(key + '-ram-replay', endpoint, private)
             assert again['text'] == first['text'], (first, again)
             assert again['usage']['cached_tokens'] >= first['usage']['prompt_tokens'] - 16, again
-            assert again['usage']['gufo']['cache_disk_queued_bytes'] == 0, again
+            if chat:
+                assert again['metrics']['cache_disk_queued_bytes'] == 0, again
             bypass = check.call(key + '-bypass', endpoint, {**private, 'cache_prompt': False})
             assert bypass['usage']['cached_tokens'] == 0, bypass
             assert bypass['text'] == first['text'], (first, bypass)
             control = payload('PUBLIC_' + key, chat, stream)
             public = check.call(key + '-public', endpoint, control)
-            assert public['usage']['gufo']['cache_disk_queued_bytes'] > 0, public
+            if chat:
+                assert public['metrics']['cache_disk_queued_bytes'] > 0, public
             manifest.append({'key': key, 'endpoint': endpoint,
                              'private': private, 'private_text': first['text'],
                              'public': control, 'public_text': public['text']})
@@ -127,13 +140,15 @@ def restore(check, manifest):
         key, endpoint = case['key'], case['endpoint']
         public = check.call(key + '-disk-restore', endpoint,
                             {**case['public'], 'cache_persist': False})
-        assert public['usage']['gufo']['cache_disk_hit'], public
+        if endpoint == '/v1/chat/completions':
+            assert public['metrics']['cache_disk_hit'], public
         assert public['usage']['cached_tokens'] >= public['usage']['prompt_tokens'] - 16, public
         assert public['text'] == case['public_text'], public
         private = check.call(key + '-not-persisted', endpoint, case['private'])
-        assert not private['usage']['gufo']['cache_disk_hit'], private
+        if endpoint == '/v1/chat/completions':
+            assert not private['metrics']['cache_disk_hit'], private
+            assert private['metrics']['cache_disk_queued_bytes'] == 0, private
         assert private['usage']['cached_tokens'] < 64, private
-        assert private['usage']['gufo']['cache_disk_queued_bytes'] == 0, private
         assert private['text'] == case['private_text'], private
 
 

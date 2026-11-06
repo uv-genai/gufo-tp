@@ -23,6 +23,9 @@ Repeat with `--mode off` for AR. This checks buffered and streamed chat and raw
 completions, preserves RAM reuse with `cache_persist: false`, bypasses lookup
 with `cache_prompt: false`, and proves only the unflagged controls restore
 from disk after restart. Every request, stream chunk and phase time is retained.
+Raw Completions reports prefill/cache counts in `timings`; its persistence
+verdict uses cached work after restart. Chat additionally checks its explicit
+disk-hit and queued-byte metrics in `usage.gufo`.
 The runner uses an existing pair and never launches a GPU process. Its
 `--phase timing` workload provides a small identical-history main/candidate
 control; compare each request and phase at the usual 5% and 10-ms thresholds.

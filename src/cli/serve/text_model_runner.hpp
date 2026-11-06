@@ -31,6 +31,7 @@ using ext::InitialOutputState;
 using ext::kHostSnapshotHeadroomBytes;
 using ext::MeminfoAvailableBytes;
 using ext::ParseRamCacheOption;
+using ext::ReasoningMarkup;
 using ext::TextDecodeSelection;
 using ext::TextDecodeStep;
 using ext::TextExecutionPlan;
@@ -196,12 +197,14 @@ private:
 
 /// Build output constraints and attach server-authored instructions as framing,
 /// preserving client message content and the model's native prompt layout.
-/// `initial` replaces runner.InitialOutputState(request), for a TP2 worker
-/// that rebuilds rank 0's constraint without the request's messages.
+/// `tool_dialect` receives the provider identity used to constrain and parse
+/// calls. `initial` replaces runner.InitialOutputState(request), for a TP2
+/// worker that rebuilds rank 0's constraint without the request's messages.
 [[nodiscard]] std::optional<ChatRequest> ConstrainChatRequest(
     const ChatRequest& request, const TextModelRunner& runner,
     sampling::SamplingConfig* sampling,
     std::optional<sampling::JsonConstraint::ToolFormat>* tool_format = nullptr,
+    std::string* tool_dialect = nullptr,
     std::optional<TextGenerationBackend::InitialOutputState> initial =
         std::nullopt);
 

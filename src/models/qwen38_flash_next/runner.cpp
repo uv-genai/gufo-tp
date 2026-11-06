@@ -30,6 +30,7 @@
 #include "src/models/qwen38_flash_next/continuation_identity.hpp"
 #include "src/models/qwen38_flash_next/engine.hpp"
 #include "src/models/qwen38_flash_next/kernels/rocm/executor.hpp"
+#include "src/models/qwen38_flash_next/probe.hpp"
 #include "src/models/qwen38_flash_next/rope_scaling.hpp"
 
 namespace gufo::models::qwen38_flash_next {
@@ -480,7 +481,7 @@ public:
                 .max_in_pass_checkpoints = rocm::kMaxPassCheckpoints,
             },
         .persistence = persistence_,
-        .sampling_preset = sampling::TextModelPreset::kQwen38,
+        .sampling_defaults = FlashNextSamplingDefaults(),
     };
   }
 
@@ -1247,6 +1248,13 @@ std::shared_ptr<ext::TextModelRunner> CreateQwenFlashNextTextRunner(
   if (!model) {
     if (error)
       *error = "Failed to load Flash-Next model: " + load_error;
+    return nullptr;
+  }
+  try {
+    models::qwen::vision::PrepareForServing(model->VisionEncoder());
+  } catch (const std::exception& e) {
+    if (error)
+      *error = e.what();
     return nullptr;
   }
   // Each eight rows of wide copy verification past the first reserve

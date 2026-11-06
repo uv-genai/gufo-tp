@@ -197,11 +197,14 @@ std::shared_ptr<const sampling::TokenConstraint> RebuildConstraint(
     request.response_format =
         ParseResponseFormat(&format, source.response_format_responses);
   }
+  if (source.initial_output >
+      static_cast<std::uint8_t>(ext::InitialOutputState::kContent))
+    throw std::invalid_argument("unknown constraint initial output state");
+  request.reasoning.enabled = source.reasoning_enabled;
   sampling::SamplingConfig config;
   (void)ConstrainChatRequest(
-      request, runner, &config, nullptr,
-      source.reasoning ? TextGenerationBackend::InitialOutputState::kReasoning
-                       : TextGenerationBackend::InitialOutputState::kContent);
+      request, runner, &config, nullptr, nullptr,
+      static_cast<ext::InitialOutputState>(source.initial_output));
   if (config.constraint == nullptr)
     throw std::invalid_argument("the source describes no constraint");
   return config.constraint;
@@ -711,6 +714,14 @@ TextModelRunner::DeviceProbeStatus TpMirroredRunner::PollDevice() const {
 
 bool TpMirroredRunner::DeviceUsable() const {
   return inner_->DeviceUsable();
+}
+
+std::string TpMirroredRunner::ToolDialectId() const {
+  return inner_->ToolDialectId();
+}
+
+ext::ReasoningMarkup TpMirroredRunner::ReasoningDelimiters() const {
+  return inner_->ReasoningDelimiters();
 }
 
 TextModelRunner::ReasoningTags TpMirroredRunner::ReasoningBudgetTags() const {

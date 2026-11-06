@@ -65,6 +65,10 @@ void TestSnapshotPrefillAlignment() {
        .prefill_alignment = 2},
       4);
   auto seed = cache.Acquire(Tokens{1, 2, 3, 4, 5});
+  Expect(seed.TryReserveSnapshot(sizeof(std::size_t), 2),
+         "reserve span fallback");
+  Expect(seed.PublishSnapshot({1, 2}, std::make_shared<FakeSnapshot>(2)) != 0,
+         "publish span fallback");
   Expect(seed.TryReserveSnapshot(sizeof(std::size_t), 4),
          "reserve aligned fallback");
   Expect(seed.PublishSnapshot({1, 2, 3, 4},
@@ -87,6 +91,13 @@ void TestSnapshotPrefillAlignment() {
              dynamic_cast<FakeState&>(retry.state()).value == 5,
          "exact retry restores the unaligned snapshot");
   retry.Invalidate();
+  auto span = cache.Acquire(
+      Tokens{1, 2, 3, 4, 5, 6}, {}, {}, {}, true, 0, {},
+      [](std::size_t position) { return position <= 2 || position >= 6; });
+  Expect(span.cached_tokens() == 2 &&
+             dynamic_cast<FakeState&>(span.state()).value == 2,
+         "native RAM restore skips checkpoints inside an indivisible input");
+  span.Invalidate();
 }
 
 void TestBorrowedSnapshotPrefersAvailableOwner() {

@@ -123,6 +123,7 @@ struct ToyOptions {
   bool fail_context_decode{false};
   /// Reported instead of the capabilities the options above imply.
   std::optional<TextRunnerCapabilities> capabilities;
+  bool provider_metadata{false};
 };
 
 /// A toy "image": it shifts every logit of the sequence that sees it, and its
@@ -257,6 +258,15 @@ public:
   [[nodiscard]] std::vector<TextRunnerToken> Tokenize(
       std::string_view text) const override {
     return {static_cast<TextRunnerToken>(text.size())};
+  }
+  std::string ToolDialectId() const override {
+    return options_.provider_metadata ? "qwen"
+                                      : TextModelRunner::ToolDialectId();
+  }
+  gufo::ext::ReasoningMarkup ReasoningDelimiters() const override {
+    return options_.provider_metadata
+               ? gufo::ext::ReasoningMarkup{"<ponder>", "</ponder>"}
+               : TextModelRunner::ReasoningDelimiters();
   }
   [[nodiscard]] ReasoningTags ReasoningBudgetTags() const override {
     return {"<think>", "\n</think>", {"</think>", "<tool_call>"}};
@@ -935,6 +945,25 @@ gufo::sampling::SamplingConfig Sampled() {
 }  // namespace
 
 int main() {
+  {
+    struct Context final : gufo::server::TextPromptContext {
+      std::size_t PrefillStop(std::size_t position, bool up) const override {
+        return position > 2 && position < 6 ? (up ? 6 : 2) : position;
+      }
+    };
+    auto inner = std::make_shared<Context>();
+    inner->cache_identity = {7, 8};
+    inner->cache_prefixes = {{2, {3}}};
+    TpRequestContext wrapped(1, inner);
+    Require(
+        std::ranges::equal(wrapped.CacheIdentity(1), inner->CacheIdentity(1)) &&
+            std::ranges::equal(wrapped.CacheIdentity(7),
+                               inner->CacheIdentity(7)) &&
+            wrapped.PrefillStop(4, false) == 2 &&
+            wrapped.PrefillStop(4, true) == 6 &&
+            wrapped.PrefillStop(6, false) == 6,
+        "TP prompt contexts preserve prefix identities and indivisible spans");
+  }
   const std::vector<TextRunnerToken> prompt{5, 9, 13, 17, 21, 3, 8};
 
   // TP2 keeps up with one host: the wrapper reports every capability of the
@@ -957,8 +986,14 @@ int main() {
         .prefill_alignment = 4,
         .max_in_pass_checkpoints = 4,
     };
-    auto toy = std::make_shared<ToyRunner>(ToyOptions{.capabilities = every});
+    auto toy = std::make_shared<ToyRunner>(
+        ToyOptions{.capabilities = every, .provider_metadata = true});
     const TpMirroredRunner runner(toy, std::make_shared<CaptureSink>());
+    Require(
+        runner.ToolDialectId() == "qwen" &&
+            runner.ReasoningDelimiters() ==
+                gufo::ext::ReasoningMarkup{"<ponder>", "</ponder>"},
+        "the mirrored wrapper preserves provider dialect and reasoning markup");
     const std::vector<TextRunnerToken> reasoning_prompt{27, 1};
     const auto budget = runner.BuildReasoningBudget(3, reasoning_prompt);
     Require(budget && budget->tokens == 3 &&

@@ -58,6 +58,8 @@ void qwen38_flash_next_provider_register(gufo::ext::Registry& registry) {
                 error);
       },
 #endif
+      .sampling_defaults =
+          &gufo::models::qwen38_flash_next::FlashNextSamplingDefaults,
   });
 #endif
 }

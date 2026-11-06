@@ -180,6 +180,44 @@ int main() {
     }
   }
 
+  // Auto reasoning waits through leading blanks, then starts at the opener.
+  // A prior content token permanently bypasses the budget on both ranks.
+  for (const auto opener : {0U, 2U}) {
+    for (const bool opens : {false, true}) {
+      TpControlCommand budgeted = command;
+      auto budget = std::make_shared<gufo::sampling::ReasoningBudget>();
+      budget->tokens = 1;
+      budget->forced = {3, 4};
+      budget->ends = {4};
+      budget->opener = opener;
+      auto blank = std::make_shared<std::vector<bool>>(10);
+      (*blank)[8] = (*blank)[9] = true;
+      budget->blank = blank;
+      budgeted.sampling.reasoning_budget = budget;
+      Require(server->SendCommand(budgeted, &server_error), server_error);
+      TpControlCommand got;
+      Require(client->ReceiveCommand(&got, &client_error), client_error);
+      const auto& actual = got.sampling.reasoning_budget;
+      Require(actual && actual->opener == opener && actual->blank &&
+                  *actual->blank == *blank && !actual->partial_utf8,
+              "auto reasoning opener and multi-byte blank mask survive TP");
+      gufo::sampling::SamplerState left(budgeted.sampling), right(got.sampling);
+      const std::vector<std::uint32_t> raw{
+          opens ? 8U : 1U, 9, opener, 1, 1, 1, 1};
+      for (std::size_t step = 0; step < raw.size(); ++step) {
+        std::vector<float> logits(10, -100);
+        logits[raw[step]] = 100;
+        const auto expected =
+            opens && (step == 4 || step == 5) ? step - 1 : raw[step];
+        const auto token = left.Sample(logits);
+        Require(token == expected && right.Sample(logits) == expected,
+                "both ranks wait for the opener and enforce the same budget");
+        left.Accept(token);
+        right.Accept(token);
+      }
+    }
+  }
+
   // A request with images carries its prompt context, byte for byte, and a
   // large one (pixels) crosses the channel in one frame.
   {
@@ -287,14 +325,22 @@ int main() {
                   {.name = "empty"}},
         .tool_choice = 2,
         .parallel_tool_calls = false,
-        .reasoning = true,
+        .initial_output = 1,
+        .reasoning_enabled = true,
     };
-    Require(server->SendCommand(sourced, &server_error), server_error);
-    TpControlCommand got_sourced;
-    Require(client->ReceiveCommand(&got_sourced, &client_error), client_error);
-    Require(got_sourced.constrained &&
-                got_sourced.constraint_source == sourced.constraint_source,
-            "TP C1 command carries the constraint source exactly");
+    for (const std::uint8_t initial : {0, 1, 2}) {
+      for (const bool enabled : {false, true}) {
+        sourced.constraint_source->initial_output = initial;
+        sourced.constraint_source->reasoning_enabled = enabled;
+        Require(server->SendCommand(sourced, &server_error), server_error);
+        TpControlCommand got_sourced;
+        Require(client->ReceiveCommand(&got_sourced, &client_error),
+                client_error);
+        Require(got_sourced.constrained &&
+                    got_sourced.constraint_source == sourced.constraint_source,
+                "TP C1 command carries the constraint source exactly");
+      }
+    }
   }
 
   // An instruction is one model call for rank 1 to execute within the request
@@ -695,6 +741,14 @@ int main() {
   });
   invalid_budget("an oversized reasoning token list",
                  [](auto& budget) { budget.prompt.resize((1U << 20) + 1); });
+  invalid_budget("an invalid reasoning opener",
+                 [](auto& budget) { budget.opener = std::uint32_t{1} << 31; });
+  invalid_budget("an oversized reasoning blank mask", [](auto& budget) {
+    budget.blank = std::make_shared<const std::vector<bool>>((1U << 20) + 1);
+  });
+  invalid_request("an invalid constraint initial state", [](auto& bad) {
+    bad.constraint_source.emplace().initial_output = 3;
+  });
   invalid_budget("an oversized reasoning UTF-8 mask", [](auto& budget) {
     budget.partial_utf8 =
         std::make_shared<const std::vector<bool>>((1U << 20) + 1);

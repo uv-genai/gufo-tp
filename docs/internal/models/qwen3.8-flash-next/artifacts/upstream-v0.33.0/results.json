@@ -1,0 +1,129 @@
+{
+  "functional_checks": {
+    "q4_mtp": 196,
+    "q8_mtp": 166
+  },
+  "studies": [
+    {
+      "study": "q4-baseline",
+      "passed": true,
+      "errors": [],
+      "runs": [
+        {
+          "name": "baseline-mtp",
+          "passed": true,
+          "source_revision": "251757aadea6bf9a03dfb8c4a86c4c351a02486c",
+          "sha256": "ed942b606cf8ee241d705cf806bcac150c8600fe1d45df1d3409cc5829311936",
+          "rank_errors": []
+        }
+      ]
+    },
+    {
+      "study": "q8-baseline",
+      "passed": true,
+      "errors": [],
+      "runs": [
+        {
+          "name": "baseline-mtp",
+          "passed": true,
+          "source_revision": "251757aadea6bf9a03dfb8c4a86c4c351a02486c",
+          "sha256": "ed942b606cf8ee241d705cf806bcac150c8600fe1d45df1d3409cc5829311936",
+          "rank_errors": []
+        }
+      ]
+    },
+    {
+      "study": "q4-candidate",
+      "passed": true,
+      "errors": [],
+      "runs": [
+        {
+          "name": "candidate-mtp",
+          "passed": true,
+          "source_revision": "b325c75c7c602020784e1fa48f9b8290f74c3aa4",
+          "sha256": "85f0be16d16ac11b8933b968ce6e4c060d6538c4ec51ed3938232e323b50d7a7",
+          "rank_errors": []
+        },
+        {
+          "name": "candidate-mtp-restore",
+          "passed": true,
+          "source_revision": "b325c75c7c602020784e1fa48f9b8290f74c3aa4",
+          "sha256": "85f0be16d16ac11b8933b968ce6e4c060d6538c4ec51ed3938232e323b50d7a7",
+          "rank_errors": []
+        }
+      ]
+    },
+    {
+      "study": "q8-candidate",
+      "passed": true,
+      "errors": [],
+      "runs": [
+        {
+          "name": "candidate-mtp",
+          "passed": true,
+          "source_revision": "b325c75c7c602020784e1fa48f9b8290f74c3aa4",
+          "sha256": "85f0be16d16ac11b8933b968ce6e4c060d6538c4ec51ed3938232e323b50d7a7",
+          "rank_errors": []
+        },
+        {
+          "name": "candidate-mtp-restore",
+          "passed": true,
+          "source_revision": "b325c75c7c602020784e1fa48f9b8290f74c3aa4",
+          "sha256": "85f0be16d16ac11b8933b968ce6e4c060d6538c4ec51ed3938232e323b50d7a7",
+          "rank_errors": []
+        }
+      ]
+    },
+    {
+      "study": "q8-timing-followup",
+      "passed": true,
+      "errors": [],
+      "runs": [
+        {
+          "name": "main-repeat",
+          "passed": true,
+          "source_revision": "251757aadea6bf9a03dfb8c4a86c4c351a02486c",
+          "sha256": "ed942b606cf8ee241d705cf806bcac150c8600fe1d45df1d3409cc5829311936",
+          "rank_errors": []
+        },
+        {
+          "name": "candidate-repeat",
+          "passed": true,
+          "source_revision": "b325c75c7c602020784e1fa48f9b8290f74c3aa4",
+          "sha256": "85f0be16d16ac11b8933b968ce6e4c060d6538c4ec51ed3938232e323b50d7a7",
+          "rank_errors": []
+        },
+        {
+          "name": "main-control",
+          "passed": true,
+          "source_revision": "251757aadea6bf9a03dfb8c4a86c4c351a02486c",
+          "sha256": "ed942b606cf8ee241d705cf806bcac150c8600fe1d45df1d3409cc5829311936",
+          "rank_errors": []
+        }
+      ]
+    },
+    {
+      "study": "q8-profile",
+      "passed": true,
+      "errors": [],
+      "runs": [
+        {
+          "name": "candidate",
+          "passed": true,
+          "source_revision": "b325c75c7c602020784e1fa48f9b8290f74c3aa4",
+          "sha256": "85f0be16d16ac11b8933b968ce6e4c060d6538c4ec51ed3938232e323b50d7a7",
+          "rank_errors": []
+        },
+        {
+          "name": "main",
+          "passed": true,
+          "source_revision": "251757aadea6bf9a03dfb8c4a86c4c351a02486c",
+          "sha256": "ed942b606cf8ee241d705cf806bcac150c8600fe1d45df1d3409cc5829311936",
+          "rank_errors": []
+        }
+      ]
+    }
+  ],
+  "timing": "Q4 initial within limits; Q8 inconclusive. Instrumented diagnostics are excluded from speed qualification.",
+  "hosted_linux": "https://github.com/uv-genai/gufo-tp/actions/runs/43004466981"
+}

@@ -74,3 +74,59 @@ The [result index](models/qwen3.8-flash-next/artifacts/upstream-v0.32.0/results.
 and [268 comparisons](models/qwen3.8-flash-next/artifacts/upstream-v0.32.0/timing-comparisons.csv)
 retain every result. Raw build/rank/diagnostic logs remain in
 `artifacts/upstream-2026-11-11/v0.32.0/`.
+
+## v0.33.0
+
+Tag `77dff828`, integrated after [v0.32.0 PR #32](https://github.com/uv-genai/gufo-tp/pull/32)
+(main `68faca6d`). The shared-expert calibration is single-host only: its
+startup MoE calls are not mirrored and would add collectives during TP2 load.
+Decode overlap and prefill layer callbacks retain their single-host gates.
+The snapshot-copy registration-boundary repair and cache retention fixes are
+integrated; native TP snapshots and restore remain available. README/AGENTS
+retain project branding, native setup and the permanent 27B Q8 restriction.
+
+Native PR checks pass 118/118; release build and all three selected GPU
+operators (routed, projection, snapshot copy) pass. Both clang-format 21.1.8
+and 23.1.1 pass, along with docs, metadata, family boundaries and API policy.
+Two initializer layouts are adjusted to satisfy both formatter versions; the
+v0.32.0 hosted format failure is corrected here.
+
+[PR #33](https://github.com/uv-genai/gufo-tp/pull/33) integrates this tag.
+The candidate passes **362 TP2+MTP functional checks**: Q4 196, Q8 166,
+including all declared suites and both restart restorations. Both rank logs
+are clean, actual drafts are observed, and no forced shutdown is needed.
+The four module/CLI follow-ups after the formatter adjustment also pass.
+Hosted [Linux CPU/repository checks](https://github.com/uv-genai/gufo-tp/actions/runs/43004466981)
+and title/API policy pass on code head `b325c75c`; final edits are evidence/docs.
+Windows packaging remains outside this Linux task's scope.
+
+Both deployed binaries are compiled from
+`b325c75c7c602020784e1fa48f9b8290f74c3aa4`, SHA-256
+`85f0be16d16ac11b8933b968ce6e4c060d6538c4ec51ed3938232e323b50d7a7`.
+
+Q4's initial timing comparisons are within the 5%/10 ms limits. Q8's initial
+6.5–9.2% decode flags trigger the one focused main/candidate/main history.
+Those controls vary: standard decode is 3.549 / 3.515 / 3.037 s; short-code
+prefill is 219 / 287 / 223 ms. The short-prefill flag remains against both
+controls and receives a targeted diagnostic, with attachment enabled.
+The unchanged candidate then prefills that short request in 222.6 ms versus
+main's 228.8 ms under instrumentation. Both profiles dispatch exactly 397997
+kernels for the matched history and neither invokes snapshot-pointer query
+APIs on this native TP path. This rules out added snapshot-range queries in
+that capture; it does not identify the cause of the slower unprofiled sample.
+Timing remains **inconclusive and unqualified**; no speedup or fixed performance
+bug is claimed. Instrumented captures are explicitly marked and excluded from
+speed qualification. No additional GPU work is queued.
+
+The [result index](models/qwen3.8-flash-next/artifacts/upstream-v0.33.0/results.json),
+[functional evidence](models/qwen3.8-flash-next/artifacts/upstream-v0.33.0/functional-results.tar.gz),
+[288 phase observations](models/qwen3.8-flash-next/artifacts/upstream-v0.33.0/timing-observations.csv),
+[192 comparisons](models/qwen3.8-flash-next/artifacts/upstream-v0.33.0/timing-comparisons.csv)
+and [profile summary](models/qwen3.8-flash-next/artifacts/upstream-v0.33.0/profile-summary.json)
+retain the initial, control and diagnostic evidence. Raw traces/build/rank logs
+remain in `artifacts/upstream-2026-11-11/v0.33.0/`.
+
+The integration closes after these two PRs. No full-context sweep, additional
+model qualification, unreleased upstream commits or new TP2 release tag is
+included. Historical numerical limits and the unreproduced client stream error
+remain documented in the canonical handoff and quality record.

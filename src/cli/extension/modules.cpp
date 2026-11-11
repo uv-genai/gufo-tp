@@ -32,15 +32,15 @@ struct Module {
 };
 
 ext::Capability ParseCapability(const std::string& name) {
-  static const std::map<std::string, ext::Capability, std::less<>>
-      kCapabilities = {
-          {"text_generation", ext::Capability::kTextGeneration},
-          {"embeddings", ext::Capability::kEmbeddings},
-          {"speech_recognition", ext::Capability::kSpeechRecognition},
-          {"speech_synthesis", ext::Capability::kSpeechSynthesis},
-          {"image_generation", ext::Capability::kImageGeneration},
-          {"video_generation", ext::Capability::kVideoGeneration},
-          {"decision", ext::Capability::kDecision},
+  using CapabilityMap = std::map<std::string, ext::Capability, std::less<>>;
+  static const CapabilityMap kCapabilities = {
+      {"text_generation", ext::Capability::kTextGeneration},
+      {"embeddings", ext::Capability::kEmbeddings},
+      {"speech_recognition", ext::Capability::kSpeechRecognition},
+      {"speech_synthesis", ext::Capability::kSpeechSynthesis},
+      {"image_generation", ext::Capability::kImageGeneration},
+      {"video_generation", ext::Capability::kVideoGeneration},
+      {"decision", ext::Capability::kDecision},
   };
   const auto found = kCapabilities.find(name);
   if (found == kCapabilities.end())

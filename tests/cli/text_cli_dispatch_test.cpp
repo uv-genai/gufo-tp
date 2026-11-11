@@ -324,25 +324,24 @@ bool CheckSpeculativeDefaults(std::string_view command,
                   std::string("wrong draft settings for ") + entry.what);
     }
   }
-  const std::vector<std::pair<const std::string*, std::vector<const char*>>>
-      rejected = {
-          // No provider accepts these; rejected without a probe.
-          {&model, {"--draft-policy", "fixed"}},
-          {&model,
-           {"--speculative", "mtp", "--mtp-model", "x", "--draft-policy",
-            "unknown"}},
-          {&model,
-           {"--speculative", "mtp", "--mtp-model", "x", "--draft-tokens", "2",
-            "--min-draft-tokens", "3"}},
-          // Accepted by another provider or above the resolved limit.
-          {&other,
-           {"--speculative", "mtp", "--mtp-model", "x", "--draft-policy",
-            "fixed"}},
-          {&model,
-           {"--speculative", "mtp", "--mtp-model", "x", "--min-draft-tokens",
-            "16"}},
-          {&model,
-           {"--speculative", "mtp", "--mtp-model", "x", "--draft-tokens", "1"}},
+  using RejectedCase = std::pair<const std::string*, std::vector<const char*>>;
+  const std::vector<RejectedCase> rejected = {
+      // No provider accepts these; rejected without a probe.
+      {&model, {"--draft-policy", "fixed"}},
+      {&model,
+       {"--speculative", "mtp", "--mtp-model", "x", "--draft-policy",
+        "unknown"}},
+      {&model,
+       {"--speculative", "mtp", "--mtp-model", "x", "--draft-tokens", "2",
+        "--min-draft-tokens", "3"}},
+      // Accepted by another provider or above the resolved limit.
+      {&other,
+       {"--speculative", "mtp", "--mtp-model", "x", "--draft-policy", "fixed"}},
+      {&model,
+       {"--speculative", "mtp", "--mtp-model", "x", "--min-draft-tokens",
+        "16"}},
+      {&model,
+       {"--speculative", "mtp", "--mtp-model", "x", "--draft-tokens", "1"}},
   };
   for (const auto& [selected, flags] : rejected) {
     if (Run(command, *selected, flags) != 2 || !dispatched.empty()) {

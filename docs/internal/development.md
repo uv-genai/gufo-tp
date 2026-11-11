@@ -2,8 +2,9 @@
 
 How the repository is laid out, how to build and test it, and the conventions
 for adding code. Production targets Linux x86-64 on AMD Strix Halo
-(`gfx1151`); CMake owns compiler flags, dependencies and installation, and Nix
-supplies the pinned toolchain. Dependencies and versions are in
+(`gfx1151`); CMake owns compiler flags, dependencies and installation.
+The twin Strix Halo hosts use the system ROCm toolchain and the
+[native host setup](../../BUILD-LOCAL.md). Dependencies and versions are in
 [install](../install.md#build-from-source); repository rules for agents and
 contributors are in [AGENTS.md](../../AGENTS.md).
 
@@ -23,7 +24,7 @@ contributors are in [AGENTS.md](../../AGENTS.md).
 | `tests` | Maintained fixtures and focused checks, mirroring `src` |
 | `tools` | CI entrypoints, profiling, microbenchmarks, offline evaluation and reference runners |
 | `cmake` | Shared CMake modules, including the hosted `check-pr` selection |
-| `docs` | Public pages; `docs/internal` holds developer documents and per-model evidence (see [docs/AGENTS.md](../../AGENTS.md)) |
+| `docs` | Public pages; `docs/internal` holds developer documents and per-model evidence (see [docs/AGENTS.md](../AGENTS.md)) |
 | `.devops/nix` | Production package, reference packages and server configuration |
 | `.github/workflows` | Hosted CI definition |
 | `artifacts`, `models` | Ignored local outputs and weights; never committed |
@@ -43,27 +44,27 @@ selection) and `gufo_http` are the top of the graph. Nothing under
 
 ## Build
 
-Nix builds the production package and the hosted checks. Stage new files in
-Git first: flakes only see tracked files.
+On the Strix Halo hosts, install the pinned Rust toolchain and prerequisites
+from [BUILD-LOCAL.md](../../BUILD-LOCAL.md), then configure with the host flags:
 
 ```sh
-nix build                              # production package, no tests or tools
-./result/bin/gufo diagnose
-nix flake check     # hosted CPU/repository checks
-nix develop                            # GPU development, profilers, reference tools
-```
-
-The same CMake commands work without Nix once the documented dependencies are
-installed; `nix develop -c <command>` runs them inside the pinned environment.
-
-Alongside the pinned compiler, `nix develop` carries the tools the loop needs:
-`gdb` for the assertion-enabled test presets, `git` and `jj` for the repository,
-`ripgrep` for searching, `radeontop` for live GPU load, and `ccache` for rebuilds.
-
-```sh
-cmake --preset release
+unset ROCM_PATH
+export PATH="$HOME/.cargo/bin:$PATH"
+export PATH=/opt/rocm/bin:/opt/rocm/core/lib/llvm/bin:$PATH
+cmake --preset release -DGUFO_ENABLE_TP2_RDMA=ON \
+  -DCMAKE_HIP_COMPILER=/opt/rocm/core/lib/llvm/bin/clang++ \
+  -DCMAKE_CXX_FLAGS="-include format" -DCMAKE_HIP_FLAGS="-include format" \
+  -DGUFO_REVISION="$(git rev-parse HEAD)"
 cmake --build --preset release --parallel 4
 ```
+
+Preserve compiler/dependency versions when comparing builds. The presets omit
+the two host-specific include workarounds deliberately. Record the compiled
+revision and SHA separately when later commits only update documentation.
+
+Upstream packaging and hosted CI use the pinned environment defined in
+`.devops/nix/` and `flake.lock`; see [CI](ci.md). Follow the native commands
+above for work on these hosts.
 
 CMake compiles C and C++ through `ccache` when it is on `PATH`, so reconfigured
 builds and header changes reuse cached objects; the configure log reports either
@@ -80,7 +81,7 @@ are not launched through the cache.
 | `cpu-sanitizer` | Debug + ASan/UBSan | Host memory and undefined-behavior diagnostics |
 | `gpu-tp2` | RelWithDebInfo + assertions | `gpu-test` plus the optional two-host RDMA adapter |
 
-Build preset `pr` configures against `cpu-test` and runs the hosted contract
+Configure `cpu-test` first; build preset `pr` then runs the hosted contract
 target `check-pr`. Test presets: `cpu-test` (label `cpu`), `cpu-sanitizer`,
 `gpu-fast` (excludes `slow` and `external-model`), `gpu-full` (complete GPU
 tree), `deepseek-gpu` and `qwen-gpu-kernel-oracle`. Definitions live in
@@ -109,12 +110,15 @@ Run the smallest check that covers the change. Formatting and the Python
 repository checks need no GPU and no Gufo build.
 
 ```sh
-nix shell --inputs-from . nixpkgs#clang-tools -c python3 tools/ci/check-format.py
-# Add --fix to apply formatting, then rerun the check.
+python3 tools/ci/check-format.py
+# Match the formatter version used by CI; add --fix when needed.
 
-nix develop -c cmake --preset gpu-test
-nix develop -c cmake --build --preset gpu-test --target <test-target>
-nix develop -c ctest --preset gpu-full -R '^<test-name>$' --output-on-failure
+# Use the environment set above and all three host flags on every configure.
+cmake --preset gpu-test \
+  -DCMAKE_HIP_COMPILER=/opt/rocm/core/lib/llvm/bin/clang++ \
+  -DCMAKE_CXX_FLAGS="-include format" -DCMAKE_HIP_FLAGS="-include format"
+cmake --build --preset gpu-test --target <test-target>
+ctest --preset gpu-full -R '^<test-name>$' --output-on-failure
 ```
 
 [Testing](testing.md) maps change categories to the checks that cover them.

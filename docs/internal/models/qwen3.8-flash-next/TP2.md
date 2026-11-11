@@ -227,7 +227,7 @@ an aligned fallback instead. Live frontiers retain their normal continuation
 rules. The capability audit must cover both cache selection and mirrored calls.
 
 
-Collective-shape rules kept through the v0.16→v0.23 requalify series (see
+Current collective-shape rules (see
 [MERGE-CHECKLIST.md](../../MERGE-CHECKLIST.md)):
 
 - **Invariant:** both ranks issue the **same** all-reduces (order, count,
@@ -246,6 +246,12 @@ Collective-shape rules kept through the v0.16→v0.23 requalify series (see
 - **Dynamic YaRN re-rotation is single-host only.** TP2 keeps the configured
   static factor on both ranks. Its persistence identity includes
   `tp_position_policy=static-yarn-v1` to distinguish that policy.
+- **Prefill layer yields are single-host only.** The mirrored descriptor
+  removes the scheduling profile, preserving bounded prefill calls between
+  decodes. The model also rejects layer hooks under TP2.
+- **Decode overlap and startup calibration are single-host only.** Calibration
+  invokes MoE directly, outside the mirrored call protocol, so it returns
+  before those calls under TP2. Existing qualified prefill overlap remains.
 - Any **new** upstream path that skips or adds a collective is a hazard until
   gated the same way. Prefer a hard single-host gate over hoping ranks agree.
 

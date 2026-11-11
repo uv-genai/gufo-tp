@@ -17,6 +17,7 @@ flags. Set the environment once per shell:
 
 ```sh
 unset ROCM_PATH
+export PATH="$HOME/.cargo/bin:$PATH"
 export PATH=/opt/rocm/bin:/opt/rocm/core/lib/llvm/bin:$PATH
 ```
 
@@ -41,6 +42,9 @@ The last two flags are host workarounds, not properties of the project, so
 they are passed at configure time and are deliberately absent from the
 presets. Do not bake them in.
 
+Rust/Cargo 1.88.0 is required by `rust-toolchain.toml` for PNG/WAV decoding.
+See [BUILD-LOCAL.md](BUILD-LOCAL.md) for native prerequisite setup.
+
 Measure performance with `build/release/gufo`. Preserve compiler and
 dependency versions when comparing results.
 
@@ -59,7 +63,7 @@ need the GPU. Before committing C++ changes, run the shared CI check:
 
 ```sh
 python3 tools/ci/check-format.py
-# Add --fix to apply formatting, then rerun the check.
+# Use the CI formatter version; add --fix, then rerun the check.
 ```
 
 Run the smallest check covering the change. `gpu-test` is RelWithDebInfo with
@@ -78,7 +82,7 @@ ctest --preset gpu-full -R '^<test-name>$' --output-on-failure
 `cmake --build --preset pr`
 runs the focused contract subset after configuring `cpu-test`. Full CPU checks,
 sanitisers, GPU/operator/model checks and H3 quality tools remain available
-locally; see [docs/TESTING.md](docs/internal/testing.md). Do not run full model sweeps,
+locally; see [testing](docs/internal/testing.md). Do not run full model sweeps,
 video generation or duplicate suites for routine edits. A missing-model skip
 is not a quality pass. Broaden checks when shared behavior changes or failures
 expose risk.
@@ -133,7 +137,8 @@ quality; successful optimizations become the default, without extra switches.
   that title on `main`. Mark breaking changes with `!` in the title, and leave
   version and changelog updates to the release workflow.
 - Prefer `jj` when available (`jj version`); otherwise use Git.
-- Model implementations are source extensions; use `docs/extensions.md` and
+- Model implementations are source extensions; use
+  [writing extensions](docs/writing-extensions.md) and
   the owning `extension.json` / `extension.cmake` for target registration.
   Native builds discover extensions; `-DGUFO_EXTENSIONS_FROM_LOCK=ON` selects
   the shipped lock set.
@@ -144,7 +149,7 @@ quality; successful optimizations become the default, without extra switches.
   `python3 tools/ci/check-extension-api.py --write` after header/include changes.
   API revisions derive from records; breaking changes advance `api-series.json`
   and update in-tree users. This guarantees source compatibility after rebuild,
-  not binary ABI. See `docs/RELEASING.md`.
+  not binary ABI. See [releasing](docs/internal/releasing.md).
 - Follow [docs/AGENTS.md](docs/AGENTS.md) for documentation layout and checks.
 - Follow the user's remote workflow and preserve unrelated work.
 
@@ -155,7 +160,7 @@ quality; successful optimizations become the default, without extra switches.
   --ff-only origin/main`). Never push to `origin` / `gufo-org`.
 - Work and publishes go on fork **`main`**, remote **`uv-genai`** only.
 - Every published TP2 tag needs a GitHub Release with written notes. Follow
-  [docs/RELEASING.md](docs/internal/releasing.md) for dated TP2 tags, source/binary
+  [releasing](docs/internal/releasing.md) for dated TP2 tags, source/binary
   identity and validation scope. Current TP2 release qualification is Linux;
   Windows is outside this work's scope.
 - **`README.md` and `AGENTS.md` are project-owned.** Integrate upstream changes
@@ -166,7 +171,7 @@ quality; successful optimizations become the default, without extra switches.
   stay **0**. Never run that package manager on this host.
 - After a merge: format check, release build, then TP2 validation below
   before any push. Compile-only is not a TP2 pass.
-- Before merging upstream, read [docs/MERGE-CHECKLIST.md](docs/internal/MERGE-CHECKLIST.md)
+- Before merging upstream, read [the merge checklist](docs/internal/MERGE-CHECKLIST.md)
   and scan the diff for TP2 hazards (below). Prefer a hard
   `TpWorldSize()==1` gate over hoping ranks agree.
 
@@ -206,6 +211,9 @@ hidden (e.g. 10240 vs 122880 = 1 vs 12 rows × 2560 F32).
   (payload v20).
 - Dynamic YaRN session re-rotation is single-host only. TP2 retains the
   configured static factor and its own position-policy persistence identity.
+- Prefill layer yields and decode-overlap calibration are single-host only.
+  `TpMirroredRunner` removes the scheduling profile; calibration must return
+  before issuing MoE calls under TP2. The new decode-overlap path stays gated.
 - `defer_residual_` only when `tp_world_size()==1`. Forced draft counts come
   from rank 0 (`request.drafts` / `batch_drafts`).
 - Watch live concurrency on rank 0: `GET /metrics`

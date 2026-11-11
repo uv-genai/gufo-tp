@@ -34,6 +34,7 @@ The short version (identical on both hosts):
 ```sh
 cd /home/ugo/projects/gufo
 unset ROCM_PATH
+export PATH="$HOME/.cargo/bin:$PATH"
 export PATH=/opt/rocm/bin:/opt/rocm/core/lib/llvm/bin:$PATH
 cmake --preset release -DGUFO_ENABLE_TP2_RDMA=ON \
   -DCMAKE_HIP_COMPILER=/opt/rocm/core/lib/llvm/bin/clang++ \
@@ -42,7 +43,9 @@ cmake --preset release -DGUFO_ENABLE_TP2_RDMA=ON \
 cmake --build --preset release --parallel 4
 ```
 
-The script encapsulates three toolchain workarounds you must not lose:
+The configure commands include three toolchain workarounds you must retain.
+Install the pinned Rust/Cargo toolchain as described in
+[BUILD-LOCAL.md](BUILD-LOCAL.md#configure-and-build) before configuring.
 
 | Symptom | Cause | Fix (already in build-gufo.sh) |
 |---|---|---|

@@ -6,6 +6,11 @@ pages explain how to install it, run models, and extend it with your own.
 
 ## Get started
 
+For Gufo-TP's two-host deployment, start with the
+[native build](../BUILD-LOCAL.md), [TP2 setup](../TP2-SETUP.md) and
+[Flash-Next guide](models/qwen3.8-flash-next.md). The
+[handoff](../handoff.md) records the deployed binary and validation scope.
+
 1. [Install](install.md): container, Debian package, Nix, source or Windows.
 2. [Models](models/README.md): what each official model does, the files to
    download and the speed to expect.

@@ -23,6 +23,14 @@ Extensions have a separate version; see the
 
 ## Where releases go
 
+Gufo-TP publishes dated `tp2-rdma-merge-*` and `tp2-rdma-fixes-*` tags with
+written notes in [its release repository](https://github.com/uv-genai/gufo-tp/releases).
+An integrated upstream version and a published TP2 release have separate
+identities. The [project README](../README.md) identifies both; the
+[handoff](../handoff.md) records the deployed binary revision and hash.
+
+Upstream Gufo publishes through these channels:
+
 | Channel | Tags | Contents |
 | --- | --- | --- |
 | [GitHub releases](https://github.com/gufo-org/gufo/releases) | `vX.Y.Z` | Source, the Debian package and the Windows ZIP |

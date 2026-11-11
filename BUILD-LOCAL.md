@@ -8,6 +8,17 @@ binary identity. Source-build prerequisites are in [README.md](README.md#build-f
 
 ## Configure and build
 
+Install Rust with rustup and the repository's pinned toolchain if it is absent:
+
+```sh
+export PATH="$HOME/.cargo/bin:$PATH"
+rustup toolchain install 1.88.0 --profile minimal --component rustfmt --component clippy
+```
+
+If `rustup` is absent, install it from [rustup.rs](https://rustup.rs/).
+PNG and WAV decoding require Cargo at configure/build time; the copied Gufo
+executable does not require Rust on the peer host.
+
 Use the system ROCm installation at `/opt/rocm`. Every configure on these hosts
 needs the environment and all three host flags below. RDMA is disabled by
 upstream default, so explicitly enable it for a new TP2 build directory.
@@ -15,6 +26,7 @@ upstream default, so explicitly enable it for a new TP2 build directory.
 ```sh
 cd /home/ugo/projects/gufo
 unset ROCM_PATH
+export PATH="$HOME/.cargo/bin:$PATH"
 export PATH=/opt/rocm/bin:/opt/rocm/core/lib/llvm/bin:$PATH
 cmake --preset release -DGUFO_ENABLE_TP2_RDMA=ON \
   -DCMAKE_HIP_COMPILER=/opt/rocm/core/lib/llvm/bin/clang++ \

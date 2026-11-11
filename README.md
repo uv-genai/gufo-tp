@@ -53,9 +53,10 @@ published release.
 
 ## Why this project
 
-On one host, Flash-Next decode and prefill are already excellent. **TP2 is
-faster than one host at every concurrency we measured**, and it holds contexts
-and the full Q8 model that do not fit a single 128 GiB APU. After merging
+The historical concurrency series below measures higher aggregate decode
+throughput with TP2. It also holds contexts and the full Q8 model that do not
+fit a single 128 GiB APU. These measurements do not establish a speedup for
+the current development build. After merging
 upstream through v0.28.1, one-host Flash-Next reports **1,801.01 tok/s AR
 prefill** and up to **116.93 tok/s tg** (see [Benchmarks](docs/internal/models/qwen3.8-flash-next/BENCHMARKS.md)).
 The matched TP2 series below is from the v0.15.0-era binary (Q4 MTP,

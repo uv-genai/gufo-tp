@@ -11,7 +11,8 @@ Fill or refresh `docs/internal/models/<model>/BENCHMARKS.md` for one model. Whic
 tables exist and which external project is the comparison baseline depend on
 the model category below. Read the model's `README.md`, `BENCHMARKS.md` and
 `QUALITY.md` first, then [docs/internal/benchmarks.md](../../../docs/internal/benchmarks.md)
-for methodology. Follow the user's machine, time and Git instructions.
+for methodology. Read root `AGENTS.md` and `handoff.md` for model restrictions,
+host setup and current deployment; follow the user's requested scope.
 
 ## Start
 
@@ -54,13 +55,15 @@ one JSON per table (and per mode for concurrency tables) into
 `docs/internal/models/<model>/artifacts/`, and renders the Markdown tables between
 `<!-- bench:<table> -->` markers in `BENCHMARKS.md`:
 
+Build `build/release/gufo` using `BUILD-LOCAL.md` first. Use a Python environment
+with the driver's dependencies and a native reference server executable:
+
 ```sh
-nix build   # production Gufo binary at result/bin/gufo
 FILES="--gguf q4=/path/to/target-q4.gguf --draft q4=/path/to/draft-q4.gguf"
-nix develop -c python3 tools/bench/model-bench.py --model <model> tables            # ids and existing artifacts
-nix develop -c python3 tools/bench/model-bench.py --model <model> $FILES run --target gufo --table single-ar-q4,single-dflash2-q4
-nix develop -c nix shell .#llama-cpp-reference -c python3 tools/bench/model-bench.py --model <model> $FILES run --target reference --table single-ar-q4,single-dflash2-q4
-nix develop -c python3 tools/bench/model-bench.py --model <model> render           # or render --check
+python3 tools/bench/model-bench.py --model <model> --gufo build/release/gufo tables
+python3 tools/bench/model-bench.py --model <model> --gufo build/release/gufo $FILES run --target gufo --table <selected-table-ids>
+python3 tools/bench/model-bench.py --model <model> --gufo build/release/gufo $FILES run --target reference --reference-binary /path/to/reference-server --table <selected-table-ids>
+python3 tools/bench/model-bench.py --model <model> --gufo build/release/gufo render
 ```
 
 `run` flags: `--table <id>[,<id>]` selects tables (without it every table

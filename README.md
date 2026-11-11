@@ -35,21 +35,18 @@ parallelism across two hosts** on top.
 > [gufo-org/gufo](https://github.com/gufo-org/gufo/releases). Gufo-TP publishes
 > from [uv-genai/gufo-tp](https://github.com/uv-genai/gufo-tp) (`main` only).
 
-Current TP2 release: **[v0.28.1 fixes, November 6, 2026](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-fixes-v0.28.1-2026-11-06)**.
-It fixes mirrored reasoning and cache controls, Q8 expert prefill, and loading
-Q4 GGUF sets with a metadata-only first shard. Q4 and Q8 TP2 + MTP serving
-passed validation; [release notes](docs/releases/2026-11-06-tp2-fixes.md)
-describe the checks and remaining numerical/timing limits.
+Current TP2 release: **[v0.33.0 upstream integration, November 11, 2026](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.33.0-2026-11-11)**.
+It integrates upstream v0.29–v0.33, retaining mirrored TP2 snapshots, provider
+reasoning controls and the earlier Q4/Q8 fixes. Prefill layer yields, new
+decode overlap and startup calibration are single-host only. Upgrade both
+hosts together: TP control protocol 23 rejects older peers.
 
-Development integrates upstream **v0.33.0**, including source extensions,
-multiple single-host prefill checkpoints, provider sampling defaults and tool
-dialects, with mirrored TP2 snapshots and reasoning controls preserved. The new layer
-yields and decode-overlap extension are single-host only; TP2 retains bounded
-prefill calls between decode steps. Upgrade
-both hosts together: TP control protocol 23 rejects older peers.
-See the [merge validation record](docs/internal/MERGE-UPSTREAM-2026-11-11.md) for build identity,
-Q4/Q8 checks and timing limits. The dated release above remains the latest
-published release.
+Flash-Next Q4/Q8 TP2+MTP passed 724 functional checks across the two latest
+integrations. The [release notes](docs/releases/2026-11-11-tp2-merge.md) and
+[merge validation record](docs/internal/MERGE-UPSTREAM-2026-11-11.md) describe
+source/binary identity, deployment, numerical limits and inconclusive timing.
+This is a Linux source release; deployed binaries retain their validated
+compiled revision.
 
 ## Why this project
 

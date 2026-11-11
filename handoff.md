@@ -1,7 +1,7 @@
 # LIVE HANDOFF — Gufo-TP
 
 Canonical file: `/home/ugo/projects/gufo/handoff.md`. Updated **2026-11-11** for
-the v0.32.0 upstream integration; v0.33.0 follows on its own branch/PR. Latest published release remains
+the completed v0.32.0 and v0.33.0 upstream integrations. Latest published release remains
 `tp2-rdma-fixes-v0.28.1-2026-11-06`. Edit this file after deployment,
 merge, release or incident changes; dated files under `~/gufo-merge-handoff/`
 are archives, and its lowercase `handoff.md` is only a pointer here.
@@ -27,12 +27,12 @@ before using either GPU; this document does not establish current availability.
 | Development | `/home/ugo/projects/gufo`, `main` tracks **`uv-genai/main`** |
 | Publish remote | **`uv-genai` only**, `https://github.com/uv-genai/gufo-tp.git` |
 | Upstream | `origin` → `gufo-org/gufo`, local tracking branch `gufo-org`; never push there |
-| Upstream merged through | **v0.32.0** (`c40862ff`); v0.29–v0.31 were integrated through PRs [#29](https://github.com/uv-genai/gufo-tp/pull/29), [#30](https://github.com/uv-genai/gufo-tp/pull/30) and [#31](https://github.com/uv-genai/gufo-tp/pull/31); unreleased upstream main is excluded |
+| Upstream merged through | **v0.33.0** (`77dff828`), through separate validated PRs [#32](https://github.com/uv-genai/gufo-tp/pull/32) and [#33](https://github.com/uv-genai/gufo-tp/pull/33); previous v0.29–v0.31 integrations are in the November 6 merge record. Unreleased upstream main is excluded |
 | Latest release | [tp2-rdma-fixes-v0.28.1-2026-11-06](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-fixes-v0.28.1-2026-11-06) |
 | Previous release | [tp2-rdma-merge-v0.28.1-2026-11-04](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.28.1-2026-11-04), code `2a7c0262` |
 | Review fixes | [PR #25](https://github.com/uv-genai/gufo-tp/pull/25), merged **`ba1ab427`**, closes #21–#24 |
 | Q4 reader fix | [PR #27](https://github.com/uv-genai/gufo-tp/pull/27), merged **`ae8a93c3`**, closes #26 |
-| Package version | `version.txt` is **0.32.0** from the upstream tag; the latest dated TP2 release remains based on v0.28.1 |
+| Package version | `version.txt` is **0.33.0** from the upstream tag; the latest dated TP2 release remains based on v0.28.1 |
 
 Separate branches and validated PRs precede code merges. Every published tag
 must have a GitHub Release with written notes. Do not move published tags or
@@ -45,12 +45,12 @@ scope for this release.
 
 Both hosts have `/home/ugo/projects/gufo/build/release/gufo`:
 
-- Compiled revision **`251757aadea6bf9a03dfb8c4a86c4c351a02486c`**.
-- SHA-256 **`ed942b606cf8ee241d705cf806bcac150c8600fe1d45df1d3409cc5829311936`**.
+- Compiled revision **`b325c75c7c602020784e1fa48f9b8290f74c3aa4`**.
+- SHA-256 **`85f0be16d16ac11b8933b968ce6e4c060d6538c4ec51ed3938232e323b50d7a7`**.
 - Production code includes v0.31.0 provider metadata, legal prefill stops and
   mirrored reasoning controls, retaining the native TP snapshot path. New layer yields and decode overlap are gated to one host. Later
-  commits change tests/documentation only. Source extension API is **0.2.17**.
-- The binary reports `gufo version development (251757aa...)`. Do not confuse
+  commits change tests/documentation only. Source extension API is **0.2.22**.
+- The binary reports `gufo version development (b325c75c...)`. Do not confuse
   its compiled revision with the squash commit or the release documentation commit.
 - The v0.30.0 baseline `7f0d93f2…` (SHA `9ad8a5a3…`) is retained on both
   hosts at `artifacts/upstream-2026-11-06/gufo-main-v0.30.0`.
@@ -111,9 +111,11 @@ Q4 file on rank 1; inspect both rank logs before diagnosing a collective bug.
 ## Current upstream validation
 
 The [November 11 merge record](docs/internal/MERGE-UPSTREAM-2026-11-11.md)
-records 362 passing v0.32.0 TP2+MTP checks (Q4/Q8), CPU/operator checks and
+records 362 passing TP2+MTP checks per tag (724 total across Q4/Q8), CPU/operator checks and
 retained inconclusive timing evidence. The large Q8 uncached timing outlier
-did not recur in the unchanged-candidate diagnostic; its cause is unresolved.
+did not recur in the unchanged-candidate diagnostic. v0.33.0 Q8 short-prefill
+timing also remains inconclusive after controls/profiling; no speedup or
+performance fix is claimed. Both model-test queues are closed.
 
 
 See the [merge record](docs/internal/MERGE-UPSTREAM-2026-11-06.md) for v0.29.0 through v0.31.0
@@ -125,7 +127,7 @@ snapshot path with component caching disabled. Static YaRN has a distinct
 persistence identity. Upgrade both hosts together; older peers are rejected.
 Only compatible persisted states can restore.
 
-The v0.31.0 binary passes **724 TP2 functional checks** across Q4/Q8 AR/MTP,
+The earlier v0.31.0 binary passes **724 TP2 functional checks** across Q4/Q8 AR/MTP,
 including 60 Q4 image checks, and the single-host Flash-Next Q4 AR/MTP suites.
 Flash-Next single-host MTP has no timing flags; other retained timing flags are
 advisory/inconclusive. Qwen27 Q4's completed controls have no confirmed slowdown

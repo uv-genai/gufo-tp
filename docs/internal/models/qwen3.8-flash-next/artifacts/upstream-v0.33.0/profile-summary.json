@@ -1,0 +1,243 @@
+{
+  "method": "rocprofv3 attached after ready, local rank 1, same standard-speed and TP2 timing history; diagnostic instrumentation, not speed qualification",
+  "runs": {
+    "candidate": {
+      "stages": {
+        "runtime: copy": {
+          "calls": 6921,
+          "gpu_ms": 13.463422000000014
+        },
+        "other": {
+          "calls": 367069,
+          "gpu_ms": 13569.693738000711
+        },
+        "quantize: activations": {
+          "calls": 314,
+          "gpu_ms": 10.300900999999993
+        },
+        "gemm: blocked w8a8": {
+          "calls": 4600,
+          "gpu_ms": 780.3083010000015
+        },
+        "attention": {
+          "calls": 16393,
+          "gpu_ms": 1595.2917170000396
+        },
+        "runtime: fill": {
+          "calls": 1152,
+          "gpu_ms": 2.5594810000000043
+        },
+        "sample": {
+          "calls": 1548,
+          "gpu_ms": 5.587758
+        }
+      },
+      "hip_api": {
+        "hipMemcpyAsync": {
+          "calls": 9206,
+          "host_ms": 111.14488499999989
+        },
+        "__hipPushCallConfiguration": {
+          "calls": 389924,
+          "host_ms": 17.350560000006297
+        },
+        "__hipPopCallConfiguration": {
+          "calls": 389924,
+          "host_ms": 18.388331000010695
+        },
+        "hipLaunchKernel": {
+          "calls": 389924,
+          "host_ms": 2077.040877001026
+        },
+        "hipStreamCreateWithFlags": {
+          "calls": 3,
+          "host_ms": 1.70236
+        },
+        "hipEventCreateWithFlags": {
+          "calls": 4,
+          "host_ms": 0.00391
+        },
+        "hipSetDevice": {
+          "calls": 1,
+          "host_ms": 0.00707
+        },
+        "hipMemsetAsync": {
+          "calls": 1152,
+          "host_ms": 7.004558000000002
+        },
+        "hipEventRecord": {
+          "calls": 4004,
+          "host_ms": 24.50314200000005
+        },
+        "hipStreamWaitEvent": {
+          "calls": 3072,
+          "host_ms": 21.25691799999998
+        },
+        "hipEventSynchronize": {
+          "calls": 922,
+          "host_ms": 2628.9101950000013
+        },
+        "hipGetLastError": {
+          "calls": 121194,
+          "host_ms": 4.453358000000443
+        },
+        "hipStreamSynchronize": {
+          "calls": 3461,
+          "host_ms": 10730.373993999963
+        },
+        "hipGetDevice": {
+          "calls": 50952,
+          "host_ms": 2.0905940000007037
+        },
+        "hipMemPoolCreate": {
+          "calls": 1,
+          "host_ms": 0.00791
+        },
+        "hipDeviceSynchronize": {
+          "calls": 1,
+          "host_ms": 0.631201
+        },
+        "hipMemGetInfo": {
+          "calls": 12,
+          "host_ms": 0.057369
+        },
+        "hipMalloc": {
+          "calls": 6,
+          "host_ms": 7.4381010000000005
+        },
+        "hipMallocFromPoolAsync": {
+          "calls": 5,
+          "host_ms": 6.323944999999999
+        },
+        "hipMemcpy": {
+          "calls": 340,
+          "host_ms": 10.760213
+        },
+        "hipFree": {
+          "calls": 1,
+          "host_ms": 0.858615
+        }
+      },
+      "short_prefill_ms": 222.593447
+    },
+    "main": {
+      "stages": {
+        "runtime: copy": {
+          "calls": 6921,
+          "gpu_ms": 13.285461000000053
+        },
+        "other": {
+          "calls": 367069,
+          "gpu_ms": 13738.575156000354
+        },
+        "quantize: activations": {
+          "calls": 314,
+          "gpu_ms": 10.41029800000001
+        },
+        "gemm: blocked w8a8": {
+          "calls": 4600,
+          "gpu_ms": 781.4750800000027
+        },
+        "attention": {
+          "calls": 16393,
+          "gpu_ms": 1607.9477210000405
+        },
+        "runtime: fill": {
+          "calls": 1152,
+          "gpu_ms": 2.465855000000005
+        },
+        "sample": {
+          "calls": 1548,
+          "gpu_ms": 5.536665999999998
+        }
+      },
+      "hip_api": {
+        "hipMemcpyAsync": {
+          "calls": 9206,
+          "host_ms": 107.23117400000034
+        },
+        "__hipPushCallConfiguration": {
+          "calls": 389924,
+          "host_ms": 16.62093900005246
+        },
+        "__hipPopCallConfiguration": {
+          "calls": 389924,
+          "host_ms": 17.60748899999472
+        },
+        "hipLaunchKernel": {
+          "calls": 389924,
+          "host_ms": 1907.9440140010718
+        },
+        "hipStreamCreateWithFlags": {
+          "calls": 3,
+          "host_ms": 1.236664
+        },
+        "hipEventCreateWithFlags": {
+          "calls": 4,
+          "host_ms": 0.0036599999999999996
+        },
+        "hipMemsetAsync": {
+          "calls": 1152,
+          "host_ms": 7.133394
+        },
+        "hipEventRecord": {
+          "calls": 4004,
+          "host_ms": 22.475564000000002
+        },
+        "hipStreamWaitEvent": {
+          "calls": 3072,
+          "host_ms": 21.53452700000002
+        },
+        "hipSetDevice": {
+          "calls": 1,
+          "host_ms": 0.006669
+        },
+        "hipEventSynchronize": {
+          "calls": 922,
+          "host_ms": 2615.4225580000043
+        },
+        "hipGetLastError": {
+          "calls": 121194,
+          "host_ms": 4.169345000006536
+        },
+        "hipStreamSynchronize": {
+          "calls": 3461,
+          "host_ms": 11097.1364240001
+        },
+        "hipGetDevice": {
+          "calls": 50952,
+          "host_ms": 1.9878810000001979
+        },
+        "hipMemPoolCreate": {
+          "calls": 1,
+          "host_ms": 0.008249
+        },
+        "hipDeviceSynchronize": {
+          "calls": 1,
+          "host_ms": 0.471816
+        },
+        "hipMemGetInfo": {
+          "calls": 12,
+          "host_ms": 0.058726999999999994
+        },
+        "hipMalloc": {
+          "calls": 6,
+          "host_ms": 7.972592000000001
+        },
+        "hipMallocFromPoolAsync": {
+          "calls": 5,
+          "host_ms": 6.574567
+        },
+        "hipMemcpy": {
+          "calls": 340,
+          "host_ms": 9.922752999999998
+        },
+        "hipFree": {
+          "calls": 1,
+          "host_ms": 0.566753
+        }
+      },
+      "short_prefill_ms": 228.83157599999998
+    }
+  }
+}

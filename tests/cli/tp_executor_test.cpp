@@ -207,7 +207,7 @@ public:
                       {.compatibility_identity = {'t', 'o', 'y'},
                        .payload_version = 1})
                 : std::nullopt,
-        .scheduling = gufo::server::TextSchedulingProfile{.pass_tokens = 64, .max_layer_groups = options_.provider_metadata ? 8u : 1u, .max_yield_decode_width = 8}};
+        .scheduling = gufo::ext::TextSchedulingProfile{.pass_tokens = 64, .max_layer_groups = options_.provider_metadata ? 8u : 1u, .max_yield_decode_width = 8}};
   }
   std::size_t PersistentSnapshotPayloadBytes(
       const gufo::server::TextRunnerSnapshot& snapshot) const override {

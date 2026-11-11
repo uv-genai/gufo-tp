@@ -60,6 +60,8 @@ class HashRunner final : public TextModelRunner {
 public:
   explicit HashRunner(Fault fault) : fault_(fault) {}
 
+  [[nodiscard]] bool UsesComponentCache() const override { return true; }
+
   [[nodiscard]] TextRunnerDescriptor Descriptor() const override {
     return {
         .model_id = "layered-fake",

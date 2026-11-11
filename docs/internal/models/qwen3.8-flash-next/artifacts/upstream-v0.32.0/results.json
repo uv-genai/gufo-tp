@@ -1,0 +1,174 @@
+{
+  "functional_checks": {
+    "q4_mtp": 196,
+    "q8_mtp": 166
+  },
+  "studies": [
+    {
+      "study": "q8-baseline",
+      "passed": true,
+      "errors": [],
+      "runs": [
+        {
+          "name": "baseline-mtp",
+          "passed": true,
+          "source_revision": "5b36be34283d77f7dfa61bbcff4beece8296b3e5",
+          "sha256": "22e628c8f20aed0ee0067606242e63761fa6004d182a335e5fc949a76d77792b",
+          "rank_errors": []
+        }
+      ]
+    },
+    {
+      "study": "q4-baseline",
+      "passed": true,
+      "errors": [],
+      "runs": [
+        {
+          "name": "baseline-mtp",
+          "passed": true,
+          "source_revision": "5b36be34283d77f7dfa61bbcff4beece8296b3e5",
+          "sha256": "22e628c8f20aed0ee0067606242e63761fa6004d182a335e5fc949a76d77792b",
+          "rank_errors": []
+        }
+      ]
+    },
+    {
+      "study": "q4-baseline-clean",
+      "passed": true,
+      "errors": [],
+      "runs": [
+        {
+          "name": "baseline-mtp",
+          "passed": true,
+          "source_revision": "5b36be34283d77f7dfa61bbcff4beece8296b3e5",
+          "sha256": "22e628c8f20aed0ee0067606242e63761fa6004d182a335e5fc949a76d77792b",
+          "rank_errors": []
+        }
+      ]
+    },
+    {
+      "study": "q4-candidate",
+      "passed": true,
+      "errors": [],
+      "runs": [
+        {
+          "name": "candidate-mtp",
+          "passed": true,
+          "source_revision": "251757aadea6bf9a03dfb8c4a86c4c351a02486c",
+          "sha256": "ed942b606cf8ee241d705cf806bcac150c8600fe1d45df1d3409cc5829311936",
+          "rank_errors": []
+        },
+        {
+          "name": "candidate-mtp-restore",
+          "passed": true,
+          "source_revision": "251757aadea6bf9a03dfb8c4a86c4c351a02486c",
+          "sha256": "ed942b606cf8ee241d705cf806bcac150c8600fe1d45df1d3409cc5829311936",
+          "rank_errors": []
+        }
+      ]
+    },
+    {
+      "study": "q8-candidate",
+      "passed": true,
+      "errors": [],
+      "runs": [
+        {
+          "name": "candidate-mtp",
+          "passed": true,
+          "source_revision": "251757aadea6bf9a03dfb8c4a86c4c351a02486c",
+          "sha256": "ed942b606cf8ee241d705cf806bcac150c8600fe1d45df1d3409cc5829311936",
+          "rank_errors": []
+        },
+        {
+          "name": "candidate-mtp-restore",
+          "passed": true,
+          "source_revision": "251757aadea6bf9a03dfb8c4a86c4c351a02486c",
+          "sha256": "ed942b606cf8ee241d705cf806bcac150c8600fe1d45df1d3409cc5829311936",
+          "rank_errors": []
+        }
+      ]
+    },
+    {
+      "study": "q4-timing-followup",
+      "passed": true,
+      "errors": [],
+      "runs": [
+        {
+          "name": "main-repeat",
+          "passed": true,
+          "source_revision": "5b36be34283d77f7dfa61bbcff4beece8296b3e5",
+          "sha256": "22e628c8f20aed0ee0067606242e63761fa6004d182a335e5fc949a76d77792b",
+          "rank_errors": []
+        },
+        {
+          "name": "candidate-repeat",
+          "passed": true,
+          "source_revision": "251757aadea6bf9a03dfb8c4a86c4c351a02486c",
+          "sha256": "ed942b606cf8ee241d705cf806bcac150c8600fe1d45df1d3409cc5829311936",
+          "rank_errors": []
+        },
+        {
+          "name": "main-control",
+          "passed": true,
+          "source_revision": "5b36be34283d77f7dfa61bbcff4beece8296b3e5",
+          "sha256": "22e628c8f20aed0ee0067606242e63761fa6004d182a335e5fc949a76d77792b",
+          "rank_errors": []
+        }
+      ]
+    },
+    {
+      "study": "q8-timing-followup",
+      "passed": true,
+      "errors": [],
+      "runs": [
+        {
+          "name": "main-repeat",
+          "passed": true,
+          "source_revision": "5b36be34283d77f7dfa61bbcff4beece8296b3e5",
+          "sha256": "22e628c8f20aed0ee0067606242e63761fa6004d182a335e5fc949a76d77792b",
+          "rank_errors": []
+        },
+        {
+          "name": "candidate-repeat",
+          "passed": true,
+          "source_revision": "251757aadea6bf9a03dfb8c4a86c4c351a02486c",
+          "sha256": "ed942b606cf8ee241d705cf806bcac150c8600fe1d45df1d3409cc5829311936",
+          "rank_errors": []
+        },
+        {
+          "name": "main-control",
+          "passed": true,
+          "source_revision": "5b36be34283d77f7dfa61bbcff4beece8296b3e5",
+          "sha256": "22e628c8f20aed0ee0067606242e63761fa6004d182a335e5fc949a76d77792b",
+          "rank_errors": []
+        }
+      ]
+    },
+    {
+      "study": "q8-profile",
+      "passed": true,
+      "errors": [],
+      "runs": [
+        {
+          "name": "candidate",
+          "passed": true,
+          "source_revision": "251757aadea6bf9a03dfb8c4a86c4c351a02486c",
+          "sha256": "ed942b606cf8ee241d705cf806bcac150c8600fe1d45df1d3409cc5829311936",
+          "rank_errors": []
+        },
+        {
+          "name": "main",
+          "passed": true,
+          "source_revision": "5b36be34283d77f7dfa61bbcff4beece8296b3e5",
+          "sha256": "22e628c8f20aed0ee0067606242e63761fa6004d182a335e5fc949a76d77792b",
+          "rank_errors": []
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Initial Q4 baseline overlapped compilation and is excluded from qualification.",
+    "Q8 timing follow-up contained an unreproduced large uncached-request outlier.",
+    "Profiler attachment failed: native process was not started with attach support. Diagnostic replay is unprofiled evidence."
+  ]
+}

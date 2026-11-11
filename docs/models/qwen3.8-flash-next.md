@@ -1,14 +1,16 @@
 # Qwen3.8 Flash-Next
 
 Qwen3.8 Flash-Next is a mixture-of-experts model that reads text and images and
-writes text. Gufo runs its Q4 GGUF, optionally sped up with its own
+writes text. Gufo-TP runs Q4 on one host and Q4/Q8 across two hosts,
+optionally sped up with its own
 multi-token prediction (MTP) head.
 
 ## Files
 
 | File | Needed for |
 | --- | --- |
-| `UD-Q4_K_XL/*` (four shards) | Text |
+| `UD-Q4_K_XL/*` (four shards) | Q4 text |
+| `Q8_0/*` (six shards, on both hosts) | Q8 TP2 text |
 | `MTP/mtp-Qwen3.8-Flash-Next-shared-Q8_0.gguf` | MTP |
 | `mmproj-BF16.gguf` | Images |
 
@@ -43,7 +45,7 @@ gufo serve llm --model "$MODEL" --speculative mtp \
 MTP adapts how many tokens it proposes; `--draft-tokens` caps the number. When
 proposals keep failing, a request falls back to AR for a while.
 
-MTP also proposes copies of earlier text from the same conversation, which
+On one host, MTP also proposes copies of earlier text from the same conversation, which
 speeds up answers that repeat code, tool output or a previous reply. A request
 decoding alone can check up to 64 copied tokens in one pass. The `timings`
 object in a response reports copies as `lookup_n` and `lookup_n_accepted`.
@@ -70,6 +72,9 @@ whole stretch factor that fits, up to context / 262,144 (1.5625 for
 `--context 409600`). Larger factors change the output more. As of October 2026,
 multiple-choice accuracy stayed within noise from factor 1.5625 to 3.875.
 
+TP2 uses the configured static factor for every request; dynamic re-rotation
+is limited to one host. Upgrade both hosts with the same executable.
+
 Memory grows with the context in use: about 27.5 KiB per token with MTP. Gufo
 reserves the configured capacity when it starts.
 
@@ -78,6 +83,14 @@ reserves the configured capacity when it starts.
 Gufo finds `mmproj-BF16.gguf` next to the target; pass `--mmproj PATH` to use
 another location. Images work the same way as for
 [Qwen3.8 27B](qwen3.8-27b.md#images), with AR and MTP.
+
+## Two hosts
+
+Build with `-DGUFO_ENABLE_TP2_RDMA=ON` and copy the same binary and model
+files to both hosts. Follow the [TP2 setup](../../TP2-SETUP.md) and
+[TP2 serving reference](../internal/models/qwen3.8-flash-next/TP2.md).
+TP2 uses neural MTP drafts and mirrored session/cache restore. Prompt copies,
+small draft heads and prefill layer callbacks are single-host optimizations.
 
 ## Performance
 

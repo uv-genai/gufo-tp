@@ -47,7 +47,7 @@ dialects, with mirrored TP2 snapshots and reasoning controls preserved. The new 
 yields and decode-overlap extension are single-host only; TP2 retains bounded
 prefill calls between decode steps. Upgrade
 both hosts together: TP control protocol 23 rejects older peers.
-See the [merge validation record](docs/internal/MERGE-UPSTREAM-2026-11-06.md) for build identity,
+See the [merge validation record](docs/internal/MERGE-UPSTREAM-2026-11-11.md) for build identity,
 Q4/Q8 checks and timing limits. The dated release above remains the latest
 published release.
 

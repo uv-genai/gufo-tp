@@ -21,6 +21,8 @@ See also: [TP2.md](models/qwen3.8-flash-next/TP2.md) · [AGENTS.md](../../AGENTS
   - MTP / draft / cache / checkpoint / prompt-lookup headers
     (`src/core/speculative/prompt_lookup.hpp`, `draft_vocab.hpp`,
     `mtp_policy.hpp`)
+- [ ] Set a finite Flash-Next validation scope and stopping criterion before
+  GPU work; follow the model restrictions in root AGENTS.md.
 - [ ] For each such commit, ask: **does it change how many GPU collectives a
   decode/prefill cycle runs?** If yes → TP2 hazard (table below).
 - [ ] Prefer **one upstream release per session**: branch
@@ -40,6 +42,8 @@ See also: [TP2.md](models/qwen3.8-flash-next/TP2.md) · [AGENTS.md](../../AGENTS
 | Component cache restore | **Off** (`UsesComponentCache` false) |
 | `defer_residual_` | **Off** |
 | Dynamic YaRN session re-rotation | Single-host only; TP2 keeps static factor |
+| Prefill layer yields | Single-host only; mirrored descriptor has no scheduling profile |
+| Decode overlap and its startup calibration | Single-host only; calibration returns before MoE calls |
 | Forced draft width | Rank 0 plan only (`request.drafts` / `batch_drafts`) |
 | Attention/MoE “skip AR” shortcuts | Forbidden unless identical on both ranks |
 
@@ -61,6 +65,7 @@ same tokens. When a feature must work under TP, **mirror the full decision**
 
 - [ ] `grep -ci nix AGENTS.md` → must be **0** (and never run that package manager)
 - [ ] `python3 tools/ci/check-format.py`
+  (use CI's formatter version; preserve compatibility with the editing host)
 - [ ] Release configure/build with the three host flags in AGENTS.md
 - [ ] `./build/release/gufo diagnose` when GPU is free
 - [ ] Confirm gates still present:
@@ -68,6 +73,7 @@ same tokens. When a feature must work under TP, **mirror the full decision**
   - `subset_ok = … && TpWorldSize()==1`
   - `lookup_ok = … && TpWorldSize()==1`
   - `defer_residual_` gated on single-host
+  - layer hooks and decode-overlap calibration gated on single-host
   - `OwnF16` includes `m==48` if TP2 half-width gates still exist
 
 ## 4. After merge (TP2 runtime — before push / before dropping `-untested`)
@@ -106,4 +112,5 @@ See [RELEASING.md](releasing.md).
 ---
 
 Write-up template for a completed merge:
-`docs/MERGE-UPSTREAM-YYYY-MM-DD.md` (see `MERGE-UPSTREAM-2026-10-17.md`).
+`docs/internal/MERGE-UPSTREAM-YYYY-MM-DD.md` (see
+`MERGE-UPSTREAM-2026-11-11.md` for the current validation record).

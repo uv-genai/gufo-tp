@@ -4,6 +4,12 @@ Gufo runs on Linux x86-64 with an AMD Strix Halo GPU (`gfx1151`). This page
 covers the container, the Debian package, Nix, a build from source and the
 Windows ZIP.
 
+The packaged channels below distribute upstream Gufo. For Gufo-TP on the twin
+Strix Halo hosts, use the [native TP2 build](../BUILD-LOCAL.md) and
+[two-host setup](../TP2-SETUP.md). Build this checkout with RDMA enabled and
+deploy the same executable to both hosts. Gufo-TP publishes its own
+[dated releases](https://github.com/uv-genai/gufo-tp/releases).
+
 ## Prepare the host
 
 Gufo needs a recent kernel and firmware, and access to the GPU devices:

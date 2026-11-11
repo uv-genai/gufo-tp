@@ -41,7 +41,7 @@ provided BF16 artifact. `qwen27b/drafts.py` compares Q4/Q8/BF16 DFlash2 companio
 incomplete or mismatching results. `--baseline-binary` interleaves two releases
 and also requires identical autoregressive token traces between them.
 `qwen27b/dflash_gemm_bench.hip` measures exact BF16, Q4/Q5/Q6/Q8 and IQ4_XS
-matrix geometries using the production templates; build it with `tools/bench/build.sh` inside Nix.
+matrix geometries using the production templates; build it with `tools/bench/build.sh` using the native ROCm environment.
 This benchmark uses the production `-O2` optimization level. `q3` and `iq4-nl`
 also cover native fourteen/sixteen-position FFNs, for example
 `q3 17408 5120 24 16` or `iq4-nl 17408 5120 24 14`.
@@ -69,7 +69,7 @@ Injection repeats one weight matrix and uses the production cache hint
 (`bf16 1024 5120 24 16` covers K/V); decoding rotates at least 128 MiB of weights.
 `qwen27b/deltanet_bench.hip` checks exact recurrence and state-only replay
 while rotating the 144 MiB target state; `qwen27b/prefill_deltanet_bench.hip`
-contains the separate prefill ablations. Both use the same fast Nix builder.
+contains the separate prefill ablations. Both use the same native HIP builder.
 `qwen27b/attention_bench.hip` compares scalar and batched attention. It checks exact outputs
 beside component timings, including the 4K split-K boundary; its `rope` mode
 compares separate and fused draft normalization/RoPE.

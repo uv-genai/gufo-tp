@@ -9,12 +9,14 @@ metadata:
 
 Read the affected model's `docs/internal/models/<model>/{BENCHMARKS,QUALITY,EXPERIMENTS}.md`
 and its launch code. Establish the timed scope and arithmetic contract before
-changing dispatch. Follow the user's machine, time, and Git instructions.
+changing dispatch. Read root `AGENTS.md` and `handoff.md` for the host setup,
+model restrictions and current binary identity. Follow the user's scope.
 
 ## Fast experiment loop
 
-1. Keep baseline and candidate production binaries/objects. Use `nix build`, or the
-   `release` CMake preset with the same compiler/dependency versions. Test
+1. Keep baseline and candidate production binaries/objects. On the Strix Halo
+   hosts, use the native `release` preset and host flags in `BUILD-LOCAL.md`,
+   with the same compiler/dependency versions. Test
    binaries keep assertions and are for correctness, not headline timings.
 2. Start with one affected shape and one control. Use pp2048/tg128 for retained
    end-to-end results; tiny prompts/outputs suffice to debug launches. For a
@@ -25,7 +27,11 @@ changing dispatch. Follow the user's machine, time, and Git instructions.
    Exclude model loading from request-time GPU utilization: a server trace here
    looked 18% busy overall but was 87% busy during inference.
    Warm each batch shape before calibration: large lazy allocations caused
-   100 ms stalls here. Use a median complete cycle when timings remain noisy.
+   100 ms stalls here. Retain individual request/phase timings and unchanged-main
+   controls; noisy results remain inconclusive under the root regression policy.
+   For attachment profiling, start the target with `ROCP_TOOL_ATTACH=1`; a
+   failed attach produces no profiling evidence. Instrumented timings are
+   diagnostic and do not qualify an unprofiled speed change.
 4. Change one mechanism, compile the affected target, then run its existing
    analytic/operator check. Use `tools/bench/build.sh <name>` for standalone
    HIP experiments; each result needs correctness alongside throughput.

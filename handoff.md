@@ -15,7 +15,8 @@ Q8 model, not Flash-Next Q8. The earlier broad test queues were closed on Novemb
 before using either GPU; this document does not establish current availability.
 
 1. [AGENTS.md](AGENTS.md): host flags, remotes and TP2 invariants.
-2. [Upstream merge record](docs/internal/MERGE-UPSTREAM-2026-11-06.md): current integration and qualification.
+2. [Upstream merge record](docs/internal/MERGE-UPSTREAM-2026-11-11.md): current integration and qualification.
+   [November 6 record](docs/internal/MERGE-UPSTREAM-2026-11-06.md) covers v0.29–v0.31.
    [Prior release notes](docs/releases/2026-11-06-tp2-fixes.md) describe the published v0.28.1 fixes.
 3. [BUILD-LOCAL.md](BUILD-LOCAL.md) and [TP2-SETUP.md](TP2-SETUP.md): native build/deployment.
 4. [Merge checklist](docs/internal/MERGE-CHECKLIST.md) and [TP2 design](docs/internal/models/qwen3.8-flash-next/TP2.md).
@@ -47,11 +48,16 @@ Both hosts have `/home/ugo/projects/gufo/build/release/gufo`:
 
 - Compiled revision **`b325c75c7c602020784e1fa48f9b8290f74c3aa4`**.
 - SHA-256 **`85f0be16d16ac11b8933b968ce6e4c060d6538c4ec51ed3938232e323b50d7a7`**.
-- Production code includes v0.31.0 provider metadata, legal prefill stops and
-  mirrored reasoning controls, retaining the native TP snapshot path. New layer yields and decode overlap are gated to one host. Later
-  commits change tests/documentation only. Source extension API is **0.2.22**.
+- Production code includes upstream v0.33.0, mirrored provider controls and
+  native TP snapshots. Prefill layer yields, decode overlap and its startup
+  calibration stay single-host only. Source extension API is **0.2.22**.
+  Later commits change documentation/evidence only.
 - The binary reports `gufo version development (b325c75c...)`. Do not confuse
   its compiled revision with the squash commit or the release documentation commit.
+- The v0.32.0 baseline `251757aa…` (SHA `ed942b60…`) is retained on both
+  hosts at `artifacts/upstream-2026-11-11/gufo-main-v0.32.0`.
+- The v0.31.0 baseline `5b36be34…` (SHA `22e628c8…`) is retained on both
+  hosts at `artifacts/upstream-2026-11-11/gufo-main-v0.31.0`.
 - The v0.30.0 baseline `7f0d93f2…` (SHA `9ad8a5a3…`) is retained on both
   hosts at `artifacts/upstream-2026-11-06/gufo-main-v0.30.0`.
 - The v0.29.0 baseline `3ea5054d…` (SHA `43be5781…`) is retained on both

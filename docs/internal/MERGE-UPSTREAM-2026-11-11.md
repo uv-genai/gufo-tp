@@ -74,3 +74,15 @@ The [result index](models/qwen3.8-flash-next/artifacts/upstream-v0.32.0/results.
 and [268 comparisons](models/qwen3.8-flash-next/artifacts/upstream-v0.32.0/timing-comparisons.csv)
 retain every result. Raw build/rank/diagnostic logs remain in
 `artifacts/upstream-2026-11-11/v0.32.0/`.
+
+## v0.33.0
+
+Tag `77dff828`, integrated after [v0.32.0 PR #32](https://github.com/uv-genai/gufo-tp/pull/32)
+(main `68faca6d`). The shared-expert calibration is single-host only: its
+startup MoE calls are not mirrored and would add collectives during TP2 load.
+Decode overlap and prefill layer callbacks retain their single-host gates.
+The snapshot-copy registration-boundary repair and cache retention fixes are
+integrated; native TP snapshots and restore remain available. README/AGENTS
+retain project branding, native setup and the permanent 27B Q8 restriction.
+
+Validation is in progress under the fixed scope above.

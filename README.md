@@ -13,7 +13,7 @@ parallelism across two hosts** on top.
 > **Gufo-TP is its own project.** It merges
 > [gufo-org/gufo](https://github.com/gufo-org/gufo) with the **TP2-enabled fork**
 > [neuhaus/gufo](https://github.com/neuhaus/gufo), tracks upstream `main`
-> (through **v0.32.0**), and keeps every one-host feature and
+> (through **v0.33.0**), and keeps every one-host feature and
 > fix; the forked work is the two-host path (InfiniBand, RoCE v2, or
 > USB4/Thunderbolt) and its launchers and benchmarks.
 >
@@ -41,7 +41,7 @@ Q4 GGUF sets with a metadata-only first shard. Q4 and Q8 TP2 + MTP serving
 passed validation; [release notes](docs/releases/2026-11-06-tp2-fixes.md)
 describe the checks and remaining numerical/timing limits.
 
-Development integrates upstream **v0.32.0**, including source extensions,
+Development integrates upstream **v0.33.0**, including source extensions,
 multiple single-host prefill checkpoints, provider sampling defaults and tool
 dialects, with mirrored TP2 snapshots and reasoning controls preserved. The new layer
 yields and decode-overlap extension are single-host only; TP2 retains bounded

@@ -17,12 +17,13 @@ set(gufo_pr_targets
   extension_runtime_test extension_role_test
   arg_parser_test transcribe_cli_test json_test json_constraint_test gguf_reader_test qwen_config_test qwen_draft_vocab_test
   gguf_identity_test
-  png_decode_test
+  png_decode_test wav_decode_test
   heap_placement_test
+  admission_memory_test
   platform_publish_test platform_prefault_test platform_mapped_file_test
   platform_fs_test platform_library_test
   logit_sampler_test ggml_dequant_test
-  quote_tracker_test logprobs_test sampling_test
+  quote_tracker_test logprobs_test sampling_test image_api_test
   openai_chat_test http_server_test http_server_signals_test trace_test
   audio_websocket_test
   text_generation_scheduler_test layered_prefill_conformance_test

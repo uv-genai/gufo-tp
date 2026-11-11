@@ -85,4 +85,10 @@ The snapshot-copy registration-boundary repair and cache retention fixes are
 integrated; native TP snapshots and restore remain available. README/AGENTS
 retain project branding, native setup and the permanent 27B Q8 restriction.
 
-Validation is in progress under the fixed scope above.
+Native PR checks pass 118/118; release build and all three selected GPU
+operators (routed, projection, snapshot copy) pass. Both clang-format 21.1.8
+and 23.1.1 pass, along with docs, metadata, family boundaries and API policy.
+Two initializer layouts are adjusted to satisfy both formatter versions; the
+v0.32.0 hosted format failure is corrected here.
+
+TP2 runtime validation is in progress under the fixed scope above.

@@ -60,6 +60,9 @@ void qwen38_flash_next_provider_register(gufo::ext::Registry& registry) {
 #endif
       .sampling_defaults =
           &gufo::models::qwen38_flash_next::FlashNextSamplingDefaults,
+      .speculative_defaults = {{.backend = "mtp",
+                                .max_draft_tokens = 7,
+                                .min_draft_tokens = 1}},
   });
 #endif
 }

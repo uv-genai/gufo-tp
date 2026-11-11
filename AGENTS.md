@@ -78,7 +78,7 @@ ctest --preset gpu-full -R '^<test-name>$' --output-on-failure
 `cmake --build --preset pr`
 runs the focused contract subset after configuring `cpu-test`. Full CPU checks,
 sanitisers, GPU/operator/model checks and H3 quality tools remain available
-locally; see [docs/TESTING.md](docs/TESTING.md). Do not run full model sweeps,
+locally; see [docs/TESTING.md](docs/internal/testing.md). Do not run full model sweeps,
 video generation or duplicate suites for routine edits. A missing-model skip
 is not a quality pass. Broaden checks when shared behavior changes or failures
 expose risk.
@@ -129,7 +129,7 @@ quality; successful optimizations become the default, without extra switches.
 - Use one canonical long option and backend name per behavior; avoid aliases.
 - Use `gh` for GitHub operations after checking `gh auth status`.
 - Follow Conventional Commits with a single-line message. Title pull requests
-  according to [the release policy](docs/RELEASING.md); squash merging retains
+  according to [the release policy](docs/internal/releasing.md); squash merging retains
   that title on `main`. Mark breaking changes with `!` in the title, and leave
   version and changelog updates to the release workflow.
 - Prefer `jj` when available (`jj version`); otherwise use Git.
@@ -145,6 +145,7 @@ quality; successful optimizations become the default, without extra switches.
   API revisions derive from records; breaking changes advance `api-series.json`
   and update in-tree users. This guarantees source compatibility after rebuild,
   not binary ABI. See `docs/RELEASING.md`.
+- Follow [docs/AGENTS.md](docs/AGENTS.md) for documentation layout and checks.
 - Follow the user's remote workflow and preserve unrelated work.
 
 ## Remotes and merges
@@ -154,7 +155,7 @@ quality; successful optimizations become the default, without extra switches.
   --ff-only origin/main`). Never push to `origin` / `gufo-org`.
 - Work and publishes go on fork **`main`**, remote **`uv-genai`** only.
 - Every published TP2 tag needs a GitHub Release with written notes. Follow
-  [docs/RELEASING.md](docs/RELEASING.md) for dated TP2 tags, source/binary
+  [docs/RELEASING.md](docs/internal/releasing.md) for dated TP2 tags, source/binary
   identity and validation scope. Current TP2 release qualification is Linux;
   Windows is outside this work's scope.
 - **`README.md` and `AGENTS.md` are project-owned.** Integrate upstream changes
@@ -165,18 +166,18 @@ quality; successful optimizations become the default, without extra switches.
   stay **0**. Never run that package manager on this host.
 - After a merge: format check, release build, then TP2 validation below
   before any push. Compile-only is not a TP2 pass.
-- Before merging upstream, read [docs/MERGE-CHECKLIST.md](docs/MERGE-CHECKLIST.md)
+- Before merging upstream, read [docs/MERGE-CHECKLIST.md](docs/internal/MERGE-CHECKLIST.md)
   and scan the diff for TP2 hazards (below). Prefer a hard
   `TpWorldSize()==1` gate over hoping ranks agree.
 
 ## TP2 (two-host Flash-Next)
 
-Launchers live in [tools/tp2/](tools/tp2/); ship the same `build/release/gufo`
+Launchers live in [tools/tp2/](tools/tp2); ship the same `build/release/gufo`
 to `strix-halo-1.local` before starting a pair. Start rank 0, then rank 1
 within 30 s. Verify TP2 with **generation text**, not HTTP 200: a rank-0-only
 restore or a residual that never settles returns an empty completion with no
 error. Session reuse is the usual desync point; see
-[TP2.md](docs/models/qwen3.8-flash-next/TP2.md).
+[TP2.md](docs/internal/models/qwen3.8-flash-next/TP2.md).
 
 ### Collective invariant
 
@@ -219,6 +220,7 @@ hazard** until gated or mirrored:
 | Hazard | Why it breaks verbs | Policy |
 | --- | --- | --- |
 | Draft subset / small head | Skips split-argmax all-reduce | `TpWorldSize()==1` only |
+| Prefill layer yields | Decode callbacks inside prefill reorder collectives | Single-host only until mirrored |
 | Prompt lookup / n-gram copy | Skips neural `MtpForward` | `TpWorldSize()==1` only |
 | New speculative/MTP modes | Different cycle width per rank | Mirror count from rank 0 **and** path shape |
 | Component-cache / slot restore | Rank-0-only restore | Keep `UsesComponentCache` false |
@@ -229,4 +231,4 @@ hazard** until gated or mirrored:
 
 **After any merge that touches** `engine.cpp`, `executor.*`,
 `inference_backend.cpp`, `component_text_cache.*`, or MTP/cache: run the
-TP2 smoke in [MERGE-CHECKLIST.md](docs/MERGE-CHECKLIST.md) before push.
+TP2 smoke in [MERGE-CHECKLIST.md](docs/internal/MERGE-CHECKLIST.md) before push.

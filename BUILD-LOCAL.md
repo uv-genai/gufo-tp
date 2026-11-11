@@ -54,5 +54,5 @@ SHA-256 hashes. Preserve the peer's unrelated source/configuration edits.
 Both hosts need the complete, identical target shards, MTP sidecar and projector.
 Sync changed rank launchers as well as the binary. Follow
 [TP2-SETUP.md](TP2-SETUP.md#part-d--running-the-two-host-server) and the
-[merge checklist](docs/MERGE-CHECKLIST.md) for generation, reuse and concurrency
+[merge checklist](docs/internal/MERGE-CHECKLIST.md) for generation, reuse and concurrency
 checks. Successful compilation or HTTP readiness alone does not qualify TP2.

@@ -15,10 +15,10 @@ Q8 model, not Flash-Next Q8. GPU test queues were stopped after the user
 challenged the expanding validation scope; both hosts are free.
 
 1. [AGENTS.md](AGENTS.md): host flags, remotes and TP2 invariants.
-2. [Upstream merge record](docs/MERGE-UPSTREAM-2026-11-06.md): current integration and qualification.
+2. [Upstream merge record](docs/internal/MERGE-UPSTREAM-2026-11-06.md): current integration and qualification.
    [Prior release notes](docs/releases/2026-11-06-tp2-fixes.md) describe the published v0.28.1 fixes.
 3. [BUILD-LOCAL.md](BUILD-LOCAL.md) and [TP2-SETUP.md](TP2-SETUP.md): native build/deployment.
-4. [Merge checklist](docs/MERGE-CHECKLIST.md) and [TP2 design](docs/models/qwen3.8-flash-next/TP2.md).
+4. [Merge checklist](docs/internal/MERGE-CHECKLIST.md) and [TP2 design](docs/internal/models/qwen3.8-flash-next/TP2.md).
 
 ## Repository and release
 
@@ -36,7 +36,7 @@ challenged the expanding validation scope; both hosts are free.
 
 Separate branches and validated PRs precede code merges. Every published tag
 must have a GitHub Release with written notes. Do not move published tags or
-push upstream tags wholesale. See [release policy](docs/RELEASING.md).
+push upstream tags wholesale. See [release policy](docs/internal/releasing.md).
 AGENTS.md is project-owned: its case-insensitive prohibited-environment name
 count must remain zero; never run that package manager here. Windows is out of
 scope for this release.
@@ -104,13 +104,13 @@ The re-downloaded Q4 set matches publisher revision
 Gufo's former padding check rejected it as `Malformed or truncated GGUF`.
 The reader now accepts complete metadata-only shards without tensor padding;
 truncated metadata and weight extents still fail. No model bytes were changed.
-Hashes and download instructions: [model guide](docs/models/qwen3.8-flash-next/README.md#metadata-only-q4-shard).
+Hashes and download instructions: [model guide](docs/internal/models/qwen3.8-flash-next/README.md#metadata-only-q4-shard).
 A preceding `peer closed the channel` launch failure was secondary to a missing
 Q4 file on rank 1; inspect both rank logs before diagnosing a collective bug.
 
 ## Current upstream validation
 
-See the [merge record](docs/MERGE-UPSTREAM-2026-11-06.md) for v0.29.0 through v0.31.0
+See the [merge record](docs/internal/MERGE-UPSTREAM-2026-11-06.md) for v0.29.0 through v0.31.0
 build, CPU/GPU tests, four TP2 modes and per-request timing controls. Raw
 evidence is retained under the corresponding version directories in
 `artifacts/upstream-2026-11-06/`.
@@ -173,12 +173,12 @@ remain inconclusive after a candidate repeat and unchanged-main controls.
 All outputs and work/draft counts matched for those controls. Keep the slower
 samples; no qualified speedup or confirmed timing regression is claimed. The
 larger-prefill control changes output after the correctness fix and is not
-comparable. [Timing record](docs/models/qwen3.8-flash-next/BENCHMARKS.md#q8-regression-controls-november-6-2026).
+comparable. [Timing record](docs/internal/models/qwen3.8-flash-next/BENCHMARKS.md#q8-regression-controls-november-6-2026).
 
 Sparse attention passes its existing FP16 envelope against the independently
 qualified reference. The extra full-model split probe retains a maximum logit
 difference of **0.698152**; it is not a byte-exact sparse-prefill pass.
-[Quality limits](docs/models/qwen3.8-flash-next/QUALITY.md).
+[Quality limits](docs/internal/models/qwen3.8-flash-next/QUALITY.md).
 
 ## TP2 invariants and future work
 

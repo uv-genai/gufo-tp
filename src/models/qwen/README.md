@@ -6,9 +6,9 @@ operators and vision live in [`src/families/qwen/`](../../families/qwen/README.m
 which Flash-Next, Qwen3-TTS, Qwen-Image-2.1 and MiniMax H3 also use. Audio
 implementations are model-private.
 
-[27B usage](../../../docs/models/qwen3.8-27b/README.md) ·
-[27B quality](../../../docs/models/qwen3.8-27b/QUALITY.md) ·
-[Flash-Next](../../../docs/models/qwen3.8-flash-next/README.md)
+[27B usage](../../../docs/models/qwen3.8-27b.md) ·
+[27B quality](../../../docs/internal/models/qwen3.8-27b/QUALITY.md) ·
+[Flash-Next](../../../docs/models/qwen3.8-flash-next.md)
 
 ## Source ownership
 
@@ -19,22 +19,22 @@ implementations are model-private.
 | [`forward.hpp`](forward.hpp), [`forward.cpp`](forward.cpp) | CPU/reference tensor math, layer composition, full single-token forward, and sampling oracle. |
 | [`generator.hpp`](generator.hpp), [`generator.cpp`](generator.cpp) | CPU autoregressive generation loop and GGUF-backed reference generator. |
 | [`ssm.hpp`](ssm.hpp), [`ssm.cpp`](ssm.cpp) | CPU Gated DeltaNet cache and the typed SSM parameter-slice implementation. |
-| [`modules/`](modules/) | Narrow stage contracts for embedding, norm, attention, RoPE, residual, FFN, SSM, unembedding, sampling, and quantized GEMM. [`module_ctx.hpp`](modules/module_ctx.hpp) separates CPU and HIP capabilities. |
+| [`modules/`](modules) | Narrow stage contracts for embedding, norm, attention, RoPE, residual, FFN, SSM, unembedding, sampling, and quantized GEMM. [`module_ctx.hpp`](modules/module_ctx.hpp) separates CPU and HIP capabilities. |
 | [`../families/qwen/hip_common/gemm_route.hpp`](../../families/qwen/hip_common/gemm_route.hpp) | Pure, host-only format/shape/capability-to-GEMM-route resolver shared by CPU, HIP decode, HIP prefill, and HIP MTP. |
 | [`hip/executor.hpp`](hip/executor.hpp), [`hip/executor.cpp`](hip/executor.cpp) | Immutable GPU-visible model, session executor, arena-facing API, generation loop, graph identity, and persistent execution state. |
 | [`hip/decode.cpp`](hip/decode.cpp), [`hip/decode_step.cpp`](hip/decode_step.cpp) | Token I/O and graph orchestration versus the per-token decode composition root. |
 | [`hip/prefill.cpp`](hip/prefill.cpp), [`hip/prefill_chunk.cpp`](hip/prefill_chunk.cpp) | Prompt chunking versus the batched prefill launch chain. |
 | [`hip/arena.cpp`](hip/arena.cpp), [`hip/ssm_replay.cpp`](hip/ssm_replay.cpp) | Stable GPU allocation ownership versus recurrent snapshots and SSM replay. |
 | [`../families/qwen/hip_common/execution_policy.hpp`](../../families/qwen/hip_common/execution_policy.hpp) | Immutable execution policy, pure per-layer route resolution, rejection reasons, fingerprints, and graph eligibility. |
-| [`../families/qwen/kernels/ops/`](../../families/qwen/kernels/ops/) | Narrow launcher interfaces grouped by attention, GEMM, norm/residual, SSM, SwiGLU, and token operations. [`ops.hpp`](../../families/qwen/kernels/ops.hpp) is a compatibility umbrella. |
-| [`../families/qwen/kernels/`](../../families/qwen/kernels/) | HIP implementations split by launch/experiment boundary; graph-pointer attention, decode recurrence, quant GEMV, and fused RMSNorm+SwiGLU have independent translation units. |
+| [`../families/qwen/kernels/ops/`](../../families/qwen/kernels/ops) | Narrow launcher interfaces grouped by attention, GEMM, norm/residual, SSM, SwiGLU, and token operations. [`ops.hpp`](../../families/qwen/kernels/ops.hpp) is a compatibility umbrella. |
+| [`../families/qwen/kernels/`](../../families/qwen/kernels) | HIP implementations split by launch/experiment boundary; graph-pointer attention, decode recurrence, quant GEMV, and fused RMSNorm+SwiGLU have independent translation units. |
 | [`mtp_reference.hpp`](mtp_reference.hpp), [`mtp_reference.cpp`](mtp_reference.cpp) | Stateful CPU oracle for the single-layer MTP graph. |
-| [`hip/mtp/`](hip/mtp/), [`hip/mtp.hpp`](hip/mtp.hpp) | GPU MTP model conversion, executor, and speculative draft backend. |
+| [`hip/mtp/`](hip/mtp), [`hip/mtp.hpp`](hip/mtp.hpp) | GPU MTP model conversion, executor, and speculative draft backend. |
 | [`dflash_weights.hpp`](dflash_weights.hpp), [`dflash_weights.cpp`](dflash_weights.cpp) | DFlash2 GGUF configuration, tensor binding and validation. The independent operator reference is in `tools/qwen27b/dflash_reference.py`. |
-| [`hip/dflash/`](hip/dflash/), [`hip/dflash.hpp`](hip/dflash.hpp), [`../families/qwen/kernels/dflash_kernels.*`](../../families/qwen/kernels/dflash_kernels.hip) | GPU DFlash / DFlash-2 model, non-causal block attention kernels, 2-tap dynamic convs, bilinear path selector, and speculative draft backend. |
+| [`hip/dflash/`](hip/dflash), [`hip/dflash.hpp`](hip/dflash.hpp), [`../families/qwen/kernels/dflash_kernels.*`](../../families/qwen/kernels/dflash_kernels.hip) | GPU DFlash / DFlash-2 model, non-causal block attention kernels, 2-tap dynamic convs, bilinear path selector, and speculative draft backend. |
 | [`../families/qwen/text/tokenizer.*`](../../families/qwen/text/tokenizer.hpp), [`../families/qwen/text/chat_template.*`](../../families/qwen/text/chat_template.hpp) | BPE vocabulary/merge handling and bounded deterministic Qwen ChatML formatting. |
 | [`../families/qwen/config/qwen_config.*`](../../families/qwen/config/qwen_config.hpp) | CPU-only Qwen GGUF configuration extraction used by the shape check, weight binding, the MTP reference and `prompt`. |
-| [`../families/qwen/vision/`](../../families/qwen/vision/) | Vision encoder, device image input, image prompt expansion and image cache. |
+| [`../families/qwen/vision/`](../../families/qwen/vision) | Vision encoder, device image input, image prompt expansion and image cache. |
 | [`oracles.*`](oracles.hpp) | Independent reference helpers used for correctness comparison. |
 | [`extension.cmake`](extension.cmake) | Explicit Qwen production source registration and HIP source ownership. |
 

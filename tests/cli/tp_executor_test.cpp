@@ -206,7 +206,8 @@ public:
                 ? std::optional<gufo::server::TextRunnerPersistenceDescriptor>(
                       {.compatibility_identity = {'t', 'o', 'y'},
                        .payload_version = 1})
-                : std::nullopt};
+                : std::nullopt,
+        .scheduling = gufo::ext::TextSchedulingProfile{.pass_tokens = 64, .max_layer_groups = options_.provider_metadata ? 8u : 1u, .max_yield_decode_width = 8}};
   }
   std::size_t PersistentSnapshotPayloadBytes(
       const gufo::server::TextRunnerSnapshot& snapshot) const override {
@@ -989,6 +990,9 @@ int main() {
     auto toy = std::make_shared<ToyRunner>(
         ToyOptions{.capabilities = every, .provider_metadata = true});
     const TpMirroredRunner runner(toy, std::make_shared<CaptureSink>());
+    Require(toy->Descriptor().scheduling->max_layer_groups == 8 &&
+                !runner.Descriptor().scheduling.has_value(),
+            "TP2 disables layer yields that rank 1 cannot mirror");
     Require(
         runner.ToolDialectId() == "qwen" &&
             runner.ReasoningDelimiters() ==

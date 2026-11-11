@@ -22,7 +22,7 @@ Model files must be complete and identical on both hosts:
 `MTP/mtp-Qwen3.8-Flash-Next-shared-Q8_0.gguf`, `mmproj-BF16.gguf`.
 The current Q4 set has a small metadata-only first shard. Verify hashes and
 sizes against the publisher before treating its size as a truncated download;
-see the [model guide](docs/models/qwen3.8-flash-next/README.md#metadata-only-q4-shard).
+see the [model guide](docs/internal/models/qwen3.8-flash-next/README.md#metadata-only-q4-shard).
 
 ---
 

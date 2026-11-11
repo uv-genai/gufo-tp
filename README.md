@@ -13,7 +13,7 @@ parallelism across two hosts** on top.
 > **Gufo-TP is its own project.** It merges
 > [gufo-org/gufo](https://github.com/gufo-org/gufo) with the **TP2-enabled fork**
 > [neuhaus/gufo](https://github.com/neuhaus/gufo), tracks upstream `main`
-> (through **v0.31.0**), and keeps every one-host feature and
+> (through **v0.32.0**), and keeps every one-host feature and
 > fix; the forked work is the two-host path (InfiniBand, RoCE v2, or
 > USB4/Thunderbolt) and its launchers and benchmarks.
 >
@@ -23,13 +23,13 @@ parallelism across two hosts** on top.
 > on top of it — including **mirrored TP2 draft counts**, **strided SSM off
 > TP2’s half width**, **draft-subset single-host only**, and **n-gram
 > `embeddings_ready`** so ranks do not wait twice after a graph pre-wait
-> (see [TP2.md](docs/models/qwen3.8-flash-next/TP2.md) and project history).
+> (see [TP2.md](docs/internal/models/qwen3.8-flash-next/TP2.md) and project history).
 >
 > - **TP2**: Qwen3.8 Flash-Next (Q4 or full Q8) across two machines
 > - **Link**: two Thunderbolt 4 / USB4 cables, write-striping both rails
 >   (~37 Gb/s measured), or InfiniBand / RoCE v2
-> - **Launchers**: [tools/tp2/](tools/tp2/) · setup guide [TP2-SETUP.md](TP2-SETUP.md)
-> - **Design and limits**: [TP2.md](docs/models/qwen3.8-flash-next/TP2.md)
+> - **Launchers**: [tools/tp2/](tools/tp2) · setup guide [TP2-SETUP.md](TP2-SETUP.md)
+> - **Design and limits**: [TP2.md](docs/internal/models/qwen3.8-flash-next/TP2.md)
 >
 > See the [changelog](CHANGELOG.md) for history. Upstream releases:
 > [gufo-org/gufo](https://github.com/gufo-org/gufo/releases). Gufo-TP publishes
@@ -41,11 +41,13 @@ Q4 GGUF sets with a metadata-only first shard. Q4 and Q8 TP2 + MTP serving
 passed validation; [release notes](docs/releases/2026-11-06-tp2-fixes.md)
 describe the checks and remaining numerical/timing limits.
 
-Development now integrates upstream **v0.31.0**, including source extensions,
+Development integrates upstream **v0.32.0**, including source extensions,
 multiple single-host prefill checkpoints, provider sampling defaults and tool
-dialects, with mirrored TP2 snapshots and reasoning controls preserved. Upgrade
+dialects, with mirrored TP2 snapshots and reasoning controls preserved. The new layer
+yields and decode-overlap extension are single-host only; TP2 retains bounded
+prefill calls between decode steps. Upgrade
 both hosts together: TP control protocol 23 rejects older peers.
-See the [merge validation record](docs/MERGE-UPSTREAM-2026-11-06.md) for build identity,
+See the [merge validation record](docs/internal/MERGE-UPSTREAM-2026-11-11.md) for build identity,
 Q4/Q8 checks and timing limits. The dated release above remains the latest
 published release.
 
@@ -55,7 +57,7 @@ On one host, Flash-Next decode and prefill are already excellent. **TP2 is
 faster than one host at every concurrency we measured**, and it holds contexts
 and the full Q8 model that do not fit a single 128 GiB APU. After merging
 upstream through v0.28.1, one-host Flash-Next reports **1,801.01 tok/s AR
-prefill** and up to **116.93 tok/s tg** (see [Benchmarks](docs/models/qwen3.8-flash-next/BENCHMARKS.md)).
+prefill** and up to **116.93 tok/s tg** (see [Benchmarks](docs/internal/models/qwen3.8-flash-next/BENCHMARKS.md)).
 The matched TP2 series below is from the v0.15.0-era binary (Q4 MTP,
 `pp2048 / tg128`, 2026-10-14). TP2 **runtime** was requalified with the
 November 6 fixes on Q4 and Q8, including user llama-swap runs; the historical
@@ -82,7 +84,7 @@ Concurrent decode (sum of per-user tok/s, ~2K prompt + 128 tokens):
 | 8 | 130 | 150 | — |
 
 Method, raw logs and Q8 depth series:
-[2026-10-14-tp2-depth-series.md](docs/models/qwen3.8-flash-next/2026-10-14-tp2-depth-series.md).
+[2026-10-14-tp2-depth-series.md](docs/internal/models/qwen3.8-flash-next/2026-10-14-tp2-depth-series.md).
 Published one-host tables stay under
 [docs/models](docs/models/README.md).
 
@@ -92,15 +94,15 @@ All model documentation lives under [docs/models](docs/models/README.md):
 
 | Model | Inference modes | Hugging Face weights | Benchmarks | Quality |
 | --- | --- | --- | --- | --- |
-| [Qwen3.8 27B](docs/models/qwen3.8-27b/README.md) | Q4/Q8, images, AR, DFlash2 | Unsloth [Q4_K_XL](https://huggingface.co/unsloth/Qwen3.8-27B-GGUF/blob/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q4_K_XL.gguf) / [Q8_K_XL](https://huggingface.co/unsloth/Qwen3.8-27B-GGUF/blob/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q8_K_XL.gguf) · [DFlash2 Q4_K_M](https://huggingface.co/z-lab/Qwen3.8-27B-DFlash2-GGUF/blob/2d9571f8ce46e151f61c6499c99dee6079e1d610/Qwen3.8-27B-DFlash2-Q4_K_M.gguf) | Q4: **648.89 tok/s pp**; up to **71.55 tok/s tg** single user and **128.42 aggregated tok/s** on 8 concurrent requests with DFlash2 · [Benchmarks](docs/models/qwen3.8-27b/BENCHMARKS.md) | [Quality](docs/models/qwen3.8-27b/QUALITY.md) |
-| [Qwen3.8 Flash-Next](docs/models/qwen3.8-flash-next/README.md) | Q4/Q8, images, AR, MTP, **TP2** | Unsloth [Q4_K_XL](https://huggingface.co/unsloth/Qwen3.8-Flash-Next-GGUF/tree/d96201194f103c906994f283f504209dc8d2a10c/UD-Q4_K_XL) · [MTP Q8_0](https://huggingface.co/unsloth/Qwen3.8-Flash-Next-GGUF/blob/d96201194f103c906994f283f504209dc8d2a10c/MTP/mtp-Qwen3.8-Flash-Next-shared-Q8_0.gguf) | One host: **1,801.01 tok/s pp** (AR); up to **116.93 tok/s tg** and **245.81 aggregated tok/s** · **TP2** up to **1,860 tok/s pp** and **79 tok/s tg**, **181 tok/s** sum at 6 users · [Benchmarks](docs/models/qwen3.8-flash-next/BENCHMARKS.md) · [TP2 series](docs/models/qwen3.8-flash-next/2026-10-14-tp2-depth-series.md) | [Quality](docs/models/qwen3.8-flash-next/QUALITY.md) |
-| [DeepSeek V4 Flash](docs/models/deepseek-v4-flash/README.md) | AR, DSpark | [antirez Flash 0731 IQ2XXS](https://huggingface.co/antirez/deepseek-v4-gguf/blob/1cd7b564460821938add0475a60b942c409295e0/DeepSeek-V4-Flash-IQ2XXS-w2Q2K-AProjQ8-SExpQ8-OutQ8-chat-v2-imatrix-0731.gguf) · [DSpark](https://huggingface.co/antirez/deepseek-v4-gguf/blob/e7f04037032990db0346398d249baf9fb9df1ccc/DeepSeek-V4-Flash-DSpark-support-0731.gguf) | **474.87 tok/s pp**; up to **29.57 tok/s tg** single user with DSpark and **77.12 aggregated tok/s** on 8 concurrent requests with AR · [Benchmarks](docs/models/deepseek-v4-flash/BENCHMARKS.md) | [Quality](docs/models/deepseek-v4-flash/QUALITY.md) |
-| [Qwen3-ASR 1.7B](docs/models/qwen3-asr/README.md) | Speech recognition | [BF16](https://huggingface.co/Qwen/Qwen3-ASR-1.7B/tree/7278e1e70fe206f11671096ffdd38061171dd6e5) | **15.27× realtime** · [Benchmarks](docs/models/qwen3-asr/BENCHMARKS.md) | [Quality](docs/models/qwen3-asr/QUALITY.md) |
-| [EmbeddingGemma 2](docs/models/embeddinggemma-2/README.md) | Text and image embeddings | [BF16](https://huggingface.co/google/embeddinggemma-2/tree/914f7f89142e33e77833254d9c9b90c3cef7303b) | Up to **41.5k tokens/s** over HTTP; **13.0 ms** for a 404-token request · [Benchmarks](docs/models/embeddinggemma-2/BENCHMARKS.md) | [Quality](docs/models/embeddinggemma-2/QUALITY.md) |
-| [Qwen3-TTS 1.7B](docs/models/qwen3-tts/README.md) | Speech synthesis and voice cloning | BF16 [CustomVoice](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice) / [VoiceDesign](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign) / [Base](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-Base) | Up to **2.54× realtime**; **201 ms** to first audio (CustomVoice) · [Benchmarks](docs/models/qwen3-tts/BENCHMARKS.md) | [Quality](docs/models/qwen3-tts/QUALITY.md) |
-| [Qwen-Image-2.1](docs/models/qwen-image-2.1/README.md) | BF16 image generation and editing | [Complete pipeline](https://huggingface.co/Qwen/Qwen-Image-2.1/tree/b3179ad355be050328e483a9dfdd9e60cd62adfa) | In progress · [Benchmarks](docs/models/qwen-image-2.1/BENCHMARKS.md) | [Quality](docs/models/qwen-image-2.1/QUALITY.md) |
-| [Qwen-Image-2.1-Turbo](docs/models/qwen-image-2.1/README.md#qwen-image-21-turbo) | BF16 eight-step image generation and editing | [Complete pipeline](https://huggingface.co/Qwen/Qwen-Image-2.1-Turbo/tree/fc13ba1986fcb905854dc8de2f52eee395f49b5b) | **18.6 s** per 1024² image, **4.8×** faster than the 40-step base model · [Benchmarks](docs/models/qwen-image-2.1/BENCHMARKS.md#qwen-image-21-turbo) | [Quality](docs/models/qwen-image-2.1/QUALITY.md#qwen-image-21-turbo) |
-| [MiniMax H3](docs/models/minimax-h3/README.md) | BF16 text to video/audio | [FL2VA pipeline](https://huggingface.co/MiniMaxAI/MiniMax-H3/tree/42ed227ee7df40d41602854ae760620d6eb651fe/FL2VA) | In progress · [Benchmarks](docs/models/minimax-h3/BENCHMARKS.md) | [Quality](docs/models/minimax-h3/QUALITY.md) |
+| [Qwen3.8 27B](docs/internal/models/qwen3.8-27b/README.md) | Q4/Q8, images, AR, DFlash2 | Unsloth [Q4_K_XL](https://huggingface.co/unsloth/Qwen3.8-27B-GGUF/blob/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q4_K_XL.gguf) / [Q8_K_XL](https://huggingface.co/unsloth/Qwen3.8-27B-GGUF/blob/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q8_K_XL.gguf) · [DFlash2 Q4_K_M](https://huggingface.co/z-lab/Qwen3.8-27B-DFlash2-GGUF/blob/2d9571f8ce46e151f61c6499c99dee6079e1d610/Qwen3.8-27B-DFlash2-Q4_K_M.gguf) | Q4: **648.89 tok/s pp**; up to **71.55 tok/s tg** single user and **128.42 aggregated tok/s** on 8 concurrent requests with DFlash2 · [Benchmarks](docs/internal/models/qwen3.8-27b/BENCHMARKS.md) | [Quality](docs/internal/models/qwen3.8-27b/QUALITY.md) |
+| [Qwen3.8 Flash-Next](docs/internal/models/qwen3.8-flash-next/README.md) | Q4/Q8, images, AR, MTP, **TP2** | Unsloth [Q4_K_XL](https://huggingface.co/unsloth/Qwen3.8-Flash-Next-GGUF/tree/d96201194f103c906994f283f504209dc8d2a10c/UD-Q4_K_XL) · [MTP Q8_0](https://huggingface.co/unsloth/Qwen3.8-Flash-Next-GGUF/blob/d96201194f103c906994f283f504209dc8d2a10c/MTP/mtp-Qwen3.8-Flash-Next-shared-Q8_0.gguf) | One host: **1,801.01 tok/s pp** (AR); up to **116.93 tok/s tg** and **245.81 aggregated tok/s** · **TP2** up to **1,860 tok/s pp** and **79 tok/s tg**, **181 tok/s** sum at 6 users · [Benchmarks](docs/internal/models/qwen3.8-flash-next/BENCHMARKS.md) · [TP2 series](docs/internal/models/qwen3.8-flash-next/2026-10-14-tp2-depth-series.md) | [Quality](docs/internal/models/qwen3.8-flash-next/QUALITY.md) |
+| [DeepSeek V4 Flash](docs/internal/models/deepseek-v4-flash/README.md) | AR, DSpark | [antirez Flash 0731 IQ2XXS](https://huggingface.co/antirez/deepseek-v4-gguf/blob/1cd7b564460821938add0475a60b942c409295e0/DeepSeek-V4-Flash-IQ2XXS-w2Q2K-AProjQ8-SExpQ8-OutQ8-chat-v2-imatrix-0731.gguf) · [DSpark](https://huggingface.co/antirez/deepseek-v4-gguf/blob/e7f04037032990db0346398d249baf9fb9df1ccc/DeepSeek-V4-Flash-DSpark-support-0731.gguf) | **474.87 tok/s pp**; up to **29.57 tok/s tg** single user with DSpark and **77.12 aggregated tok/s** on 8 concurrent requests with AR · [Benchmarks](docs/internal/models/deepseek-v4-flash/BENCHMARKS.md) | [Quality](docs/internal/models/deepseek-v4-flash/QUALITY.md) |
+| [Qwen3-ASR 1.7B](docs/internal/models/qwen3-asr/README.md) | Speech recognition | [BF16](https://huggingface.co/Qwen/Qwen3-ASR-1.7B/tree/7278e1e70fe206f11671096ffdd38061171dd6e5) | **15.27× realtime** · [Benchmarks](docs/internal/models/qwen3-asr/BENCHMARKS.md) | [Quality](docs/internal/models/qwen3-asr/QUALITY.md) |
+| [EmbeddingGemma 2](docs/internal/models/embeddinggemma-2/README.md) | Text and image embeddings | [BF16](https://huggingface.co/google/embeddinggemma-2/tree/914f7f89142e33e77833254d9c9b90c3cef7303b) | Up to **41.5k tokens/s** over HTTP; **13.0 ms** for a 404-token request · [Benchmarks](docs/internal/models/embeddinggemma-2/BENCHMARKS.md) | [Quality](docs/internal/models/embeddinggemma-2/QUALITY.md) |
+| [Qwen3-TTS 1.7B](docs/internal/models/qwen3-tts/README.md) | Speech synthesis and voice cloning | BF16 [CustomVoice](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice) / [VoiceDesign](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign) / [Base](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-Base) | Up to **2.54× realtime**; **201 ms** to first audio (CustomVoice) · [Benchmarks](docs/internal/models/qwen3-tts/BENCHMARKS.md) | [Quality](docs/internal/models/qwen3-tts/QUALITY.md) |
+| [Qwen-Image-2.1](docs/internal/models/qwen-image-2.1/README.md) | BF16 image generation and editing | [Complete pipeline](https://huggingface.co/Qwen/Qwen-Image-2.1/tree/b3179ad355be050328e483a9dfdd9e60cd62adfa) | In progress · [Benchmarks](docs/internal/models/qwen-image-2.1/BENCHMARKS.md) | [Quality](docs/internal/models/qwen-image-2.1/QUALITY.md) |
+| [Qwen-Image-2.1-Turbo](docs/models/qwen-image-2.1.md#qwen-image-21-turbo) | BF16 eight-step image generation and editing | [Complete pipeline](https://huggingface.co/Qwen/Qwen-Image-2.1-Turbo/tree/fc13ba1986fcb905854dc8de2f52eee395f49b5b) | **18.6 s** per 1024² image, **4.8×** faster than the 40-step base model · [Benchmarks](docs/internal/models/qwen-image-2.1/BENCHMARKS.md#qwen-image-21-turbo) | [Quality](docs/internal/models/qwen-image-2.1/QUALITY.md#qwen-image-21-turbo) |
+| [MiniMax H3](docs/internal/models/minimax-h3/README.md) | BF16 text to video/audio | [FL2VA pipeline](https://huggingface.co/MiniMaxAI/MiniMax-H3/tree/42ed227ee7df40d41602854ae760620d6eb651fe/FL2VA) | In progress · [Benchmarks](docs/internal/models/minimax-h3/BENCHMARKS.md) | [Quality](docs/internal/models/minimax-h3/QUALITY.md) |
 
 Peak measured workloads; text pp is autoregressive (AR), while tg uses the
 named speculative mode. Peaks include repetitive output; aggregate tg sums
@@ -141,7 +143,7 @@ YaRN enabled. Model files and binaries must match on both hosts. llama-swap
 serves clients on port 8080 and assigns the backend port; inspect `/running`
 before reading Gufo's `/metrics` or `/slots`. From bare metal to striped USB4:
 [TP2-SETUP.md](TP2-SETUP.md). Protocol, cache rules and qualification:
-[TP2.md](docs/models/qwen3.8-flash-next/TP2.md).
+[TP2.md](docs/internal/models/qwen3.8-flash-next/TP2.md).
 
 To add or maintain a model, start with the [source extension guide](docs/extensions.md).
 
@@ -225,7 +227,7 @@ curl http://localhost:8080/v1/chat/completions \
 For Open WebUI, VS Code, OpenAI SDK and Responses-API clients (for example
 Codex), set the API base URL to `http://localhost:8080/v1`. Chat Completions and
 Responses support text, images, function tools, structured output and streaming.
-See the [API contract](docs/SERVER.md).
+See the [API contract](docs/internal/server.md).
 
 The text server uses the model's native context by default and generates until
 EOS or the context is full. `--context N` sets context capacity per session;
@@ -238,7 +240,7 @@ Reasoning tokens count toward that response limit.
   compaction or a settings change. Qwen's template accepts only one leading
   system turn, so Gufo moves them there. The request that introduces one is
   prefilled again; later requests reuse the cache. See the
-  [API contract](docs/SERVER.md).
+  [API contract](docs/internal/server.md).
 - **Qwen with Claude Code:** not supported. Claude Code adds a system message
   to `messages` on every turn, so Gufo moves a new one to the leading system
   turn each time and every request prefills the whole history again (#522).
@@ -256,7 +258,8 @@ On the twin CachyOS hosts, follow [BUILD-LOCAL.md](BUILD-LOCAL.md): the compiler
 path and both `-include format` flags are required on every configure there.
 The generic Debian/Ubuntu example below does not include those host workarounds.
 
-Install a C++20 compiler, CMake 3.21+, Ninja, pkg-config and the
+Install a C++20 compiler, CMake 3.21+, Ninja, pkg-config, Rust/Cargo 1.88.0
+(as pinned in `rust-toolchain.toml`) and the
 following development libraries. The pinned Nix toolchain uses GCC
 16.2 and ROCm 10.1.0 (HIP Clang 24). Attention and audio convolution kernels are compiled
 directly from HIP. Python, Triton/AOTriton, Composable Kernel and MIOpen are
@@ -308,7 +311,7 @@ its runtime data and license notices. The GPU driver must allow your user to
 access `/dev/kfd` and `/dev/dri`; model weights are acquired separately.
 
 Changing the compiler or math libraries requires the affected model's quality
-checks. See [testing](docs/TESTING.md) and [benchmarking](docs/BENCHMARKS.md).
+checks. See [testing](docs/internal/testing.md) and [benchmarking](docs/internal/benchmarks.md).
 
 ## License
 

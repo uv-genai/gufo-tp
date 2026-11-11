@@ -13,6 +13,7 @@
 #include <limits>
 #include <memory>
 #include <mutex>
+#include <new>
 #include <optional>
 #include <span>
 #include <string>
@@ -661,30 +662,39 @@ bool InferenceBackend::load(std::shared_ptr<ext::TextModelRunner> runner,
       impl_->state = std::move(new_state);
     }
     return true;
+  } catch (const std::bad_alloc&) {
+    SetError(error, "out of host memory while preparing " +
+                        std::to_string(session_count) + " sessions");
+    return false;
   } catch (const std::exception& exception) {
     SetError(error, exception.what());
     return false;
   }
 }
 
-bool InferenceBackend::load(const std::string& model_path, std::string* error,
-                            std::uint32_t max_context,
-                            std::size_t session_count,
-                            TextPrefillPolicy prefill_policy,
-                            TextSchedulerPolicy scheduler_policy,
-                            const TextSpeculativeConfig& speculative_config,
-                            const TextDiskCacheConfig& disk_cache_config,
-                            const std::string& vision_model_path,
-                            TextRunnerRamCacheOptions ram_cache_config,
-                            const TextTpConfig& tp_config, bool enable_yarn) {
+bool InferenceBackend::load(
+    const std::string& model_path, std::string* error,
+    std::uint32_t max_context, std::size_t session_count,
+    TextPrefillPolicy prefill_policy, TextSchedulerPolicy scheduler_policy,
+    const TextSpeculativeConfig& speculative_config,
+    const TextDiskCacheConfig& disk_cache_config,
+    const std::string& vision_model_path,
+    TextRunnerRamCacheOptions ram_cache_config, const TextTpConfig& tp_config,
+    bool enable_yarn, const PrepareRunnerOptions& prepare_runner_options) {
   std::string load_error;
-  auto reader_owner = core::GgufReader::OpenFile(model_path, &load_error);
+  auto reader_owner = core::GgufReader::OpenFile(
+      model_path, &load_error, {.allow_unsized_tensors = true});
   if (reader_owner == nullptr) {
     SetError(error, "Failed to open GGUF: " + load_error);
     return false;
   }
   const std::shared_ptr<const core::GgufReader> reader(std::move(reader_owner));
   const auto* provider = ext::ProbeTextProvider(*reader);
+  if (provider == nullptr && reader->FirstUnsizedTensor() != nullptr) {
+    // No provider owns this layout: keep the reader's own diagnostic.
+    SetError(error, "Failed to open GGUF: " + reader->UnsizedTensorError());
+    return false;
+  }
   if (provider == nullptr || provider->create == nullptr) {
     SetError(error, "No text provider found for model architecture");
     return false;
@@ -706,13 +716,17 @@ bool InferenceBackend::load(const std::string& model_path, std::string* error,
       .enable_yarn = enable_yarn,
       .tp_transport = tp_config.communicator,
   };
+  if (prepare_runner_options &&
+      !prepare_runner_options(*provider, *reader, &options, error)) {
+    return false;
+  }
   auto runner = provider->create(options, error);
   if (runner == nullptr) {
     return false;
   }
   return load(std::move(runner), error, session_count, prefill_policy,
               scheduler_policy, disk_cache_config, ram_cache_config, tp_config,
-              speculative_config.max_draft_tokens);
+              options.speculative.max_draft_tokens);
 }
 
 #else
@@ -730,7 +744,7 @@ bool InferenceBackend::load(const std::string&, std::string* error,
                             TextSchedulerPolicy, const TextSpeculativeConfig&,
                             const TextDiskCacheConfig&, const std::string&,
                             TextRunnerRamCacheOptions, const TextTpConfig&,
-                            bool) {
+                            bool, const PrepareRunnerOptions&) {
   SetError(error, "HIP engine is disabled");
   return false;
 }
@@ -1254,6 +1268,20 @@ std::optional<std::string> InferenceBackend::render_chat_prompt(
   return state->scheduler->runner().RenderPrompt(effective_request);
 #else
   (void)request;
+  return std::nullopt;
+#endif
+}
+
+std::optional<std::vector<std::uint32_t>> InferenceBackend::tokenize(
+    std::string_view text) const {
+#if defined(ENGINE_ENABLE_HIP)
+  const auto state = impl_->Snapshot();
+  if (state == nullptr) {
+    return std::nullopt;
+  }
+  return state->scheduler->runner().Tokenize(text);
+#else
+  (void)text;
   return std::nullopt;
 #endif
 }

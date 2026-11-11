@@ -12,8 +12,8 @@ Status: **planned, not implemented.** Gufo today runs **DeepSeek V4 Flash**
 3. Start from **streaming** (Engram and/or experts on disk) because that is
    what makes the model fit.
 
-Related: [V4 Flash](../deepseek-v4-flash/README.md) ·
-[Flash-Next TP2](../qwen3.8-flash-next/TP2.md) ·
+Related: [V4 Flash](../../internal/models/deepseek-v4-flash/README.md) ·
+[Flash-Next TP2](../../internal/models/qwen3.8-flash-next/TP2.md) ·
 [Models index](../README.md) ·
 **Reference engine: [ds4-dfm-rs](https://github.com/Baekpica/ds4-dfm-rs)**
 
@@ -183,7 +183,7 @@ No verbs, no mirror — same quality gates as other single-host models.
 
 ### 5.2 TP2 (always in scope)
 
-Reuse [Flash-Next TP2](../qwen3.8-flash-next/TP2.md):
+Reuse [Flash-Next TP2](../../internal/models/qwen3.8-flash-next/TP2.md):
 
 | Piece | Rule |
 | --- | --- |

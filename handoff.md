@@ -128,7 +128,8 @@ records v0.34.0: 124/124 native PR checks and 362 TP2+MTP functional checks
 (Q4 196, Q8 166) with clean rank logs and restart restore. Timing is
 inconclusive: Q4 short-code prefill stays flagged against one of two main
 controls, while main spans 168–198 ms; no regression or speedup is claimed.
-The user's llama-swap check is still pending, and no release tag exists.
+On November 17 the user confirmed the deployed binary works well through
+llama-swap. No release tag includes v0.34.0 yet.
 TP2 runs only through mirrored snapshots: the frontier alignment from upstream
 #1154 is skipped there.
 

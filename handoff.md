@@ -1,7 +1,7 @@
 # LIVE HANDOFF — Gufo-TP
 
-Canonical file: `/home/ugo/projects/gufo/handoff.md`. Updated **2026-11-11** for
-the v0.33.0 TP2 release and completed upstream integrations. Latest release:
+Canonical file: `/home/ugo/projects/gufo/handoff.md`. Updated **2026-11-17** for
+the v0.34.0 upstream integration (PR #36), deployed but not yet released. Latest release:
 `tp2-rdma-merge-v0.33.0-2026-11-11`. Edit this file after deployment,
 merge, release or incident changes; dated files under `~/gufo-merge-handoff/`
 are archives, and its lowercase `handoff.md` is only a pointer here.
@@ -15,7 +15,8 @@ Q8 model, not Flash-Next Q8. The earlier broad test queues were closed on Novemb
 before using either GPU; this document does not establish current availability.
 
 1. [AGENTS.md](AGENTS.md): host flags, remotes and TP2 invariants.
-2. [Upstream merge record](docs/internal/MERGE-UPSTREAM-2026-11-11.md): current integration and qualification.
+2. [Upstream merge record](docs/internal/MERGE-UPSTREAM-2026-11-17.md): current v0.34.0 integration and qualification.
+   [November 11 record](docs/internal/MERGE-UPSTREAM-2026-11-11.md) covers v0.32–v0.33.
    [November 6 record](docs/internal/MERGE-UPSTREAM-2026-11-06.md) covers v0.29–v0.31.
    [Current release notes](docs/releases/2026-11-11-tp2-merge.md) describe this source release.
    [Prior release notes](docs/releases/2026-11-06-tp2-fixes.md) describe the published v0.28.1 fixes.
@@ -29,12 +30,12 @@ before using either GPU; this document does not establish current availability.
 | Development | `/home/ugo/projects/gufo`, `main` tracks **`uv-genai/main`** |
 | Publish remote | **`uv-genai` only**, `https://github.com/uv-genai/gufo-tp.git` |
 | Upstream | `origin` → `gufo-org/gufo`, local tracking branch `gufo-org`; never push there |
-| Upstream merged through | **v0.33.0** (`77dff828`), through separate validated PRs [#32](https://github.com/uv-genai/gufo-tp/pull/32) and [#33](https://github.com/uv-genai/gufo-tp/pull/33); previous v0.29–v0.31 integrations are in the November 6 merge record. Unreleased upstream main is excluded |
+| Upstream merged through | **v0.34.0** (`2845939b`), validated [PR #36](https://github.com/uv-genai/gufo-tp/pull/36), squash `96bb9b49`; v0.32–v0.33 via [#32](https://github.com/uv-genai/gufo-tp/pull/32)/[#33](https://github.com/uv-genai/gufo-tp/pull/33). Unreleased upstream main is excluded |
 | Latest release | [tp2-rdma-merge-v0.33.0-2026-11-11](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.33.0-2026-11-11) |
 | Previous release | [tp2-rdma-fixes-v0.28.1-2026-11-06](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-fixes-v0.28.1-2026-11-06) |
 | Review fixes | [PR #25](https://github.com/uv-genai/gufo-tp/pull/25), merged **`ba1ab427`**, closes #21–#24 |
 | Q4 reader fix | [PR #27](https://github.com/uv-genai/gufo-tp/pull/27), merged **`ae8a93c3`**, closes #26 |
-| Package version | `version.txt` is **0.33.0** from the upstream tag; the dated TP2 release integrates upstream v0.33.0 |
+| Package version | `version.txt` is **0.34.0** from the upstream tag; no dated TP2 release includes v0.34.0 yet |
 
 Separate branches and validated PRs precede code merges. Every published tag
 must have a GitHub Release with written notes. Do not move published tags or
@@ -47,14 +48,19 @@ scope for this release.
 
 Both hosts have `/home/ugo/projects/gufo/build/release/gufo`:
 
-- Compiled revision **`b325c75c7c602020784e1fa48f9b8290f74c3aa4`**.
-- SHA-256 **`85f0be16d16ac11b8933b968ce6e4c060d6538c4ec51ed3938232e323b50d7a7`**.
-- Production code includes upstream v0.33.0, mirrored provider controls and
-  native TP snapshots. Prefill layer yields, decode overlap and its startup
-  calibration stay single-host only. Source extension API is **0.2.22**.
-  Later commits change documentation/evidence only.
-- The binary reports `gufo version development (b325c75c...)`. Do not confuse
-  its compiled revision with the squash commit or the release documentation commit.
+- Compiled revision **`991ecf2a57dd5eb136fd8fd90e591ebcfa10781a`** (PR #36 branch head
+  before its documentation commit), deployed November 17.
+- SHA-256 **`5503297f96e78a53beb52cd526ea47e2ec20c1bb172d4a2f005a809fca45ae61`**.
+- Production code includes upstream v0.34.0, the TP2 frontier-alignment guard,
+  mirrored provider controls and native TP snapshots. Prefill layer yields,
+  decode overlap and its startup calibration stay single-host only. Source
+  extension API is **0.3.2**. Later commits change documentation/evidence only.
+- The binary reports `gufo version development (991ecf2a...)`. Do not confuse
+  its compiled revision with the squash commit `96bb9b49`.
+- The binary needs libopus at runtime (1.6.1 on both hosts); libsndfile/soxr
+  are no longer used.
+- The v0.33.0 binary `b325c75c…` (SHA `85f0be16…`) is retained on both
+  hosts at `artifacts/upstream-2026-11-17/gufo-main-v0.33.0` for rollback.
 - The v0.32.0 baseline `251757aa…` (SHA `ed942b60…`) is retained on both
   hosts at `artifacts/upstream-2026-11-11/gufo-main-v0.32.0`.
 - The v0.31.0 baseline `5b36be34…` (SHA `22e628c8…`) is retained on both
@@ -116,6 +122,15 @@ A preceding `peer closed the channel` launch failure was secondary to a missing
 Q4 file on rank 1; inspect both rank logs before diagnosing a collective bug.
 
 ## Current upstream validation
+
+The [November 17 merge record](docs/internal/MERGE-UPSTREAM-2026-11-17.md)
+records v0.34.0: 124/124 native PR checks and 362 TP2+MTP functional checks
+(Q4 196, Q8 166) with clean rank logs and restart restore. Timing is
+inconclusive: Q4 short-code prefill stays flagged against one of two main
+controls, while main spans 168–198 ms; no regression or speedup is claimed.
+The user's llama-swap check is still pending, and no release tag exists.
+TP2 runs only through mirrored snapshots: the frontier alignment from upstream
+#1154 is skipped there.
 
 The [November 11 merge record](docs/internal/MERGE-UPSTREAM-2026-11-11.md)
 records 362 passing TP2+MTP checks per tag (724 total across Q4/Q8), CPU/operator checks and

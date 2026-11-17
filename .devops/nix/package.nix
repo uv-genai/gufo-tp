@@ -10,6 +10,7 @@
   libpng,
   libjpeg,
   libwebp,
+  libopus,
   libsndfile,
   soxr,
   openssl,
@@ -44,6 +45,25 @@ let
       else
         sourceRoot + "/src/core/png_decode/Cargo.lock";
   };
+  # The CI timing baseline builds an older revision with this definition;
+  # before the Rust audio decoder, EmbeddingGemma 2 linked libsndfile and soxr.
+  hasRustAudio = builtins.pathExists (sourceRoot + "/src/core/audio_decode/Cargo.toml");
+  # A store path has no Git metadata. A flake input or fetcher result still
+  # names its commit (`dirtyRev` ends in "-dirty") or at least the hash of its
+  # tree; a plain path names nothing.
+  extensionRevision =
+    ext:
+    let
+      revision =
+        if builtins.isAttrs ext then
+          ext.rev or ext.dirtyRev or ext.narHash or ext.outputHash or "unknown"
+        else
+          "unknown";
+    in
+    if builtins.isString revision && revision != "" && !(lib.hasInfix ";" revision) then
+      revision
+    else
+      "unknown";
   versionLabel = if releaseVersion == null then "development" else releaseVersion;
   packageVersion =
     if releaseVersion == null then "0-unstable-${revision}" else releaseVersion;
@@ -121,8 +141,7 @@ stdenv.mkDerivation {
     libpng
     libjpeg
     libwebp
-    libsndfile
-    soxr
+    libopus
     openssl
     ffmpeg-headless
     rocmPackages.clr
@@ -132,7 +151,11 @@ stdenv.mkDerivation {
     rocmPackages.rocprim
     rocmPackages.rocwmma
     rocmPackages.rocblas
-  ] ++ lib.optionals enableTp2Rdma [ rdma-core rdma-core.dev ];
+  ] ++ lib.optionals enableTp2Rdma [ rdma-core rdma-core.dev ]
+  ++ lib.optionals (!hasRustAudio) [
+    libsndfile
+    soxr
+  ];
 
   cmakeFlags = [
     "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
@@ -144,7 +167,10 @@ stdenv.mkDerivation {
     "-DGUFO_FFPROBE_EXECUTABLE=${ffmpeg-headless}/bin/ffprobe"
     "-DCMAKE_HIP_COMPILER=${rocmPackages.llvm.clang}/bin/clang"
   ] ++ lib.optionals enableTp2Rdma [ "-DGUFO_ENABLE_TP2_RDMA=ON" ] ++ lib.optional hasExtensionSdk "-DGUFO_SDK_INSTALL_DIR=${placeholder "sdk"}/lib/gufo/sdk"
-  ++ lib.optional (extensions != [ ]) "-DGUFO_EXTENSION_DIRS=${lib.concatMapStringsSep ";" (ext: "${ext}") extensions}";
+  ++ lib.optionals (extensions != [ ]) [
+    "-DGUFO_EXTENSION_DIRS=${lib.concatMapStringsSep ";" (ext: "${ext}") extensions}"
+    "-DGUFO_EXTENSION_DIR_REVISIONS=${lib.concatMapStringsSep ";" extensionRevision extensions}"
+  ];
 
   # CI exposes a persistent /tmp/gufo-ccache through extra-sandbox-paths for
   # C/C++ sources. Keep HIP uncached: Clang emits a bundled preprocessor output

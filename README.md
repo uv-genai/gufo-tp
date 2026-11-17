@@ -35,15 +35,14 @@ parallelism across two hosts** on top.
 > [gufo-org/gufo](https://github.com/gufo-org/gufo/releases). Gufo-TP publishes
 > from [uv-genai/gufo-tp](https://github.com/uv-genai/gufo-tp) (`main` only).
 
-Current TP2 release: **[v0.33.0 upstream integration, November 11, 2026](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.33.0-2026-11-11)**.
-It integrates upstream v0.29–v0.33, retaining mirrored TP2 snapshots, provider
-reasoning controls and the earlier Q4/Q8 fixes. Prefill layer yields, new
-decode overlap and startup calibration are single-host only. Upgrade both
-hosts together: TP control protocol 23 rejects older peers.
+Current TP2 release: **[v0.34.0 upstream integration, November 17, 2026](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.34.0-2026-11-17)**.
+It integrates upstream v0.34.0 and retains mirrored TP2 snapshots, the earlier
+Q4/Q8 fixes and every single-host optimization gate. Upgrade both hosts
+together: TP control protocol 23 rejects older peers.
 
-Flash-Next Q4/Q8 TP2+MTP passed 724 functional checks across the two latest
-integrations. The [release notes](docs/releases/2026-11-11-tp2-merge.md) and
-[merge validation record](docs/internal/MERGE-UPSTREAM-2026-11-11.md) describe
+Flash-Next Q4/Q8 TP2+MTP passed 362 functional checks. The
+[release notes](docs/releases/2026-11-17-tp2-merge.md) and
+[merge validation record](docs/internal/MERGE-UPSTREAM-2026-11-17.md) describe
 source/binary identity, deployment, numerical limits and inconclusive timing.
 This is a Linux source release; deployed binaries retain their validated
 compiled revision.

@@ -1,8 +1,8 @@
 # LIVE HANDOFF — Gufo-TP
 
 Canonical file: `/home/ugo/projects/gufo/handoff.md`. Updated **2026-11-17** for
-the v0.34.0 upstream integration (PR #36), deployed but not yet released. Latest release:
-`tp2-rdma-merge-v0.33.0-2026-11-11`. Edit this file after deployment,
+the v0.34.0 upstream integration (PR #36) and its release. Latest release:
+`tp2-rdma-merge-v0.34.0-2026-11-17`. Edit this file after deployment,
 merge, release or incident changes; dated files under `~/gufo-merge-handoff/`
 are archives, and its lowercase `handoff.md` is only a pointer here.
 
@@ -18,7 +18,8 @@ before using either GPU; this document does not establish current availability.
 2. [Upstream merge record](docs/internal/MERGE-UPSTREAM-2026-11-17.md): current v0.34.0 integration and qualification.
    [November 11 record](docs/internal/MERGE-UPSTREAM-2026-11-11.md) covers v0.32–v0.33.
    [November 6 record](docs/internal/MERGE-UPSTREAM-2026-11-06.md) covers v0.29–v0.31.
-   [Current release notes](docs/releases/2026-11-11-tp2-merge.md) describe this source release.
+   [Current release notes](docs/releases/2026-11-17-tp2-merge.md) describe this source release;
+   [November 11 notes](docs/releases/2026-11-11-tp2-merge.md) cover v0.29–v0.33.
    [Prior release notes](docs/releases/2026-11-06-tp2-fixes.md) describe the published v0.28.1 fixes.
 3. [BUILD-LOCAL.md](BUILD-LOCAL.md) and [TP2-SETUP.md](TP2-SETUP.md): native build/deployment.
 4. [Merge checklist](docs/internal/MERGE-CHECKLIST.md) and [TP2 design](docs/internal/models/qwen3.8-flash-next/TP2.md).
@@ -31,11 +32,11 @@ before using either GPU; this document does not establish current availability.
 | Publish remote | **`uv-genai` only**, `https://github.com/uv-genai/gufo-tp.git` |
 | Upstream | `origin` → `gufo-org/gufo`, local tracking branch `gufo-org`; never push there |
 | Upstream merged through | **v0.34.0** (`2845939b`), validated [PR #36](https://github.com/uv-genai/gufo-tp/pull/36), squash `96bb9b49`; v0.32–v0.33 via [#32](https://github.com/uv-genai/gufo-tp/pull/32)/[#33](https://github.com/uv-genai/gufo-tp/pull/33). Unreleased upstream main is excluded |
-| Latest release | [tp2-rdma-merge-v0.33.0-2026-11-11](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.33.0-2026-11-11) |
-| Previous release | [tp2-rdma-fixes-v0.28.1-2026-11-06](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-fixes-v0.28.1-2026-11-06) |
+| Latest release | [tp2-rdma-merge-v0.34.0-2026-11-17](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.34.0-2026-11-17) |
+| Previous release | [tp2-rdma-merge-v0.33.0-2026-11-11](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.33.0-2026-11-11) |
 | Review fixes | [PR #25](https://github.com/uv-genai/gufo-tp/pull/25), merged **`ba1ab427`**, closes #21–#24 |
 | Q4 reader fix | [PR #27](https://github.com/uv-genai/gufo-tp/pull/27), merged **`ae8a93c3`**, closes #26 |
-| Package version | `version.txt` is **0.34.0** from the upstream tag; no dated TP2 release includes v0.34.0 yet |
+| Package version | `version.txt` is **0.34.0** from the upstream tag; the dated TP2 release integrates upstream v0.34.0 |
 
 Separate branches and validated PRs precede code merges. Every published tag
 must have a GitHub Release with written notes. Do not move published tags or
@@ -129,7 +130,7 @@ records v0.34.0: 124/124 native PR checks and 362 TP2+MTP functional checks
 inconclusive: Q4 short-code prefill stays flagged against one of two main
 controls, while main spans 168–198 ms; no regression or speedup is claimed.
 On November 17 the user confirmed the deployed binary works well through
-llama-swap. No release tag includes v0.34.0 yet.
+llama-swap. The v0.34.0 TP2 release follows.
 TP2 runs only through mirrored snapshots: the frontier alignment from upstream
 #1154 is skipped there.
 

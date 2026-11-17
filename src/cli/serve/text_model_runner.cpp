@@ -2033,6 +2033,10 @@ void TextRunnerPool::ClearCache() {
   impl_->cache->Clear();
 }
 
+const TextRunnerResourceClaim& TextRunnerPool::resource_claim() const noexcept {
+  return impl_->validated.resources;
+}
+
 std::size_t TextRunnerPool::capacity() const noexcept {
   return impl_->component_cache ? impl_->component_cache->capacity()
                                 : impl_->cache->capacity();
@@ -2432,6 +2436,18 @@ std::size_t TextRunnerPool::CachedPrefixTokens(
     return impl_->cache->CachedPrefixTokens(prompt);
   return impl_->cache->CachedPrefixTokens(prompt, context->cache_identity,
                                           context->cache_prefixes);
+}
+
+bool TextRunnerPool::AlignToLiveFrontier(std::vector<TextRunnerToken>& prompt,
+                                         std::size_t& cache_prefix_tokens,
+                                         bool chat_template) const {
+  // Only the component cache tracks live frontiers. Runners that opt out of
+  // it (TpMirroredRunner) keep the prompt as tokenized.
+  if (!impl_->component_cache)
+    return false;
+  return impl_->component_cache->AlignToLiveFrontier(
+      prompt, cache_prefix_tokens, impl_->validated.descriptor.max_context,
+      chat_template);
 }
 
 }  // namespace gufo::server

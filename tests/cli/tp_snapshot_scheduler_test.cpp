@@ -969,6 +969,25 @@ void TestRunnerCanReuseExactIncrementalText() {
          "exact incremental text avoids duplicate final decoding");
 }
 
+// Only the component cache tracks live frontiers. A runner that opts out of
+// it (TpMirroredRunner) keeps prompt reuse without frontier alignment.
+void TestPromptReuseWithoutComponentCacheKeepsPrompt() {
+  auto control = std::make_shared<FakeControl>();
+  control->incremental_text_is_exact = true;
+  auto scheduler = MakeScheduler(control, 1);
+  const auto reuse = [] {
+    auto metadata = ClientMetadata("frontier");
+    metadata.cache_prompt = true;
+    return metadata;
+  };
+  const auto first = scheduler->Submit({7}, 2, 0.0F, {}, false, reuse()).Wait();
+  const auto next =
+      scheduler->Submit({7, 700, 701, 8}, 2, 0.0F, {}, false, reuse()).Wait();
+  Expect(first.text == "700701" && next.text == "700701" &&
+             next.prompt_tokens == 4,
+         "prompt reuse without a component cache keeps the tokenized prompt");
+}
+
 // An armed `--trace` records each finished request under the HTTP request id
 // bound where it was submitted: the prompt as the runner decodes it, the
 // effective limits and sampling, the cache outcome and the raw output.
@@ -3326,6 +3345,7 @@ int main() {
     }
   }
   TestNonIncrementalRunnerFallsBackSafely();
+  TestPromptReuseWithoutComponentCacheKeepsPrompt();
   TestPendingLimitsRejectBeforeStateAdmission();
   TestPendingClientsAreRoundRobinAndIndividuallyBounded();
   TestExpiredQueuedRequestNeverConsumesState();

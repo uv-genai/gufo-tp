@@ -159,6 +159,16 @@ quality; successful optimizations become the default, without extra switches.
   **`gufo-org`** (`git fetch origin && git switch gufo-org && git merge
   --ff-only origin/main`). Never push to `origin` / `gufo-org`.
 - Work and publishes go on fork **`main`**, remote **`uv-genai`** only.
+- **GitHub CI is disabled on `uv-genai/gufo-tp`; do not re-enable it or wait
+  for hosted checks.** Push only code that has passed locally. Before every
+  push run, on the editing host: `python3 tools/ci/check-format.py` with
+  clang-format **21.1.8** (CI's version; e.g. `uvx --from clang-format==21.1.8`)
+  and the system 23.x, `python3 tools/ci/check-docs.py`,
+  `python3 tools/ci/check-extension-api.py --base main --labels '["ext-api"]'`
+  (omit the label when the PR carries none) and
+  `python3 tools/ci/check-pr-title.py "<title>"`. Code changes also need
+  `cmake --build --preset pr` and the release build; TP2-affecting changes
+  need the GPU validation below. Merge once those pass.
 - Every published TP2 tag needs a GitHub Release with written notes. Follow
   [releasing](docs/internal/releasing.md) for dated TP2 tags, source/binary
   identity and validation scope. Current TP2 release qualification is Linux;

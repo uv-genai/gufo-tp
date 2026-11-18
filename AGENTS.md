@@ -229,7 +229,8 @@ hidden (e.g. 10240 vs 122880 = 1 vs 12 rows × 2560 F32).
 - Dynamic YaRN session re-rotation is single-host only. TP2 retains the
   configured static factor and its own position-policy persistence identity.
 - Prefill layer yields and decode-overlap calibration are single-host only.
-  `TpMirroredRunner` removes the scheduling profile; calibration must return
+  `TpMirroredRunner` declares an unsplit 512-token profile
+  (`max_layer_groups` 1); calibration must return
   before issuing MoE calls under TP2. The new decode-overlap path stays gated.
 - `defer_residual_` only when `tp_world_size()==1`. Forced draft counts come
   from rank 0 (`request.drafts` / `batch_drafts`).

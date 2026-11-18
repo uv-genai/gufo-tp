@@ -990,8 +990,12 @@ int main() {
     auto toy = std::make_shared<ToyRunner>(
         ToyOptions{.capabilities = every, .provider_metadata = true});
     const TpMirroredRunner runner(toy, std::make_shared<CaptureSink>());
-    Require(toy->Descriptor().scheduling->max_layer_groups == 8 &&
-                !runner.Descriptor().scheduling.has_value(),
+    // An unsplit pass of the width both ranks confirm at the handshake.
+    const auto mirrored = runner.Descriptor().scheduling;
+    Require(toy->Descriptor().scheduling.max_layer_groups == 8 &&
+                mirrored.max_layer_groups == 1 &&
+                mirrored.pass_tokens == gufo::server::kTpPrefillPassTokens &&
+                mirrored.max_yield_decode_width == 8,
             "TP2 disables layer yields that rank 1 cannot mirror");
     Require(
         runner.ToolDialectId() == "qwen" &&

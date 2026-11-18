@@ -683,11 +683,16 @@ void ArgmaxConfidence(const float* logits, std::int32_t* row,
 /// (value, index) floats to slot `part` of `exchange`, whose other `width`
 /// floats are cleared, so a summing all-reduce delivers both candidates.
 /// Part 0 reports index 0 at +infinity when that logit is NaN, as Argmax.
+/// Float `kSplitArgmaxNormalizerSlot + part` carries the part's softmax
+/// normalizer relative to its candidate, so `width` must exceed that slot.
 void SplitArgmaxPart(const float* logits, ArgmaxCandidate* scratch,
                      float* exchange, std::uint32_t width, std::uint32_t count,
                      std::uint32_t first, std::uint32_t part,
                      hipStream_t stream);
-/// The full-vocabulary argmax from both exchanged candidates, as Argmax.
+inline constexpr std::uint32_t kSplitArgmaxNormalizerSlot = 4;
+/// The full-vocabulary argmax from both exchanged candidates into out[0], as
+/// Argmax, and its softmax probability as float bits into out[1], as
+/// ArgmaxConfidence (up to summation order). The draft gate reads out[1].
 void SplitArgmaxFinish(const float* exchange, std::int32_t* out,
                        hipStream_t stream);
 

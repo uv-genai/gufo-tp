@@ -3627,10 +3627,11 @@ bool Executor::MtpHead(const DeviceMixer& head, const float* res, bool token,
   if (!HcMix(head, res, false, s_.mixed, nullptr, 1, error_msg)) {
     return false;
   }
-  // A greedy draft needs only the argmax. Under TP each rank scores half of
-  // the vocabulary and the two candidates cross in one all-reduce row, held
-  // in the logits buffer's unused second half. The small-head path remaps
-  // IDs after a full-row argmax instead.
+  // A greedy draft needs only the argmax and its confidence. Under TP each
+  // rank scores half of the vocabulary; the two candidates and their softmax
+  // normalizers cross in one all-reduce row, held in the logits buffer's
+  // unused second half. The small-head path remaps IDs after a full-row
+  // argmax instead.
   const std::uint32_t half = output.rows / 2;
   const std::size_t width = config().hidden_size;
   if (draft == nullptr && token && !candidates &&
@@ -3651,9 +3652,13 @@ bool Executor::MtpHead(const DeviceMixer& head, const float* res, bool token,
     if (!AllReduce(exchange, 1, error_msg)) {
       return false;
     }
+    // The token and its full-vocabulary confidence (float bits), as below.
+    // The draft gate reads the confidence on both ranks; a rank-local value
+    // would stop their chains at different widths and desync the next
+    // exchange (a one-row draft against a multi-row verification).
     SplitArgmaxFinish(exchange, s_.mtp_token, stream_);
     return Check(
-        hipMemcpyAsync(mtp_token_host_, s_.mtp_token, sizeof(std::int32_t),
+        hipMemcpyAsync(mtp_token_host_, s_.mtp_token, 2 * sizeof(std::int32_t),
                        hipMemcpyDeviceToHost, stream_),
         "draft token download", error_msg);
   }

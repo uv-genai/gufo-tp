@@ -238,6 +238,7 @@ hazard** until gated or mirrored:
 | Hazard | Why it breaks verbs | Policy |
 | --- | --- | --- |
 | Draft subset / small head | Skips split-argmax all-reduce | `TpWorldSize()==1` only |
+| Draft gate / chain stop rules | A rank-local input ends one chain early | Inputs identical on both ranks (exchanged split confidence) |
 | Prefill layer yields | Decode callbacks inside prefill reorder collectives | Single-host only until mirrored |
 | Prompt lookup / n-gram copy | Skips neural `MtpForward` | `TpWorldSize()==1` only |
 | New speculative/MTP modes | Different cycle width per rank | Mirror count from rank 0 **and** path shape |

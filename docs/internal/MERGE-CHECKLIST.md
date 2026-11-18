@@ -59,6 +59,7 @@ same tokens. When a feature must work under TP, **mirror the full decision**
 | `n-gram table read failed` | Graph pre-wait + `MixerPart` double WaitPle | `TrunkBatch.embeddings_ready` |
 | `identity or size mismatch` 10240 vs N×hidden | Rank skipped split-argmax or lookup cycle | Draft-subset and lookup single-host only |
 | Rapid restart loop, RDMA status 5 | Often after peer desync / bad QP | Fix desync first; then check link |
+| Intermittent `identity or size mismatch` 10240 vs k×10240 in MTP decode (Q8) | The v0.28.1 confidence gate read a word the split greedy head never wrote; ranks stopped chains at different widths | Split exchange carries normalizers; `SplitArgmaxFinish` writes token and confidence |
 | Short NL prompts claim “scrambled text” / empty content | Wide-prefill fused paths (SSM/attention/routed tiles/`last_only`) ran for `n>8` but TP2 half-width only qualifies `n≥1024` | Keep TP2 fused thresholds at `n≥1024` (see `bb383a36`) |
 
 ## 3. After merge (code)
@@ -75,6 +76,8 @@ same tokens. When a feature must work under TP, **mirror the full decision**
   - `defer_residual_` gated on single-host
   - layer hooks and decode-overlap calibration gated on single-host
   - `OwnF16` includes `m==48` if TP2 half-width gates still exist
+  - every value an MTP gate or stop rule reads is computed identically on
+    both ranks (the split greedy head downloads token **and** confidence)
 
 ## 4. After merge (TP2 runtime — before push / before dropping `-untested`)
 

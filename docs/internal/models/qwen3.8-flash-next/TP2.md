@@ -39,7 +39,9 @@ and the same `--tp-control-token`, `--context`, `--prefill-chunk`,
 `--sessions`, MTP settings and `--mmproj` use; the handshake names any setting
 that differs.
 
-Control protocol **23** carries v0.31 provider reasoning: budget openers,
+Control protocol **24** rejects peers whose split draft head does not
+exchange its confidence (see Exchange below). It carries v0.31 provider
+reasoning: budget openers,
 whitespace masks and the exact automatic/reasoning/content constraint state.
 The mirrored runner also forwards provider tool dialects and reasoning markup.
 Upgrade both hosts together; mixed protocol/binary
@@ -154,8 +156,9 @@ on its half. Each GDN layer's 16 key heads and the 48 value heads that read them
 with their query heads are split, and each rank keeps only its heads' KV cache
 and recurrent state. The indexer, draft block, HC, embedding, PLE, LM head and
 vision encoder are replicated. A greedy draft scores only its rank's half of
-the Q8_0 LM head; the two halves' argmax candidates cross in one all-reduce
-row. Target rows, sampled drafts and logprobs keep the full head.
+the Q8_0 LM head; the two halves' argmax candidates and softmax normalizers
+cross in one all-reduce row, so both ranks read the same draft token and the
+same confidence. Target rows, sampled drafts and logprobs keep the full head.
 
 **Exchange.** Each mixer block and each MoE ends in one exchange of partial
 sums, 10 KiB per decode row. A stage kernel copies the partial to host memory
@@ -234,6 +237,12 @@ Current collective-shape rules (see
   bytes). Rank 0 mirrors calls and draft **counts**, not every decode
   micro-decision. Size mismatches appear as different row counts of hidden
   (e.g. 10240 vs 122880 bytes at hidden 2560).
+- **Draft gate inputs are identical on both ranks.** Rank 0 mirrors the
+  draft count, but the confidence gate still ends each chain early on each
+  rank. Greedy reads the split head's exchanged confidence and sampled reads
+  the replicated full-head candidates. A rank-local gate input stops one
+  chain earlier, so that rank verifies while the other drafts on: a 1-row
+  draft exchange meets a multi-row verification (10240 vs 51200 bytes).
 - **Draft-subset is single-host only.** The small head scores a local table
   and skips the split-argmax all-reduce; the full-head greedy path performs
   that all-reduce. `PrepareDecode` requires `TpWorldSize()==1` before setting

@@ -1,6 +1,7 @@
 #include <hip/hip_runtime.h>
 
 #include <algorithm>
+#include <array>
 #include <bit>
 #include <cmath>
 #include <cstdint>
@@ -375,7 +376,8 @@ void CheckCandidates(std::uint32_t vocab) {
 
 // Each rank's half of a split vocabulary and the summed exchange rows must
 // select what the full argmax selects, including ties across the halves and
-// NaN or infinite logits.
+// NaN or infinite logits, and report the full-vocabulary softmax probability
+// of that token: the TP2 draft gate reads it on both ranks.
 void CheckSplitArgmax(std::uint32_t vocab) {
   constexpr std::uint32_t width = 2560;
   const std::uint32_t half = vocab / 2;
@@ -384,7 +386,11 @@ void CheckSplitArgmax(std::uint32_t vocab) {
   auto device_logits = Allocate<float>(vocab);
   auto scratch = Allocate<q::ArgmaxCandidate>(q::kArgmaxParts);
   auto exchange = Allocate<float>(width);
-  auto output = Allocate<std::int32_t>(1);
+  auto output = Allocate<std::int32_t>(2);
+  auto full = Allocate<std::int32_t>(2);
+  const auto owns = [](std::uint32_t slot, std::uint32_t part) {
+    return slot / 2 == part || slot == q::kSplitArgmaxNormalizerSlot + part;
+  };
   for (std::uint32_t t = 0; t < 10; ++t) {
     std::vector<float> row(vocab);
     for (std::uint32_t i = 0; i < vocab; ++i)
@@ -440,7 +446,7 @@ void CheckSplitArgmax(std::uint32_t vocab) {
                          hipMemcpyDeviceToHost),
                "download exchange");
       for (std::uint32_t i = 0; i < width; ++i) {
-        if (i / 2 != part && rank[i] != 0.0F)
+        if (!owns(i, part) && rank[i] != 0.0F)
           throw std::runtime_error("split argmax left a foreign slot set");
         sum[i] += rank[i];
       }
@@ -448,22 +454,57 @@ void CheckSplitArgmax(std::uint32_t vocab) {
     CheckHip(hipMemcpy(exchange.get(), sum.data(), width * sizeof(float),
                        hipMemcpyHostToDevice),
              "upload exchange sum");
+    // Poisoned outputs prove that the finish writes both words.
+    const std::array<std::int32_t, 2> poison{-7, 0x3F7FFFFF};
+    CheckHip(hipMemcpy(output.get(), poison.data(), sizeof(poison),
+                       hipMemcpyHostToDevice),
+             "poison split output");
     q::SplitArgmaxFinish(exchange.get(), output.get(), nullptr);
-    std::int32_t actual = -1;
-    CheckHip(
-        hipMemcpy(&actual, output.get(), sizeof(actual), hipMemcpyDeviceToHost),
-        "download split argmax");
+    std::array<std::int32_t, 2> actual{};
+    CheckHip(hipMemcpy(actual.data(), output.get(), sizeof(actual),
+                       hipMemcpyDeviceToHost),
+             "download split argmax");
     const auto expected = static_cast<std::int32_t>(
         std::max_element(row.begin(), row.end()) - row.begin());
-    if (actual != expected) {
+    if (actual[0] != expected) {
       throw std::runtime_error(
           "split argmax mismatch: vocab=" + std::to_string(vocab) + " row=" +
           std::to_string(t) + " expected=" + std::to_string(expected) +
-          " actual=" + std::to_string(actual));
+          " actual=" + std::to_string(actual[0]));
+    }
+    // The CPU softmax probability of the selected token over finite logits,
+    // and the single-host kernel's, which the gate compares to its threshold.
+    const double top = row[expected];
+    double total = 0.0;
+    for (const float l : row)
+      if (std::isfinite(l))
+        total += std::exp(static_cast<double>(l) - top);
+    const double reference =
+        std::isfinite(top) && total > 0.0 ? 1.0 / total : 0.0;
+    CheckHip(hipMemcpy(full.get(), &expected, sizeof(expected),
+                       hipMemcpyHostToDevice),
+             "upload full argmax");
+    q::ArgmaxConfidence(device_logits.get(), full.get(), vocab, nullptr);
+    std::array<std::int32_t, 2> single{};
+    CheckHip(hipMemcpy(single.data(), full.get(), sizeof(single),
+                       hipMemcpyDeviceToHost),
+             "download full confidence");
+    const float split = std::bit_cast<float>(actual[1]);
+    const float host = std::bit_cast<float>(single[1]);
+    const auto close = [](double a, double b) {
+      return std::abs(a - b) <= 1e-6 + 1e-4 * std::abs(b);
+    };
+    if (!std::isfinite(split) || !close(split, reference) ||
+        !close(split, host)) {
+      throw std::runtime_error(
+          "split argmax confidence mismatch: vocab=" + std::to_string(vocab) +
+          " row=" + std::to_string(t) + " split=" + std::to_string(split) +
+          " single=" + std::to_string(host) +
+          " reference=" + std::to_string(reference));
     }
   }
   std::cout << "split argmax vocab=" << vocab
-            << ": ties, infinities and NaN match the full argmax\n";
+            << ": ties, infinities, NaN and confidence match the full head\n";
 }
 
 void CheckRemapDraftIds() {

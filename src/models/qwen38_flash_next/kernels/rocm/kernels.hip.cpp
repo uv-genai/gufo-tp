@@ -3930,11 +3930,53 @@ __global__ void SplitArgmaxPartKernel(const float* logits,
   }
 }
 
+/// One block: this rank's softmax normalizer, the sum of exp(logit - top)
+/// over its finite logits, where top is the candidate value already in its
+/// exchange slot. A nonfinite top contributes nothing (ArgmaxConfidence).
+__launch_bounds__(1024) __global__
+    void SplitConfidencePartKernel(const float* logits, float* exchange,
+                                   std::uint32_t count, std::uint32_t part) {
+  __shared__ float partial[32];
+  const float top = exchange[2 * part];
+  float sum = 0.0F;
+  if (isfinite(top)) {
+    for (std::uint32_t i = threadIdx.x; i < count; i += blockDim.x) {
+      const float l = logits[i];
+      if (isfinite(l))
+        sum += __expf(l - top);
+    }
+  }
+  sum = WaveSum(sum);
+  if ((threadIdx.x & 31U) == 0)
+    partial[threadIdx.x >> 5U] = sum;
+  __syncthreads();
+  if (threadIdx.x == 0) {
+    float total = 0.0F;
+    for (unsigned w = 0; w < blockDim.x / 32U; ++w)
+      total += partial[w];
+    exchange[kSplitArgmaxNormalizerSlot + part] = total;
+  }
+}
+
+/// Both ranks read the same summed exchange, so they select the same token
+/// and compute the same confidence bits: the draft gate then stops every
+/// chain at the same width on both ranks.
 __global__ void SplitArgmaxFinishKernel(const float* exchange,
                                         std::int32_t* out) {
   const ArgmaxCandidate a{exchange[0], static_cast<std::int32_t>(exchange[1])};
   const ArgmaxCandidate b{exchange[2], static_cast<std::int32_t>(exchange[3])};
-  out[0] = BetterCandidate(a, b).index;
+  const ArgmaxCandidate best = BetterCandidate(a, b);
+  out[0] = best.index;
+  // The halves' indices differ unless neither has a candidate (top -inf).
+  const bool first = best.index == a.index;
+  const float top = best.value;
+  const float other = first ? b.value : a.value;
+  float total = exchange[kSplitArgmaxNormalizerSlot + (first ? 0 : 1)];
+  if (isfinite(top) && isfinite(other) && other <= top)
+    total += exchange[kSplitArgmaxNormalizerSlot + (first ? 1 : 0)] *
+             __expf(other - top);
+  const float p = isfinite(top) && total > 0.0F ? 1.0F / total : 0.0F;
+  out[1] = __float_as_int(p);
 }
 
 __device__ __forceinline__ PenaltyArgmaxCandidate
@@ -9552,10 +9594,14 @@ void SplitArgmaxPart(const float* logits, ArgmaxCandidate* scratch,
                      float* exchange, std::uint32_t width, std::uint32_t count,
                      std::uint32_t first, std::uint32_t part,
                      hipStream_t stream) {
+  if (part > 1 || width < kSplitArgmaxNormalizerSlot + 2)
+    throw std::invalid_argument("invalid split argmax exchange");
   hipLaunchKernelGGL(ArgmaxPartialKernel, dim3(kArgmaxParts, 1), dim3(kThreads),
                      0, stream, logits, scratch, count);
   hipLaunchKernelGGL(SplitArgmaxPartKernel, dim3(1), dim3(kThreads), 0, stream,
                      logits, scratch, exchange, width, first, part);
+  hipLaunchKernelGGL(SplitConfidencePartKernel, dim3(1), dim3(1024), 0, stream,
+                     logits, exchange, count, part);
 }
 
 void SplitArgmaxFinish(const float* exchange, std::int32_t* out,

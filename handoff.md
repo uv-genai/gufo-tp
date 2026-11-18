@@ -198,6 +198,25 @@ cause. No configuration change or stream fix was made. If it recurs, collect
 client identity, exact time and client-side error details, then correlate
 both ranks and the proxy. Do not label this a confirmed TP2 failure or a fixed bug.
 
+**Intermittent `verbs communicator is poisoned` (diagnosed November 18).**
+Rank 0's log holds 37 `tp_pair_lost` events since November 7 (7, 28 and 2 on
+November 7, 8 and 18), each `identity or size mismatch` during MTP decode with
+one side a single 10240-byte row, e.g. `51200` against `10240` at 18:22:11 on
+November 18. Upstream v0.28.1's confidence gate (merged November 4) ends greedy
+draft chains early, but the TP2 split greedy head downloaded only the token: the
+gate read a host word that path never wrote, so ranks could stop one chain at
+different widths. Q4 and Q8 both have a Q8_0 head. On the deployed binary a
+fresh pair read 0, capping single-request greedy drafting at one proposal per
+round. The fix branch `fix/tp2-split-draft-confidence` exchanges each half's
+softmax normalizer and writes the confidence on both ranks; TP protocol 24
+rejects mixed pairs. A Q4 probe on the deployed binary reproduced the poison
+(`20480` against `10240`) in its concurrent greedy stage; the same workload
+passes on the fix with every reply both runs finished identical (16/16). Q8
+probe, deployed binary against the fix: 60/60 replies identical, no rank
+errors, single greedy 1.000 → 2.574 drafts per round and 44.2 → 57.4 tok/s;
+seeded sampling is unchanged. Evidence: `artifacts/upstream-2026-11-18/repro-*`.
+It is not deployed yet.
+
 Controlled timing compared fresh `uv-genai/main` **`78d8a4bf`** with the
 numerical fix **`c1e4cc38`**, same compiler/settings/model/history. **58/66**
 per-request phase comparisons were within 5% and 10 ms; **8 MTP** comparisons

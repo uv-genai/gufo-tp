@@ -90,28 +90,44 @@ endif()
 if(DEFINED ENV{XILINX_XRT} AND NOT "$ENV{XILINX_XRT}" STREQUAL "")
   list(PREPEND _GUFO_XRT_PREFIXES "$ENV{XILINX_XRT}")
 endif()
+# Gufo-TP: on Linux XRT only links the NPU module loaded on first NPU use
+# (src/core/npu), so a host without XRT builds without that module and runs
+# on the GPU; --npu then reports that XRT is not usable.
+if(WIN32)
+  set(_GUFO_XRT_REQUIRED REQUIRED)
+else()
+  set(_GUFO_XRT_REQUIRED)
+endif()
 find_path(GUFO_XRT_INCLUDE_DIR NAMES xrt/xrt_bo.h
-  HINTS ${_GUFO_XRT_PREFIXES} PATH_SUFFIXES include REQUIRED)
+  HINTS ${_GUFO_XRT_PREFIXES} PATH_SUFFIXES include ${_GUFO_XRT_REQUIRED})
 if(WIN32)
   find_library(GUFO_XRT_COREUTIL_LIBRARY NAMES xrt_coreutil
     HINTS ${_GUFO_XRT_PREFIXES} PATH_SUFFIXES lib lib64 REQUIRED)
   add_library(XRT::xrt_coreutil UNKNOWN IMPORTED)
-else()
+elseif(GUFO_XRT_INCLUDE_DIR)
   # Production XRT is dynamically linked; do not fall back to a static archive.
   set(_GUFO_SAVED_FIND_LIBRARY_SUFFIXES "${CMAKE_FIND_LIBRARY_SUFFIXES}")
   set(CMAKE_FIND_LIBRARY_SUFFIXES .so)
   find_library(GUFO_XRT_COREUTIL_LIBRARY NAMES xrt_coreutil
-    HINTS ${_GUFO_XRT_PREFIXES} PATH_SUFFIXES lib lib64 REQUIRED)
+    HINTS ${_GUFO_XRT_PREFIXES} PATH_SUFFIXES lib lib64)
   set(CMAKE_FIND_LIBRARY_SUFFIXES "${_GUFO_SAVED_FIND_LIBRARY_SUFFIXES}")
   unset(_GUFO_SAVED_FIND_LIBRARY_SUFFIXES)
-  add_library(XRT::xrt_coreutil SHARED IMPORTED)
+  if(GUFO_XRT_COREUTIL_LIBRARY)
+    add_library(XRT::xrt_coreutil SHARED IMPORTED)
+  endif()
 endif()
-set_target_properties(XRT::xrt_coreutil PROPERTIES
-  IMPORTED_LOCATION "${GUFO_XRT_COREUTIL_LIBRARY}"
-  INTERFACE_INCLUDE_DIRECTORIES "${GUFO_XRT_INCLUDE_DIR}")
-if(NOT WIN32)
-  set_property(TARGET XRT::xrt_coreutil PROPERTY INTERFACE_LINK_LIBRARIES uuid)
+if(TARGET XRT::xrt_coreutil)
+  set_target_properties(XRT::xrt_coreutil PROPERTIES
+    IMPORTED_LOCATION "${GUFO_XRT_COREUTIL_LIBRARY}"
+    INTERFACE_INCLUDE_DIRECTORIES "${GUFO_XRT_INCLUDE_DIR}")
+  if(NOT WIN32)
+    set_property(TARGET XRT::xrt_coreutil PROPERTY INTERFACE_LINK_LIBRARIES uuid)
+  endif()
+else()
+  message(WARNING "XRT (xrt/xrt_bo.h, libxrt_coreutil.so) not found: "
+    "building without the NPU module; NPU execution is unavailable")
 endif()
+unset(_GUFO_XRT_REQUIRED)
 unset(_GUFO_XRT_PREFIXES)
 unset(_GUFO_XRT_CONFIG_PREFIX)
 set(GUFO_FFMPEG_EXECUTABLE "ffmpeg" CACHE STRING

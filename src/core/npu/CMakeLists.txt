@@ -17,7 +17,7 @@ if(WIN32)
   target_link_libraries(gufo_npu PRIVATE XRT::xrt_coreutil)
   target_link_options(gufo_npu INTERFACE "/DELAYLOAD:xrt_coreutil.dll")
   target_link_libraries(gufo_npu PUBLIC delayimp)
-else()
+elseif(TARGET XRT::xrt_coreutil)
   # A module loaded on first NPU use (probe.cpp), so Gufo neither needs XRT
   # to start nor searches XRT's library directory for its other libraries.
   # It exports only its C entry point: Gufo exports its own C++ symbols to

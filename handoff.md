@@ -2,8 +2,8 @@
 
 Canonical file: `/home/ugo/projects/gufo/handoff.md`. Updated **2026-11-18** for
 the TP2 draft-gate fix (PR #40), the v0.35.0 integration (PR #41) and its
-candidate deployment. Latest release:
-`tp2-rdma-merge-v0.34.0-2026-11-17`. Edit this file after deployment,
+release. Latest release:
+`tp2-rdma-merge-v0.35.0-2026-11-18`. Edit this file after deployment,
 merge, release or incident changes; dated files under `~/gufo-merge-handoff/`
 are archives, and its lowercase `handoff.md` is only a pointer here.
 
@@ -16,14 +16,14 @@ Q8 model, not Flash-Next Q8. The earlier broad test queues were closed on Novemb
 before using either GPU; this document does not establish current availability.
 
 1. [AGENTS.md](AGENTS.md): host flags, remotes and TP2 invariants.
-2. [Upstream merge record](docs/internal/MERGE-UPSTREAM-2026-11-18.md): v0.35.0 integration (branch
-   `merge-upstream-v0.35.0`, [PR #41](https://github.com/uv-genai/gufo-tp/pull/41), stacked on the TP2
-   draft-confidence fix [PR #40](https://github.com/uv-genai/gufo-tp/pull/40)), validated and deployed on
-   November 18 for the user llama-swap check; not yet merged.
+2. [Upstream merge record](docs/internal/MERGE-UPSTREAM-2026-11-18.md): current v0.35.0 integration
+   ([PR #41](https://github.com/uv-genai/gufo-tp/pull/41)) after the TP2 draft-confidence fix
+   ([PR #40](https://github.com/uv-genai/gufo-tp/pull/40)), and its qualification.
    [November 17 record](docs/internal/MERGE-UPSTREAM-2026-11-17.md) covers v0.34.0.
    [November 11 record](docs/internal/MERGE-UPSTREAM-2026-11-11.md) covers v0.32–v0.33.
    [November 6 record](docs/internal/MERGE-UPSTREAM-2026-11-06.md) covers v0.29–v0.31.
-   [Current release notes](docs/releases/2026-11-17-tp2-merge.md) describe this source release;
+   [Current release notes](docs/releases/2026-11-18-tp2-merge.md) describe this source release;
+   [November 17 notes](docs/releases/2026-11-17-tp2-merge.md) cover v0.34.0;
    [November 11 notes](docs/releases/2026-11-11-tp2-merge.md) cover v0.29–v0.33.
    [Prior release notes](docs/releases/2026-11-06-tp2-fixes.md) describe the published v0.28.1 fixes.
 3. [BUILD-LOCAL.md](BUILD-LOCAL.md) and [TP2-SETUP.md](TP2-SETUP.md): native build/deployment.
@@ -36,13 +36,13 @@ before using either GPU; this document does not establish current availability.
 | Development | `/home/ugo/projects/gufo`, `main` tracks **`uv-genai/main`** |
 | Publish remote | **`uv-genai` only**, `https://github.com/uv-genai/gufo-tp.git` |
 | Upstream | `origin` → `gufo-org/gufo`, local tracking branch `gufo-org`; never push there |
-| Upstream v0.35.0 | Branch `merge-upstream-v0.35.0` (tag `0260e116`), validated on both hosts (394 TP2+MTP checks); [PR #41](https://github.com/uv-genai/gufo-tp/pull/41) open, deployed November 18. Linux builds without the NPU module where XRT is absent |
-| Upstream merged through | **v0.34.0** (`2845939b`), validated [PR #36](https://github.com/uv-genai/gufo-tp/pull/36), squash `96bb9b49`; v0.32–v0.33 via [#32](https://github.com/uv-genai/gufo-tp/pull/32)/[#33](https://github.com/uv-genai/gufo-tp/pull/33). Unreleased upstream main is excluded |
-| Latest release | [tp2-rdma-merge-v0.34.0-2026-11-17](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.34.0-2026-11-17) |
-| Previous release | [tp2-rdma-merge-v0.33.0-2026-11-11](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.33.0-2026-11-11) |
+| Upstream merged through | **v0.35.0** (`0260e116`), validated [PR #41](https://github.com/uv-genai/gufo-tp/pull/41), squash `6d2b14ce`; v0.34.0 via [#36](https://github.com/uv-genai/gufo-tp/pull/36). Linux builds without the NPU module where XRT is absent. Unreleased upstream main is excluded |
+| Draft-gate fix | [PR #40](https://github.com/uv-genai/gufo-tp/pull/40), squash **`7dcc8c67`**: split greedy draft confidence exchanged on both ranks; TP protocol 24 |
+| Latest release | [tp2-rdma-merge-v0.35.0-2026-11-18](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.35.0-2026-11-18) |
+| Previous release | [tp2-rdma-merge-v0.34.0-2026-11-17](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.34.0-2026-11-17) |
 | Review fixes | [PR #25](https://github.com/uv-genai/gufo-tp/pull/25), merged **`ba1ab427`**, closes #21–#24 |
 | Q4 reader fix | [PR #27](https://github.com/uv-genai/gufo-tp/pull/27), merged **`ae8a93c3`**, closes #26 |
-| Package version | `version.txt` is **0.34.0** from the upstream tag; the dated TP2 release integrates upstream v0.34.0 |
+| Package version | `version.txt` is **0.35.0** from the upstream tag; the dated TP2 release integrates upstream v0.35.0 |
 
 Separate branches and validated PRs precede code merges. Every published tag
 must have a GitHub Release with written notes. Do not move published tags or
@@ -57,7 +57,8 @@ Both hosts have `/home/ugo/projects/gufo/build/release/gufo`:
 
 - Compiled revision **`4bdc23c070385b4a1192103080811653f6e7d0fd`** (PR #41 branch,
   before its test and documentation commits), deployed November 18 at about
-  21:00 AWST for the user llama-swap check, before either PR merged.
+  21:00 AWST; the user confirmed it through llama-swap before both PRs merged.
+  Do not confuse it with the squash commit `6d2b14ce`.
 - SHA-256 **`fef19e2d79ca2d7e74f273057b29e69b7ec39759dab70cba3f773666908f1e9b`**.
 - Production code includes upstream v0.35.0, the unsplit TP2 scheduling
   profile, the exchanged split draft confidence and TP control protocol **24**

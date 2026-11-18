@@ -46,7 +46,6 @@ using gufo::server::TextGenerationError;
 using gufo::server::TextGenerationErrorCode;
 using gufo::server::TextGenerationScheduler;
 using gufo::server::TextModelRunner;
-using gufo::server::TextPrefillPolicy;
 using gufo::server::TextPrefillStep;
 using gufo::server::TextRequestMetadata;
 using gufo::server::TextRequestPhase;
@@ -225,6 +224,9 @@ struct FakeControl {
   std::size_t actual_batch_width{4};
   bool prefix_reuse{true};
   bool preview_first_token{false};
+  // An unsplit profile of this many pass tokens, the scheduler's prompt unit:
+  // passes beside decoders take one unit.
+  std::size_t unit_tokens{gufo::sched::kPrefillUnitTokens};
   std::vector<std::string> output_pieces;
   std::uint32_t max_context{128};
   std::optional<std::size_t> stop_after;
@@ -311,6 +313,9 @@ public:
             },
         .persistence = std::nullopt,
         .sampling_preset = control_->sampling_preset,
+        .scheduling =
+            gufo::ext::TextSchedulingProfile{.pass_tokens =
+                                                 control_->unit_tokens},
     };
   }
 
@@ -633,12 +638,15 @@ private:
 
 std::unique_ptr<TextGenerationScheduler> MakeScheduler(
     const std::shared_ptr<FakeControl>& control, std::size_t capacity,
-    TextPrefillPolicy prefill_policy = {},
-    TextSchedulerPolicy scheduler_policy = {}) {
+    std::size_t unit_tokens = 0, TextSchedulerPolicy scheduler_policy = {}) {
+  if (unit_tokens != 0) {
+    scheduler_policy.prefill_unit_tokens = unit_tokens;
+    control->unit_tokens = unit_tokens;
+  }
   auto runner = std::make_shared<FakeRunner>(control);
   auto pool = std::make_shared<TextRunnerPool>(std::move(runner), capacity);
-  return std::make_unique<TextGenerationScheduler>(
-      std::move(pool), prefill_policy, scheduler_policy);
+  return std::make_unique<TextGenerationScheduler>(std::move(pool),
+                                                   scheduler_policy);
 }
 
 std::size_t EventIndex(std::span<const Event> events, EventKind kind,
@@ -920,7 +928,7 @@ void TestAwaitedCheckpointSurvivesCachePressure() {
 
 void TestIdlePrefillUsesBulkWorkUnit() {
   auto control = std::make_shared<FakeControl>();
-  auto scheduler = MakeScheduler(control, 1, {.decode_active_tokens = 2});
+  auto scheduler = MakeScheduler(control, 1, 2);
 
   const auto result = scheduler->Submit({7, 70, 71, 72, 73}, 2, 0.0F).Wait();
 
@@ -1267,8 +1275,7 @@ void TestMultiResidentPrefillUsesBoundedWorkUnits() {
   for (const auto capacity : {1U, 2U}) {
     auto control = std::make_shared<FakeControl>();
     control->prefill_capacity = 3;
-    auto scheduler =
-        MakeScheduler(control, capacity, {.decode_active_tokens = 2});
+    auto scheduler = MakeScheduler(control, capacity, 2);
     const auto result =
         scheduler->Submit({7, 70, 71, 72, 73, 74, 75}, 2, 0.0F).Wait();
     std::vector<std::size_t> chunks;
@@ -1292,7 +1299,7 @@ void TestArrivalDoesNotWaitForAnotherLongChunk() {
     control->supports_batched_advance = speculative;
     control->prefill_capacity = 4;
     control->block_prefill_label = 1;
-    auto scheduler = MakeScheduler(control, 2, {.decode_active_tokens = 2});
+    auto scheduler = MakeScheduler(control, 2, 2);
     auto long_request = scheduler->Submit(
         {1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}, 4, 0.0F);
     control->WaitForPrefill(1);
@@ -1315,7 +1322,7 @@ void TestLongPrefillsKeepWideFairTurns() {
   auto control = std::make_shared<FakeControl>();
   control->prefill_capacity = 4;
   control->block_prefill_label = 1;
-  auto scheduler = MakeScheduler(control, 2, {.decode_active_tokens = 2});
+  auto scheduler = MakeScheduler(control, 2, 2);
   auto first = scheduler->Submit(
       {1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}, 2, 0.0F);
   control->WaitForPrefill(1);
@@ -1340,7 +1347,7 @@ void TestShortArrivalBehindWaitingPrefill() {
   auto control = std::make_shared<FakeControl>();
   control->prefill_capacity = 4;
   control->block_prefill_label = 1;
-  auto scheduler = MakeScheduler(control, 3, {.decode_active_tokens = 2});
+  auto scheduler = MakeScheduler(control, 3, 2);
   auto first = scheduler->Submit(
       {1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}, 2, 0.0F);
   control->WaitForPrefill(1);
@@ -1367,7 +1374,7 @@ void TestDecodeActivePrefillIsBounded(bool multi_token, bool batched) {
   control->batched_multi_token_decode = batched;
   control->supports_batched_advance = multi_token;
   control->block_advance_label = 1;
-  auto scheduler = MakeScheduler(control, 2, {.decode_active_tokens = 2});
+  auto scheduler = MakeScheduler(control, 2, 2);
 
   const std::size_t output_tokens = multi_token ? 30 : 10;
   auto request_a = scheduler->Submit({1}, output_tokens, 0.0F);
@@ -1419,7 +1426,7 @@ void TestPrefillYieldsToEveryDueDecoder(bool multi_token, bool batched) {
   control->batched_multi_token_decode = batched;
   control->supports_batched_advance = multi_token;
   control->block_advance_label = 1;
-  auto scheduler = MakeScheduler(control, 3, {.decode_active_tokens = 2});
+  auto scheduler = MakeScheduler(control, 3, 2);
 
   const std::size_t output_tokens = multi_token ? 30 : 10;
   auto request_a = scheduler->Submit({1}, output_tokens, 0.0F);
@@ -1468,7 +1475,7 @@ void TestNonIncrementalRunnerFallsBackSafely() {
   auto control = std::make_shared<FakeControl>();
   control->incremental_prefill = false;
   control->block_advance_label = 1;
-  auto scheduler = MakeScheduler(control, 2, {.decode_active_tokens = 2});
+  auto scheduler = MakeScheduler(control, 2, 2);
 
   auto request_a = scheduler->Submit({1}, 8, 0.0F);
   control->WaitForAdvance(1);
@@ -1490,7 +1497,7 @@ void TestNonIncrementalRunnerFallsBackSafely() {
 void TestPendingLimitsRejectBeforeStateAdmission() {
   auto control = std::make_shared<FakeControl>();
   control->block_advance_label = 1;
-  auto scheduler = MakeScheduler(control, 1, {},
+  auto scheduler = MakeScheduler(control, 1, 0,
                                  {
                                      .max_pending_requests = 1,
                                      .max_pending_requests_per_client = 1,
@@ -1522,7 +1529,7 @@ void TestPendingLimitsRejectBeforeStateAdmission() {
 void TestPendingClientsAreRoundRobinAndIndividuallyBounded() {
   auto control = std::make_shared<FakeControl>();
   control->block_advance_label = 1;
-  auto scheduler = MakeScheduler(control, 1, {},
+  auto scheduler = MakeScheduler(control, 1, 0,
                                  {
                                      .max_pending_requests = 4,
                                      .max_pending_requests_per_client = 2,
@@ -1595,7 +1602,7 @@ void TestExpiredQueuedRequestNeverConsumesState() {
 void TestSlowConsumerOutputIsBoundedAndReclaimed() {
   auto control = std::make_shared<FakeControl>();
   control->block_advance_label = 5;
-  auto scheduler = MakeScheduler(control, 1, {},
+  auto scheduler = MakeScheduler(control, 1, 0,
                                  {
                                      .max_buffered_output_bytes_per_request = 4,
                                      .max_buffered_output_bytes_total = 4,
@@ -1652,7 +1659,7 @@ void TestSlowConsumerOutputIsBoundedAndReclaimed() {
 void TestGeneratedOutputLimitAppliesWithoutStreaming() {
   auto control = std::make_shared<FakeControl>();
   control->device_usable = false;
-  auto scheduler = MakeScheduler(control, 1, {},
+  auto scheduler = MakeScheduler(control, 1, 0,
                                  {
                                      .max_output_bytes_per_request = 4,
                                  });
@@ -1675,7 +1682,7 @@ void TestCompletedAbandonedStreamReleasesOutputBudget() {
     auto control = std::make_shared<FakeControl>();
     control->block_prefill_label = 2;
     auto scheduler =
-        MakeScheduler(control, 1, {},
+        MakeScheduler(control, 1, 0,
                       {
                           .max_buffered_output_bytes_per_request = 3,
                           .max_buffered_output_bytes_total = 3,
@@ -2043,7 +2050,7 @@ void TestQueuedAndPrefillCancellation() {
     auto control = std::make_shared<FakeControl>();
     control->block_advance_label = 1;
     control->block_prefill_label = 4;
-    auto scheduler = MakeScheduler(control, 2, {.decode_active_tokens = 2});
+    auto scheduler = MakeScheduler(control, 2, 2);
 
     auto active = scheduler->Submit({1}, 4, 0.0F);
     control->WaitForAdvance(1);
@@ -2142,7 +2149,7 @@ void TestIdleDeviceProbe() {
   TextSchedulerPolicy policy{.device_probe_interval =
                                  std::chrono::milliseconds(10)};
   const auto before = gufo::server::detail::DeviceLostTotal().load();
-  auto scheduler = MakeScheduler(control, 1, {}, policy);
+  auto scheduler = MakeScheduler(control, 1, 0, policy);
   {
     std::unique_lock lock(control->mutex);
     Expect(
@@ -2192,7 +2199,7 @@ void TestStallMonitor() {
   }
   auto control = std::make_shared<FakeControl>();
   TextSchedulerPolicy policy{.stall_timeout = stall_timeout};
-  auto scheduler = MakeScheduler(control, 1, {}, policy);
+  auto scheduler = MakeScheduler(control, 1, 0, policy);
   std::this_thread::sleep_for(stall_timeout + stall_timeout / 2);
   Expect(!scheduler->device_lost(), "an idle scheduler is never stalled");
   auto healthy = scheduler->Submit({8, 80}, 2, 0.0F);
@@ -2241,7 +2248,7 @@ void TestStallMonitor() {
       (void)release.try_acquire_for(2 * kTestTimeout);
     }
   };
-  auto capturing = MakeScheduler(capture_control, 3, {}, policy);
+  auto capturing = MakeScheduler(capture_control, 3, 0, policy);
   const auto shared_prompt = SharedPrompt(1200, 7000, 100);
   auto leader = capturing->Submit(shared_prompt, 2, 0.0F);
   capture_control->WaitForPrefill(1);
@@ -2546,7 +2553,7 @@ void TestSnapshotDoesNotBlockOtherRequests() {
         release.acquire();
       }
     };
-    auto scheduler = MakeScheduler(control, 2, {.decode_active_tokens = 2});
+    auto scheduler = MakeScheduler(control, 2, 2);
     const std::vector<TextRunnerToken> prompt =
         history ? std::vector<TextRunnerToken>(2200, 1)
                 : std::vector<TextRunnerToken>{1, 10};
@@ -2670,7 +2677,7 @@ void TestCapturedDecoderResumesBeforeMorePrefill() {
       finished.release();
     }
   };
-  auto scheduler = MakeScheduler(control, 2, {.decode_active_tokens = 2});
+  auto scheduler = MakeScheduler(control, 2, 2);
   auto first = scheduler->Submit({1, 10}, 3, 0.0F);
   Expect(entered.try_acquire_for(kTestTimeout), "first capture starts");
   auto second = scheduler->Submit({2, 20, 21, 22, 23, 24, 25, 26, 27}, 1, 0.0F);
@@ -2853,7 +2860,7 @@ void TestProgressLoggingIsOptInAndBounded() {
     auto* previous = std::clog.rdbuf(output.rdbuf());
     {
       auto scheduler = MakeScheduler(
-          control, 1, {}, TextSchedulerPolicy{.log_progress = enabled});
+          control, 1, 0, TextSchedulerPolicy{.log_progress = enabled});
       const auto result =
           scheduler->Submit({7, 70, 71, 72, 73}, 55, 0.0F).Wait();
       Expect(result.tokens.size() == 55,
@@ -2884,7 +2891,7 @@ void TestAdmissionLoggingIsDebugTierOnly() {
     auto* previous = std::clog.rdbuf(output.rdbuf());
     bool rejected = false;
     {
-      auto scheduler = MakeScheduler(control, 1, {},
+      auto scheduler = MakeScheduler(control, 1, 0,
                                      TextSchedulerPolicy{
                                          .max_pending_requests = 1,
                                          .max_pending_requests_per_client = 1,
@@ -2981,7 +2988,7 @@ void TestStreamStartPrecedesPrefill() {
     auto control = std::make_shared<FakeControl>();
     control->block_prefill_label = 1;
     auto scheduler = MakeScheduler(
-        control, 1, {}, {.stream_start_delay = std::chrono::hours(1)});
+        control, 1, 0, {.stream_start_delay = std::chrono::hours(1)});
     auto request = submit(*scheduler, {1, 10, 11}, true);
     std::binary_semaphore started(0);
     std::atomic<int> starts{0};
@@ -3011,8 +3018,7 @@ void TestStreamStartPrecedesPrefill() {
     // A stream waiting behind another request starts after the bound.
     auto control = std::make_shared<FakeControl>();
     control->block_advance_label = 1;
-    auto scheduler =
-        MakeScheduler(control, 1, {}, {.stream_start_delay = 20ms});
+    auto scheduler = MakeScheduler(control, 1, 0, {.stream_start_delay = 20ms});
     auto active = submit(*scheduler, {1, 10}, true);
     control->WaitForAdvance(1);
     auto queued = submit(*scheduler, {2, 20}, true);
@@ -3038,7 +3044,7 @@ void TestStreamStartPrecedesPrefill() {
     auto control = std::make_shared<FakeControl>();
     control->block_advance_label = 1;
     auto scheduler = MakeScheduler(
-        control, 1, {}, {.stream_start_delay = std::chrono::hours(1)});
+        control, 1, 0, {.stream_start_delay = std::chrono::hours(1)});
     auto active = submit(*scheduler, {1, 10}, false);
     control->WaitForAdvance(1);
     auto queued = submit(*scheduler, {2, 20}, true);
@@ -3194,7 +3200,7 @@ void TestTokenLogprobs() {
     } else {
       policy.max_output_bytes_per_request = 32;
     }
-    auto scheduler = MakeScheduler(control, 1, {}, policy);
+    auto scheduler = MakeScheduler(control, 1, 0, policy);
     gufo::sampling::SamplingConfig config;
     config.logprobs = 0;
     bool failed = false;

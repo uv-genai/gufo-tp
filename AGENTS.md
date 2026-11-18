@@ -48,6 +48,12 @@ See [BUILD-LOCAL.md](BUILD-LOCAL.md) for native prerequisite setup.
 Measure performance with `build/release/gufo`. Preserve compiler and
 dependency versions when comparing results.
 
+For NPU designs, keep repeated runtime work in IRON `range_` loops; Python
+`range` expands the IR and can make verification and generated C++ compilation
+expensive. Time a cold affected-design build as well as cache reuse. Preserve
+verification and compiler optimization; check phase layouts and emitted
+instructions against the original. See [docs/internal/npu.md](docs/internal/npu.md).
+
 ## Focused tests
 
 **Model scope: never launch Qwen3.8 27B Q8**, for tests, benchmarks or
@@ -120,6 +126,7 @@ quality; successful optimizations become the default, without extra switches.
 ## Development
 
 - Keep model code, tests, tools and numerical contracts with their model.
+- Follow [src/core/rust/AGENTS.md](src/core/rust/AGENTS.md) for Rust components.
 - Use the shared Qwen control-token constants for framing; see
   [src/families/qwen/AGENTS.md](src/families/qwen/AGENTS.md). Inspect their definitions
   when reviewing or changing behavior, and keep reference fixtures independent.

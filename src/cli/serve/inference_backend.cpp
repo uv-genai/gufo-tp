@@ -80,7 +80,7 @@ std::size_t CountReasoningTokens(
     const ext::ReasoningMarkup& reasoning,
     const std::function<std::string(tokenization::TokenId)>& decode) {
   using State = TextGenerationBackend::InitialOutputState;
-  if (initial == State::kContent || reasoning.close.empty() ||
+  if (TextGenerationBackend::IsContent(initial) || reasoning.close.empty() ||
       (initial == State::kAuto && reasoning.open.empty()))
     return 0;
   // The parsers match delimiters in text, and tokens at their edges can merge
@@ -514,7 +514,6 @@ std::shared_ptr<ext::TextTpTransport> InferenceBackend::CreateTpTransport(
 #if defined(ENGINE_ENABLE_HIP)
 bool InferenceBackend::load(std::shared_ptr<ext::TextModelRunner> runner,
                             std::string* error, std::size_t session_count,
-                            TextPrefillPolicy prefill_policy,
                             TextSchedulerPolicy scheduler_policy,
                             const TextDiskCacheConfig& disk_cache_config,
                             TextRunnerRamCacheOptions ram_cache_config,
@@ -536,11 +535,6 @@ bool InferenceBackend::load(std::shared_ptr<ext::TextModelRunner> runner,
        tp_config.communicator->world_size() != tp_config.world_size)) {
     SetError(error,
              "TP2 requires matching transport and worker control channel");
-    return false;
-  }
-  if (prefill_policy.decode_active_tokens >
-      std::numeric_limits<std::uint32_t>::max()) {
-    SetError(error, "HTTP prefill chunk exceeds the TP control range");
     return false;
   }
   try {
@@ -582,8 +576,7 @@ bool InferenceBackend::load(std::shared_ptr<ext::TextModelRunner> runner,
           .max_draft_tokens = has_mtp ? max_draft_tokens : 0,
           .use_mtp = has_mtp,
           .auth_token = tp_config.auth_token,
-          .prefill_chunk_tokens =
-              static_cast<std::uint32_t>(prefill_policy.decode_active_tokens),
+          .prefill_chunk_tokens = kTpPrefillPassTokens,
           .sessions = static_cast<std::uint32_t>(session_count),
           .vision = has_vision,
           .disk_cache = DiskCacheEnabled(disk_cache_config),
@@ -647,11 +640,13 @@ bool InferenceBackend::load(std::shared_ptr<ext::TextModelRunner> runner,
             .staging_capacity_bytes = disk_cache_config.staging_capacity_bytes,
         };
       }
+      Logger::Info("loader",
+                   "event=load_phase phase=sessions " + Logger::MemoryStatus());
       auto runner_pool = std::make_shared<TextRunnerPool>(
           std::move(pool_runner), session_count, std::move(runner_disk_cache),
           ram_cache_config);
       new_state->scheduler = std::make_shared<TextGenerationScheduler>(
-          std::move(runner_pool), prefill_policy, scheduler_policy);
+          std::move(runner_pool), scheduler_policy);
     }
     new_state->control = tp_config.control;
     new_state->communicator = tp_config.communicator;
@@ -676,7 +671,7 @@ bool InferenceBackend::load(std::shared_ptr<ext::TextModelRunner> runner,
 bool InferenceBackend::load(
     const std::string& model_path, std::string* error,
     std::uint32_t max_context, std::size_t session_count,
-    TextPrefillPolicy prefill_policy, TextSchedulerPolicy scheduler_policy,
+    TextSchedulerPolicy scheduler_policy,
     const TextSpeculativeConfig& speculative_config,
     const TextDiskCacheConfig& disk_cache_config,
     const std::string& vision_model_path,
@@ -725,14 +720,14 @@ bool InferenceBackend::load(
   if (runner == nullptr) {
     return false;
   }
-  return load(std::move(runner), error, session_count, prefill_policy,
-              scheduler_policy, disk_cache_config, ram_cache_config, tp_config,
+  return load(std::move(runner), error, session_count, scheduler_policy,
+              disk_cache_config, ram_cache_config, tp_config,
               options.speculative.max_draft_tokens);
 }
 
 #else
 bool InferenceBackend::load(std::shared_ptr<ext::TextModelRunner>,
-                            std::string* error, std::size_t, TextPrefillPolicy,
+                            std::string* error, std::size_t,
                             TextSchedulerPolicy, const TextDiskCacheConfig&,
                             TextRunnerRamCacheOptions, const TextTpConfig&,
                             std::uint32_t) {
@@ -741,8 +736,8 @@ bool InferenceBackend::load(std::shared_ptr<ext::TextModelRunner>,
 }
 
 bool InferenceBackend::load(const std::string&, std::string* error,
-                            std::uint32_t, std::size_t, TextPrefillPolicy,
-                            TextSchedulerPolicy, const TextSpeculativeConfig&,
+                            std::uint32_t, std::size_t, TextSchedulerPolicy,
+                            const TextSpeculativeConfig&,
                             const TextDiskCacheConfig&, const std::string&,
                             TextRunnerRamCacheOptions, const TextTpConfig&,
                             bool, const PrepareRunnerOptions&) {
@@ -1069,7 +1064,7 @@ InferenceBackend::Result InferenceBackend::chat(
   const auto initial =
       state->scheduler->runner().InitialOutputState(effective_request);
   if (request.reasoning.budget_tokens &&
-      initial != TextGenerationBackend::InitialOutputState::kContent)
+      !TextGenerationBackend::IsContent(initial))
     effective_sampling.reasoning_budget =
         state->scheduler->runner().BuildReasoningBudget(
             *request.reasoning.budget_tokens, prompt->tokens, initial);
@@ -1171,7 +1166,7 @@ InferenceBackend::start_chat(const ChatRequest& request, std::size_t max_tokens,
   const auto initial =
       state->scheduler->runner().InitialOutputState(effective_request);
   if (request.reasoning.budget_tokens &&
-      initial != TextGenerationBackend::InitialOutputState::kContent)
+      !TextGenerationBackend::IsContent(initial))
     effective_sampling.reasoning_budget =
         state->scheduler->runner().BuildReasoningBudget(
             *request.reasoning.budget_tokens, prompt->tokens, initial);

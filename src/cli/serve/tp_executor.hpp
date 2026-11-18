@@ -21,6 +21,11 @@
 
 namespace gufo::server {
 
+/// Prompt tokens one TP2 prefill pass covers beside decoders. The mirrored
+/// runner declares it as its scheduling profile's pass width, unsplit by
+/// layers, and both ranks confirm it at the handshake.
+inline constexpr std::uint32_t kTpPrefillPassTokens = 512;
+
 /// Running digest of the model calls one TP2 request made and their results.
 ///
 /// Rank 0 adds each call as it runs it and rank 1 as it executes the same

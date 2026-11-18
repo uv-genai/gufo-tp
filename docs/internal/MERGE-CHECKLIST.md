@@ -42,7 +42,7 @@ See also: [TP2.md](models/qwen3.8-flash-next/TP2.md) · [AGENTS.md](../../AGENTS
 | Component cache restore | **Off** (`UsesComponentCache` false) |
 | `defer_residual_` | **Off** |
 | Dynamic YaRN session re-rotation | Single-host only; TP2 keeps static factor |
-| Prefill layer yields | Single-host only; mirrored descriptor has no scheduling profile |
+| Prefill layer yields | Single-host only; mirrored descriptor declares one unsplit 512-token layer group |
 | Decode overlap and its startup calibration | Single-host only; calibration returns before MoE calls |
 | Forced draft width | Rank 0 plan only (`request.drafts` / `batch_drafts`) |
 | Attention/MoE “skip AR” shortcuts | Forbidden unless identical on both ranks |

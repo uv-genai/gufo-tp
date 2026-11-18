@@ -670,8 +670,14 @@ TextRunnerDescriptor TpMirroredRunner::Descriptor() const {
   // Cancellation is checked between mirrored calls; the inner state never
   // receives a cancellation callback and cannot roll back an interrupted pass.
   descriptor.capabilities.prefill_rollback = false;
-  // Layer callbacks can enter another decode while rank 1 is still in prefill.
-  descriptor.scheduling.reset();
+  // Layer callbacks can enter another decode while rank 1 is still in
+  // prefill, so passes beside decoders stay unsplit and bounded instead.
+  descriptor.scheduling = {
+      .pass_tokens = kTpPrefillPassTokens,
+      .max_layer_groups = 1,
+      .max_yield_decode_width = std::max<std::size_t>(
+          descriptor.scheduling.max_yield_decode_width, 1),
+  };
   if (descriptor.persistence.has_value()) {
     // Rank 0's files hold its half and name rank 1's: neither a one-host
     // server nor a lone rank can restore them.

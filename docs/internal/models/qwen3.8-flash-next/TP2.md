@@ -35,9 +35,10 @@ is [tools/llama-swap/tp2.sh](../../../../tools/llama-swap/tp2.sh); the older
 `build/release/gufo` on both hosts; copy that binary to `strix-halo-1.local`
 first. Start rank 0 first, and rank 1 within 30 s. `RANK0_ADDRESS` is where
 rank 1 reaches rank 0's TCP bootstrap. Both ranks need the same model files
-and the same `--tp-control-token`, `--context`, `--prefill-chunk`,
-`--sessions`, MTP settings and `--mmproj` use; the handshake names any setting
-that differs.
+and the same `--tp-control-token`, `--context`, `--sessions`, MTP settings
+and `--mmproj` use; the handshake names any setting that differs.
+`--prefill-chunk` is deprecated and ignored: both ranks confirm the fixed
+TP2 pass width.
 
 Control protocol **24** rejects peers whose split draft head does not
 exchange its confidence (see Exchange below). It carries v0.31 provider
@@ -256,8 +257,10 @@ Current collective-shape rules (see
   static factor on both ranks. Its persistence identity includes
   `tp_position_policy=static-yarn-v1` to distinguish that policy.
 - **Prefill layer yields are single-host only.** The mirrored descriptor
-  removes the scheduling profile, preserving bounded prefill calls between
-  decodes. The model also rejects layer hooks under TP2.
+  declares an unsplit scheduling profile (`kTpPrefillPassTokens`, 512 tokens,
+  one layer group), preserving bounded prefill calls between decodes; the
+  handshake confirms that width on both ranks. The model also rejects layer
+  hooks under TP2.
 - **Decode overlap and startup calibration are single-host only.** Calibration
   invokes MoE directly, outside the mirrored call protocol, so it returns
   before those calls under TP2. Existing qualified prefill overlap remains.

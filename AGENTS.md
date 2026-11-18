@@ -48,6 +48,12 @@ See [BUILD-LOCAL.md](BUILD-LOCAL.md) for native prerequisite setup.
 Measure performance with `build/release/gufo`. Preserve compiler and
 dependency versions when comparing results.
 
+For NPU designs, keep repeated runtime work in IRON `range_` loops; Python
+`range` expands the IR and can make verification and generated C++ compilation
+expensive. Time a cold affected-design build as well as cache reuse. Preserve
+verification and compiler optimization; check phase layouts and emitted
+instructions against the original. See [docs/internal/npu.md](docs/internal/npu.md).
+
 ## Focused tests
 
 **Model scope: never launch Qwen3.8 27B Q8**, for tests, benchmarks or
@@ -120,6 +126,7 @@ quality; successful optimizations become the default, without extra switches.
 ## Development
 
 - Keep model code, tests, tools and numerical contracts with their model.
+- Follow [src/core/rust/AGENTS.md](src/core/rust/AGENTS.md) for Rust components.
 - Use the shared Qwen control-token constants for framing; see
   [src/families/qwen/AGENTS.md](src/families/qwen/AGENTS.md). Inspect their definitions
   when reviewing or changing behavior, and keep reference fixtures independent.
@@ -222,7 +229,8 @@ hidden (e.g. 10240 vs 122880 = 1 vs 12 rows × 2560 F32).
 - Dynamic YaRN session re-rotation is single-host only. TP2 retains the
   configured static factor and its own position-policy persistence identity.
 - Prefill layer yields and decode-overlap calibration are single-host only.
-  `TpMirroredRunner` removes the scheduling profile; calibration must return
+  `TpMirroredRunner` declares an unsplit 512-token profile
+  (`max_layer_groups` 1); calibration must return
   before issuing MoE calls under TP2. The new decode-overlap path stays gated.
 - `defer_residual_` only when `tp_world_size()==1`. Forced draft counts come
   from rank 0 (`request.drafts` / `batch_drafts`).

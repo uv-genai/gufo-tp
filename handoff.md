@@ -1,7 +1,8 @@
 # LIVE HANDOFF — Gufo-TP
 
-Canonical file: `/home/ugo/projects/gufo/handoff.md`. Updated **2026-11-17** for
-the v0.34.0 upstream integration (PR #36) and its release. Latest release:
+Canonical file: `/home/ugo/projects/gufo/handoff.md`. Updated **2026-11-18** for
+the TP2 draft-gate fix (PR #40), the v0.35.0 integration (PR #41) and its
+candidate deployment. Latest release:
 `tp2-rdma-merge-v0.34.0-2026-11-17`. Edit this file after deployment,
 merge, release or incident changes; dated files under `~/gufo-merge-handoff/`
 are archives, and its lowercase `handoff.md` is only a pointer here.
@@ -16,7 +17,9 @@ before using either GPU; this document does not establish current availability.
 
 1. [AGENTS.md](AGENTS.md): host flags, remotes and TP2 invariants.
 2. [Upstream merge record](docs/internal/MERGE-UPSTREAM-2026-11-18.md): v0.35.0 integration (branch
-   `merge-upstream-v0.35.0`, stacked on the TP2 draft-confidence fix), validated, not yet merged or deployed.
+   `merge-upstream-v0.35.0`, [PR #41](https://github.com/uv-genai/gufo-tp/pull/41), stacked on the TP2
+   draft-confidence fix [PR #40](https://github.com/uv-genai/gufo-tp/pull/40)), validated and deployed on
+   November 18 for the user llama-swap check; not yet merged.
    [November 17 record](docs/internal/MERGE-UPSTREAM-2026-11-17.md) covers v0.34.0.
    [November 11 record](docs/internal/MERGE-UPSTREAM-2026-11-11.md) covers v0.32–v0.33.
    [November 6 record](docs/internal/MERGE-UPSTREAM-2026-11-06.md) covers v0.29–v0.31.
@@ -33,7 +36,7 @@ before using either GPU; this document does not establish current availability.
 | Development | `/home/ugo/projects/gufo`, `main` tracks **`uv-genai/main`** |
 | Publish remote | **`uv-genai` only**, `https://github.com/uv-genai/gufo-tp.git` |
 | Upstream | `origin` → `gufo-org/gufo`, local tracking branch `gufo-org`; never push there |
-| Upstream v0.35.0 | Branch `merge-upstream-v0.35.0` (tag `0260e116`), validated on both hosts (394 TP2+MTP checks); pending PR, not deployed. Linux builds without the NPU module where XRT is absent |
+| Upstream v0.35.0 | Branch `merge-upstream-v0.35.0` (tag `0260e116`), validated on both hosts (394 TP2+MTP checks); [PR #41](https://github.com/uv-genai/gufo-tp/pull/41) open, deployed November 18. Linux builds without the NPU module where XRT is absent |
 | Upstream merged through | **v0.34.0** (`2845939b`), validated [PR #36](https://github.com/uv-genai/gufo-tp/pull/36), squash `96bb9b49`; v0.32–v0.33 via [#32](https://github.com/uv-genai/gufo-tp/pull/32)/[#33](https://github.com/uv-genai/gufo-tp/pull/33). Unreleased upstream main is excluded |
 | Latest release | [tp2-rdma-merge-v0.34.0-2026-11-17](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.34.0-2026-11-17) |
 | Previous release | [tp2-rdma-merge-v0.33.0-2026-11-11](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.33.0-2026-11-11) |
@@ -52,15 +55,19 @@ scope for this release.
 
 Both hosts have `/home/ugo/projects/gufo/build/release/gufo`:
 
-- Compiled revision **`991ecf2a57dd5eb136fd8fd90e591ebcfa10781a`** (PR #36 branch head
-  before its documentation commit), deployed November 17.
-- SHA-256 **`5503297f96e78a53beb52cd526ea47e2ec20c1bb172d4a2f005a809fca45ae61`**.
-- Production code includes upstream v0.34.0, the TP2 frontier-alignment guard,
-  mirrored provider controls and native TP snapshots. Prefill layer yields,
-  decode overlap and its startup calibration stay single-host only. Source
-  extension API is **0.3.2**. Later commits change documentation/evidence only.
-- The binary reports `gufo version development (991ecf2a...)`. Do not confuse
-  its compiled revision with the squash commit `96bb9b49`.
+- Compiled revision **`4bdc23c070385b4a1192103080811653f6e7d0fd`** (PR #41 branch,
+  before its test and documentation commits), deployed November 18 at about
+  21:00 AWST for the user llama-swap check, before either PR merged.
+- SHA-256 **`fef19e2d79ca2d7e74f273057b29e69b7ec39759dab70cba3f773666908f1e9b`**.
+- Production code includes upstream v0.35.0, the unsplit TP2 scheduling
+  profile, the exchanged split draft confidence and TP control protocol **24**
+  (older peers are rejected). Source extension API is **0.3.20**. Built
+  without XRT, so the NPU module is absent; GPU serving is unaffected.
+- The binary reports `gufo version development (4bdc23c0...)`.
+- The v0.34.0 binary `991ecf2a…` (SHA `5503297f…`) is retained on both hosts
+  at `artifacts/upstream-2026-11-18/gufo-main-v0.34.0` for rollback, and the
+  fix-only binary `f0bcd922…` (SHA `c238423f…`) at
+  `artifacts/upstream-2026-11-18/gufo-fix-confidence-v2`.
 - The binary needs libopus at runtime (1.6.1 on both hosts); libsndfile/soxr
   are no longer used.
 - The v0.33.0 binary `b325c75c…` (SHA `85f0be16…`) is retained on both
@@ -149,7 +156,7 @@ See the [merge record](docs/internal/MERGE-UPSTREAM-2026-11-06.md) for v0.29.0 t
 build, CPU/GPU tests, four TP2 modes and per-request timing controls. Raw
 evidence is retained under the corresponding version directories in
 `artifacts/upstream-2026-11-06/`.
-TP protocol is **23**, snapshot payload is 20, and TP2 retains its mirrored
+TP protocol is **24** (deployed November 18; 23 before), snapshot payload is 20, and TP2 retains its mirrored
 snapshot path with component caching disabled. Static YaRN has a distinct
 persistence identity. Upgrade both hosts together; older peers are rejected.
 Only compatible persisted states can restore.
@@ -219,7 +226,7 @@ probe, deployed binary against the fix: 60/60 replies identical, no rank
 errors, single greedy 1.000 → 2.574 drafts per round and 44.2 → 57.4 tok/s;
 seeded sampling is unchanged. [Probe evidence](docs/internal/models/qwen3.8-flash-next/artifacts/tp2-draft-confidence/probe-results.json);
 raw logs in `artifacts/upstream-2026-11-18/repro-*`.
-It is not deployed yet.
+It is deployed with v0.35.0 (below) since November 18.
 
 Controlled timing compared fresh `uv-genai/main` **`78d8a4bf`** with the
 numerical fix **`c1e4cc38`**, same compiler/settings/model/history. **58/66**
@@ -238,7 +245,7 @@ difference of **0.698152**; it is not a byte-exact sparse-prefill pass.
 ## TP2 invariants and future work
 
 - **Same binary/revision/SHA on both hosts; one model process per GPU host.**
-- Control protocol **23**, snapshot payload **v20**. Upgrade ranks together.
+- Control protocol **24**, snapshot payload **v20**. Upgrade ranks together.
 - `TpMirroredRunner::UsesComponentCache()` remains **false**.
 - Draft subset/small head, prompt lookup copies and residual deferral stay
   single-host only. Rank 0 mirrors draft counts and execution shape.

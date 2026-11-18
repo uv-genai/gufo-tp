@@ -1111,7 +1111,9 @@ public:
       if (last)
         break;
       const auto started = std::chrono::steady_clock::now();
-      qwen.CaptureBoundary([&] { consume(pass); });
+      // Read as the lease's component state, like Flash-Next's in-pass
+      // captures: no native payload.
+      qwen.CaptureBoundary([&] { consume(pass, nullptr); });
       capture_ms += std::chrono::duration<double, std::milli>(
                         std::chrono::steady_clock::now() - started)
                         .count();

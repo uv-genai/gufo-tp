@@ -39,7 +39,9 @@ and the same `--tp-control-token`, `--context`, `--prefill-chunk`,
 `--sessions`, MTP settings and `--mmproj` use; the handshake names any setting
 that differs.
 
-Control protocol **23** carries v0.31 provider reasoning: budget openers,
+Control protocol **24** rejects peers whose split draft head does not
+exchange its confidence (see Exchange below). It carries v0.31 provider
+reasoning: budget openers,
 whitespace masks and the exact automatic/reasoning/content constraint state.
 The mirrored runner also forwards provider tool dialects and reasoning markup.
 Upgrade both hosts together; mixed protocol/binary

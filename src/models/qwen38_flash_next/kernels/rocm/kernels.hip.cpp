@@ -9757,4 +9757,77 @@ void MtpTopCandidates(const float* logits, std::uint32_t* ids,
                                       stream);
 }
 
+namespace {
+
+// IDs travel as floats: vocabulary IDs are below 2^24, so this value is
+// above every one and marks an empty slot.
+constexpr float kNoSplitCandidate = 16777216.0F;
+
+// Clears the row with -0.0, not +0.0: the summing all-reduce then adds -0.0
+// to every value of the other rank's slot, which leaves each value (a -0.0
+// score included) exactly as that rank wrote it.
+__global__ void SplitCandidatesPartKernel(const std::uint32_t* ids,
+                                          const float* scores, float* exchange,
+                                          std::uint32_t width,
+                                          std::uint32_t count,
+                                          std::uint32_t first,
+                                          std::uint32_t part) {
+  for (std::uint32_t i = threadIdx.x; i < width; i += blockDim.x)
+    exchange[i] = -0.0F;
+  __syncthreads();
+  float* slot = exchange + std::size_t{part} * 2 * kMtpCandidates;
+  for (std::uint32_t i = threadIdx.x; i < kMtpCandidates; i += blockDim.x) {
+    const bool valid = i < count;
+    slot[i] = valid ? static_cast<float>(ids[i] + first) : kNoSplitCandidate;
+    slot[kMtpCandidates + i] = valid ? scores[i] : -INFINITY;
+  }
+}
+
+// MtpTopCandidates' order: descending score with -0.0 equal to +0.0 (scores
+// are finite or -infinity), then the lower token ID. Each half is already in
+// that order and holds every global candidate of its half.
+__device__ __forceinline__ bool SplitCandidateFirst(float score_a, float id_a,
+                                                    float score_b, float id_b) {
+  const float key_a = score_a == 0.0F ? 0.0F : score_a;
+  const float key_b = score_b == 0.0F ? 0.0F : score_b;
+  return key_a > key_b || (key_a == key_b && id_a < id_b);
+}
+
+__global__ void SplitCandidatesFinishKernel(const float* exchange,
+                                            std::uint32_t* ids, float* scores) {
+  const float* a = exchange;
+  const float* b = exchange + 2 * kMtpCandidates;
+  std::uint32_t i = 0, j = 0;
+  for (std::uint32_t r = 0; r < kMtpCandidates; ++r) {
+    const bool take_a = j >= kMtpCandidates ||
+                        (i < kMtpCandidates &&
+                         SplitCandidateFirst(a[kMtpCandidates + i], a[i],
+                                             b[kMtpCandidates + j], b[j]));
+    const float id = take_a ? a[i] : b[j];
+    scores[r] = take_a ? a[kMtpCandidates + i] : b[kMtpCandidates + j];
+    ids[r] =
+        id < kNoSplitCandidate ? static_cast<std::uint32_t>(id) : UINT32_MAX;
+    i += take_a ? 1 : 0;
+    j += take_a ? 0 : 1;
+  }
+}
+
+}  // namespace
+
+void SplitCandidatesPart(const std::uint32_t* ids, const float* scores,
+                         float* exchange, std::uint32_t width,
+                         std::uint32_t count, std::uint32_t first,
+                         std::uint32_t part, hipStream_t stream) {
+  if (part > 1 || count > kMtpCandidates || width < 4 * kMtpCandidates)
+    throw std::invalid_argument("invalid split candidate exchange");
+  hipLaunchKernelGGL(SplitCandidatesPartKernel, dim3(1), dim3(kThreads), 0,
+                     stream, ids, scores, exchange, width, count, first, part);
+}
+
+void SplitCandidatesFinish(const float* exchange, std::uint32_t* ids,
+                           float* scores, hipStream_t stream) {
+  hipLaunchKernelGGL(SplitCandidatesFinishKernel, dim3(1), dim3(1), 0, stream,
+                     exchange, ids, scores);
+}
+
 }  // namespace gufo::models::qwen38_flash_next::rocm

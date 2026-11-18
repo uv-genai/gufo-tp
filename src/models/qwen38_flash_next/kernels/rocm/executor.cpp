@@ -3644,16 +3644,19 @@ bool Executor::MtpHead(const DeviceMixer& head, const float* res, bool token,
   if (!HcMix(head, res, false, s_.mixed, nullptr, 1, error_msg)) {
     return false;
   }
-  // A greedy draft needs only the argmax and its confidence. Under TP each
-  // rank scores half of the vocabulary; the two candidates and their softmax
-  // normalizers cross in one all-reduce row, held in the logits buffer's
-  // unused second half. The small-head path remaps IDs after a full-row
-  // argmax instead.
+  // A greedy draft needs only the argmax and its confidence, a sampled one
+  // only the top kMtpCandidates. Under TP each rank scores half of the
+  // vocabulary; the two halves' candidates (with the greedy argmax's softmax
+  // normalizers) cross in one all-reduce row, held in the logits buffer's
+  // unused second half, and both ranks merge them alike. The small-head path
+  // remaps IDs after a full-row selection instead.
   const std::uint32_t half = output.rows / 2;
   const std::size_t width = config().hidden_size;
-  if (draft == nullptr && token && !candidates &&
-      model_->tp_world_size() == 2 && output.type == GgmlType::kQ8_0 &&
-      output.cols % 32 == 0 && output.rows % 2 == 0 && half >= width) {
+  const bool split =
+      draft == nullptr && token != candidates && model_->tp_world_size() == 2 &&
+      output.type == GgmlType::kQ8_0 && output.cols % 32 == 0 &&
+      output.rows % 2 == 0 && half >= width && half >= kMtpCandidates;
+  if (split) {
     const std::uint32_t rank = model_->tp_rank();
     DeviceTensor part = output;
     part.rows = half;
@@ -3662,6 +3665,26 @@ bool Executor::MtpHead(const DeviceMixer& head, const float* res, bool token,
     float* exchange = s_.logits + half;
     if (!Dense(part, s_.mixed, s_.logits, 1, error_msg)) {
       return false;
+    }
+    if (candidates) {
+      // The exact full-vocabulary top kMtpCandidates: a candidate outside its
+      // half's top kMtpCandidates cannot be in the global ones.
+      MtpTopCandidates(s_.logits, s_.mtp_ids, s_.mtp_scratch_ids, s_.mtp_scores,
+                       half, stream_);
+      SplitCandidatesPart(s_.mtp_ids, s_.mtp_scores, exchange,
+                          static_cast<std::uint32_t>(width), kMtpCandidates,
+                          rank * half, rank, stream_);
+      if (!AllReduce(exchange, 1, error_msg)) {
+        return false;
+      }
+      SplitCandidatesFinish(exchange, s_.mtp_ids, s_.mtp_scores, stream_);
+      static_assert(offsetof(MtpCandidateLogits, logits) ==
+                    kMtpCandidates * sizeof(std::uint32_t));
+      return Check(hipMemcpyAsync(mtp_candidates_host_, s_.mtp_ids,
+                                  offsetof(MtpCandidateLogits, logits) +
+                                      kMtpCandidates * sizeof(float),
+                                  hipMemcpyDeviceToHost, stream_),
+                   "draft candidates download", error_msg);
     }
     SplitArgmaxPart(s_.logits, s_.mtp_argmax, exchange,
                     static_cast<std::uint32_t>(width), half, rank * half, rank,

@@ -767,6 +767,21 @@ void MtpTopCandidates(const float* logits, std::uint32_t* ids,
                       std::uint32_t* scratch_ids, float* scores,
                       std::uint32_t vocab, hipStream_t stream);
 
+/// One rank's part of a sampled draft head split across two ranks, after
+/// MtpTopCandidates over its half of the vocabulary: its first `count` IDs
+/// (offset by `first`, the half's first vocabulary ID) and scores go to slot
+/// `part` of `exchange` (kMtpCandidates IDs as floats, then their scores),
+/// and the rest of the `width` floats are cleared, so a summing all-reduce
+/// delivers both halves' lists unchanged. `width` must hold both slots.
+void SplitCandidatesPart(const std::uint32_t* ids, const float* scores,
+                         float* exchange, std::uint32_t width,
+                         std::uint32_t count, std::uint32_t first,
+                         std::uint32_t part, hipStream_t stream);
+/// The full-vocabulary MtpTopCandidates result from both exchanged lists:
+/// kMtpCandidates IDs and scores in its order. Empty slots get UINT32_MAX.
+void SplitCandidatesFinish(const float* exchange, std::uint32_t* ids,
+                           float* scores, hipStream_t stream);
+
 }  // namespace gufo::models::qwen38_flash_next::rocm
 
 #endif  // GUFO_MODELS_QWEN38_FLASH_NEXT_KERNELS_ROCM_KERNELS_HPP_

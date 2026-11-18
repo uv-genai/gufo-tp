@@ -15,7 +15,9 @@ Q8 model, not Flash-Next Q8. The earlier broad test queues were closed on Novemb
 before using either GPU; this document does not establish current availability.
 
 1. [AGENTS.md](AGENTS.md): host flags, remotes and TP2 invariants.
-2. [Upstream merge record](docs/internal/MERGE-UPSTREAM-2026-11-17.md): current v0.34.0 integration and qualification.
+2. [Upstream merge record](docs/internal/MERGE-UPSTREAM-2026-11-18.md): v0.35.0 integration (branch
+   `merge-upstream-v0.35.0`, stacked on the TP2 draft-confidence fix), validated, not yet merged or deployed.
+   [November 17 record](docs/internal/MERGE-UPSTREAM-2026-11-17.md) covers v0.34.0.
    [November 11 record](docs/internal/MERGE-UPSTREAM-2026-11-11.md) covers v0.32–v0.33.
    [November 6 record](docs/internal/MERGE-UPSTREAM-2026-11-06.md) covers v0.29–v0.31.
    [Current release notes](docs/releases/2026-11-17-tp2-merge.md) describe this source release;
@@ -31,6 +33,7 @@ before using either GPU; this document does not establish current availability.
 | Development | `/home/ugo/projects/gufo`, `main` tracks **`uv-genai/main`** |
 | Publish remote | **`uv-genai` only**, `https://github.com/uv-genai/gufo-tp.git` |
 | Upstream | `origin` → `gufo-org/gufo`, local tracking branch `gufo-org`; never push there |
+| Upstream v0.35.0 | Branch `merge-upstream-v0.35.0` (tag `0260e116`), validated on both hosts (394 TP2+MTP checks); pending PR, not deployed. Linux builds without the NPU module where XRT is absent |
 | Upstream merged through | **v0.34.0** (`2845939b`), validated [PR #36](https://github.com/uv-genai/gufo-tp/pull/36), squash `96bb9b49`; v0.32–v0.33 via [#32](https://github.com/uv-genai/gufo-tp/pull/32)/[#33](https://github.com/uv-genai/gufo-tp/pull/33). Unreleased upstream main is excluded |
 | Latest release | [tp2-rdma-merge-v0.34.0-2026-11-17](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.34.0-2026-11-17) |
 | Previous release | [tp2-rdma-merge-v0.33.0-2026-11-11](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.33.0-2026-11-11) |
@@ -214,7 +217,8 @@ rejects mixed pairs. A Q4 probe on the deployed binary reproduced the poison
 passes on the fix with every reply both runs finished identical (16/16). Q8
 probe, deployed binary against the fix: 60/60 replies identical, no rank
 errors, single greedy 1.000 → 2.574 drafts per round and 44.2 → 57.4 tok/s;
-seeded sampling is unchanged. Evidence: `artifacts/upstream-2026-11-18/repro-*`.
+seeded sampling is unchanged. [Probe evidence](docs/internal/models/qwen3.8-flash-next/artifacts/tp2-draft-confidence/probe-results.json);
+raw logs in `artifacts/upstream-2026-11-18/repro-*`.
 It is not deployed yet.
 
 Controlled timing compared fresh `uv-genai/main` **`78d8a4bf`** with the

@@ -1,0 +1,5225 @@
+{
+ "repro-candidate-q8-repeat": {
+  "binary": "/home/ugo/projects/gufo/artifacts/upstream-2026-11-18/gufo-candidate-v0.35.0",
+  "quant": "q8",
+  "sessions": 2,
+  "passed": true,
+  "errors": [],
+  "started_at": "2026-11-18T20:03:19.567307+08:00",
+  "finished_at": "2026-11-18T20:09:52.473362+08:00",
+  "requests": [
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3046,
+    "seconds": 16.223643150005955,
+    "text_sha256": "06b2587e065781b7592008caba5339d89b0453b2ce52ce40ba811e6eddc61cb5"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2384,
+    "seconds": 13.814507158997003,
+    "text_sha256": "48225dfc76a8c0513e20dc7978125f62be8670b8845dd79d1a5bd559622ec86c"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 2,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 1965,
+    "seconds": 10.430459469003836,
+    "text_sha256": "9ce5f8b538015036b6f29551fa28a76f4f31078628d7d39eeac49a554d237ccd"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1811,
+    "seconds": 10.363651154999388,
+    "text_sha256": "02b3159db917730716137dfbd896e8184c6c576b3233a74384443ecc7efbd412"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2923,
+    "seconds": 12.698112710990245,
+    "text_sha256": "fcdf7674b301ce12c3d5a9b83b53b6c5b1950f35ef4512d83f178d78d0e17c7b"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3179,
+    "seconds": 12.620297653003945,
+    "text_sha256": "acc2cf12e8014f5fe0f06e1bf7de2e6cf4a5eb8b810e748cf0c56a95abcbb85a"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 6,
+    "prompt": "Write a TypeScript React component for a sortable table with",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2757,
+    "seconds": 10.850092159991618,
+    "text_sha256": "a5bcdc319b5597085ac02854c1edaa9cccc813fbeb4e4d7096cdc17f5f7362bc"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 7,
+    "prompt": "Explain, step by step, how TCP congestion control (slow star",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3116,
+    "seconds": 18.142402056997526,
+    "text_sha256": "d4c49ba85e9f80139b59ec3e8da153d6557b8e97b2f235b464c50ecc925498a8"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 8,
+    "prompt": "Write a Go HTTP server with graceful shutdown, a /health end",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 2551,
+    "seconds": 11.892636364995269,
+    "text_sha256": "74b26831b8b637780580fc82dbbc08d1cf0abe1d0933e3301e4ef258e20e34ef"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 9,
+    "prompt": "Write an eBPF program in C that counts execve calls per proc",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2501,
+    "seconds": 13.6893137809966,
+    "text_sha256": "951d9aa4dfa33f647e4477f00473f3a016269443fa7a567dc6a79a738f9c247b"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 10,
+    "prompt": "Write a Python script that reads a CSV of sales and prints t",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2959,
+    "seconds": 13.32207791300607,
+    "text_sha256": "5257814cae8bfc2f3200eed9b0d9366590d6d443c52858c990a50451c38550c3"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 11,
+    "prompt": "Write a Makefile for a C project with src/, include/ and tes",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1874,
+    "seconds": 12.121238459003507,
+    "text_sha256": "6113f3c745fae55a96d590365cdfd83f23c4045f637ed1c802ba0331eaf1e0c6"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3046,
+    "seconds": 19.15036818299268,
+    "text_sha256": "06b2587e065781b7592008caba5339d89b0453b2ce52ce40ba811e6eddc61cb5"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2384,
+    "seconds": 19.150160978999338,
+    "text_sha256": "48225dfc76a8c0513e20dc7978125f62be8670b8845dd79d1a5bd559622ec86c"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 1,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 1965,
+    "seconds": 15.563357423001435,
+    "text_sha256": "9ce5f8b538015036b6f29551fa28a76f4f31078628d7d39eeac49a554d237ccd"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1811,
+    "seconds": 15.563125318993116,
+    "text_sha256": "02b3159db917730716137dfbd896e8184c6c576b3233a74384443ecc7efbd412"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 2,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2923,
+    "seconds": 18.84935507499904,
+    "text_sha256": "fcdf7674b301ce12c3d5a9b83b53b6c5b1950f35ef4512d83f178d78d0e17c7b"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 2,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3179,
+    "seconds": 18.849138131001382,
+    "text_sha256": "acc2cf12e8014f5fe0f06e1bf7de2e6cf4a5eb8b810e748cf0c56a95abcbb85a"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a TypeScript React component for a sortable table with",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2757,
+    "seconds": 23.484059055001126,
+    "text_sha256": "a5bcdc319b5597085ac02854c1edaa9cccc813fbeb4e4d7096cdc17f5f7362bc"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 3,
+    "prompt": "Explain, step by step, how TCP congestion control (slow star",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3116,
+    "seconds": 23.483733343993663,
+    "text_sha256": "d4c49ba85e9f80139b59ec3e8da153d6557b8e97b2f235b464c50ecc925498a8"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Go HTTP server with graceful shutdown, a /health end",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 2551,
+    "seconds": 19.29511782800546,
+    "text_sha256": "74b26831b8b637780580fc82dbbc08d1cf0abe1d0933e3301e4ef258e20e34ef"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write an eBPF program in C that counts execve calls per proc",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2501,
+    "seconds": 19.294549643993378,
+    "text_sha256": "951d9aa4dfa33f647e4477f00473f3a016269443fa7a567dc6a79a738f9c247b"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a Python script that reads a CSV of sales and prints t",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2959,
+    "seconds": 17.965884235003614,
+    "text_sha256": "5257814cae8bfc2f3200eed9b0d9366590d6d443c52858c990a50451c38550c3"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a Makefile for a C project with src/, include/ and tes",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1874,
+    "seconds": 17.96550394599035,
+    "text_sha256": "6113f3c745fae55a96d590365cdfd83f23c4045f637ed1c802ba0331eaf1e0c6"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 3038,
+    "seconds": 13.286389756001881,
+    "text_sha256": "01e665ff21a07306f2e045258b73d6596317ee1a4a099fc946dacdb92d775237"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2607,
+    "seconds": 15.000548780008103,
+    "text_sha256": "000470d31994ce9525fa80a3afe372b537181c2d81fcfb870aedb8e8033bb709"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 2,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2531,
+    "seconds": 12.28662538799108,
+    "text_sha256": "1a848798373b68fa7125638c2c67a256cf0474e57701fbef8153a6add369b75e"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.7,
+    "finish": "stop",
+    "chars": 2221,
+    "seconds": 11.954548811991117,
+    "text_sha256": "16d4e10358de3affd56f458f54bbe0153c463e8ebff078a6915646d48e60e984"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2810,
+    "seconds": 12.343123296988779,
+    "text_sha256": "0f3471ad0ea7db9d01defdb70f8c041d08b1d48b6ca1e767bc74eb45c71d9dc6"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 3188,
+    "seconds": 12.966517630993621,
+    "text_sha256": "873d44e8b83d8448f27277bc7f22855eef2db1b7ce2f5378317af167e117e0cf"
+   }
+  ],
+  "rank0_completed": [
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "48.2",
+    "draft_accepted": "502",
+    "draft_proposed": "561",
+    "draft_rounds": "266",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "56.8",
+    "draft_accepted": "572",
+    "draft_proposed": "645",
+    "draft_rounds": "196",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "75.5",
+    "draft_accepted": "669",
+    "draft_proposed": "673",
+    "draft_rounds": "99",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "513",
+    "decode_tps": "50.7",
+    "draft_accepted": "328",
+    "draft_proposed": "377",
+    "draft_rounds": "185",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "61.7",
+    "draft_accepted": "554",
+    "draft_proposed": "623",
+    "draft_rounds": "214",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "62.1",
+    "draft_accepted": "555",
+    "draft_proposed": "600",
+    "draft_rounds": "213",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "72.3",
+    "draft_accepted": "619",
+    "draft_proposed": "681",
+    "draft_rounds": "149",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "43.0",
+    "draft_accepted": "350",
+    "draft_proposed": "460",
+    "draft_rounds": "385",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "723",
+    "decode_tps": "62.0",
+    "draft_accepted": "518",
+    "draft_proposed": "576",
+    "draft_rounds": "205",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "57.1",
+    "draft_accepted": "509",
+    "draft_proposed": "580",
+    "draft_rounds": "258",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "58.8",
+    "draft_accepted": "529",
+    "draft_proposed": "595",
+    "draft_rounds": "239",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "629",
+    "decode_tps": "53.0",
+    "draft_accepted": "391",
+    "draft_proposed": "443",
+    "draft_rounds": "238",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "41.1",
+    "draft_accepted": "583",
+    "draft_proposed": "656",
+    "draft_rounds": "164",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "40.1",
+    "draft_accepted": "578",
+    "draft_proposed": "658",
+    "draft_rounds": "167",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "513",
+    "decode_tps": "33.0",
+    "draft_accepted": "365",
+    "draft_proposed": "418",
+    "draft_rounds": "126",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "56.0",
+    "draft_accepted": "651",
+    "draft_proposed": "655",
+    "draft_rounds": "109",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "40.8",
+    "draft_accepted": "592",
+    "draft_proposed": "662",
+    "draft_rounds": "155",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "41.6",
+    "draft_accepted": "597",
+    "draft_proposed": "656",
+    "draft_rounds": "155",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "32.7",
+    "draft_accepted": "455",
+    "draft_proposed": "586",
+    "draft_rounds": "265",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "45.3",
+    "draft_accepted": "576",
+    "draft_proposed": "612",
+    "draft_rounds": "178",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "39.8",
+    "draft_accepted": "561",
+    "draft_proposed": "665",
+    "draft_rounds": "176",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "723",
+    "decode_tps": "43.3",
+    "draft_accepted": "555",
+    "draft_proposed": "614",
+    "draft_rounds": "145",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "629",
+    "decode_tps": "38.3",
+    "draft_accepted": "476",
+    "draft_proposed": "569",
+    "draft_rounds": "131",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "42.8",
+    "draft_accepted": "595",
+    "draft_proposed": "683",
+    "draft_rounds": "153",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "57.8",
+    "draft_accepted": "548",
+    "draft_proposed": "621",
+    "draft_rounds": "220",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "51.2",
+    "draft_accepted": "486",
+    "draft_proposed": "602",
+    "draft_rounds": "265",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "62.5",
+    "draft_accepted": "575",
+    "draft_proposed": "610",
+    "draft_rounds": "177",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "607",
+    "decode_tps": "50.8",
+    "draft_accepted": "384",
+    "draft_proposed": "491",
+    "draft_rounds": "223",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "62.3",
+    "draft_accepted": "581",
+    "draft_proposed": "654",
+    "draft_rounds": "187",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "59.3",
+    "draft_accepted": "561",
+    "draft_proposed": "625",
+    "draft_rounds": "207",
+    "outcome": "completed"
+   }
+  ]
+ },
+ "repro-candidate-q8": {
+  "binary": "/home/ugo/projects/gufo/artifacts/upstream-2026-11-18/gufo-candidate-v0.35.0",
+  "quant": "q8",
+  "sessions": 2,
+  "passed": true,
+  "errors": [],
+  "started_at": "2026-11-18T19:49:04.445912+08:00",
+  "finished_at": "2026-11-18T19:56:13.105531+08:00",
+  "requests": [
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3046,
+    "seconds": 16.226062846006243,
+    "text_sha256": "06b2587e065781b7592008caba5339d89b0453b2ce52ce40ba811e6eddc61cb5"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2384,
+    "seconds": 12.396529456003918,
+    "text_sha256": "48225dfc76a8c0513e20dc7978125f62be8670b8845dd79d1a5bd559622ec86c"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 2,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 1965,
+    "seconds": 9.4481952660135,
+    "text_sha256": "9ce5f8b538015036b6f29551fa28a76f4f31078628d7d39eeac49a554d237ccd"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1811,
+    "seconds": 11.00218525400851,
+    "text_sha256": "02b3159db917730716137dfbd896e8184c6c576b3233a74384443ecc7efbd412"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2923,
+    "seconds": 19.819229572996846,
+    "text_sha256": "fcdf7674b301ce12c3d5a9b83b53b6c5b1950f35ef4512d83f178d78d0e17c7b"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3179,
+    "seconds": 18.596217404992785,
+    "text_sha256": "acc2cf12e8014f5fe0f06e1bf7de2e6cf4a5eb8b810e748cf0c56a95abcbb85a"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 6,
+    "prompt": "Write a TypeScript React component for a sortable table with",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2757,
+    "seconds": 18.82055369199952,
+    "text_sha256": "a5bcdc319b5597085ac02854c1edaa9cccc813fbeb4e4d7096cdc17f5f7362bc"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 7,
+    "prompt": "Explain, step by step, how TCP congestion control (slow star",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3116,
+    "seconds": 29.190448868990643,
+    "text_sha256": "d4c49ba85e9f80139b59ec3e8da153d6557b8e97b2f235b464c50ecc925498a8"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 8,
+    "prompt": "Write a Go HTTP server with graceful shutdown, a /health end",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 2551,
+    "seconds": 20.335230639000656,
+    "text_sha256": "74b26831b8b637780580fc82dbbc08d1cf0abe1d0933e3301e4ef258e20e34ef"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 9,
+    "prompt": "Write an eBPF program in C that counts execve calls per proc",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2501,
+    "seconds": 12.992357341005118,
+    "text_sha256": "951d9aa4dfa33f647e4477f00473f3a016269443fa7a567dc6a79a738f9c247b"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 10,
+    "prompt": "Write a Python script that reads a CSV of sales and prints t",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2959,
+    "seconds": 13.487792915999307,
+    "text_sha256": "5257814cae8bfc2f3200eed9b0d9366590d6d443c52858c990a50451c38550c3"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 11,
+    "prompt": "Write a Makefile for a C project with src/, include/ and tes",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1874,
+    "seconds": 12.137682574000792,
+    "text_sha256": "6113f3c745fae55a96d590365cdfd83f23c4045f637ed1c802ba0331eaf1e0c6"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3046,
+    "seconds": 19.451426636995166,
+    "text_sha256": "06b2587e065781b7592008caba5339d89b0453b2ce52ce40ba811e6eddc61cb5"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2384,
+    "seconds": 19.451079737002146,
+    "text_sha256": "48225dfc76a8c0513e20dc7978125f62be8670b8845dd79d1a5bd559622ec86c"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 1,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 1965,
+    "seconds": 15.656243332996382,
+    "text_sha256": "9ce5f8b538015036b6f29551fa28a76f4f31078628d7d39eeac49a554d237ccd"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1811,
+    "seconds": 15.655921283003408,
+    "text_sha256": "02b3159db917730716137dfbd896e8184c6c576b3233a74384443ecc7efbd412"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 2,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2923,
+    "seconds": 18.944329634992755,
+    "text_sha256": "fcdf7674b301ce12c3d5a9b83b53b6c5b1950f35ef4512d83f178d78d0e17c7b"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 2,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3179,
+    "seconds": 18.94376965200354,
+    "text_sha256": "acc2cf12e8014f5fe0f06e1bf7de2e6cf4a5eb8b810e748cf0c56a95abcbb85a"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a TypeScript React component for a sortable table with",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2757,
+    "seconds": 22.52577422199829,
+    "text_sha256": "a5bcdc319b5597085ac02854c1edaa9cccc813fbeb4e4d7096cdc17f5f7362bc"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 3,
+    "prompt": "Explain, step by step, how TCP congestion control (slow star",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3116,
+    "seconds": 24.091062348990818,
+    "text_sha256": "d4c49ba85e9f80139b59ec3e8da153d6557b8e97b2f235b464c50ecc925498a8"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Go HTTP server with graceful shutdown, a /health end",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 2551,
+    "seconds": 19.32885781499499,
+    "text_sha256": "74b26831b8b637780580fc82dbbc08d1cf0abe1d0933e3301e4ef258e20e34ef"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write an eBPF program in C that counts execve calls per proc",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2501,
+    "seconds": 19.32860940200044,
+    "text_sha256": "951d9aa4dfa33f647e4477f00473f3a016269443fa7a567dc6a79a738f9c247b"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a Python script that reads a CSV of sales and prints t",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2959,
+    "seconds": 18.52575233299285,
+    "text_sha256": "5257814cae8bfc2f3200eed9b0d9366590d6d443c52858c990a50451c38550c3"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a Makefile for a C project with src/, include/ and tes",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1874,
+    "seconds": 18.525435022005695,
+    "text_sha256": "6113f3c745fae55a96d590365cdfd83f23c4045f637ed1c802ba0331eaf1e0c6"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 3038,
+    "seconds": 13.784974367998075,
+    "text_sha256": "01e665ff21a07306f2e045258b73d6596317ee1a4a099fc946dacdb92d775237"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2607,
+    "seconds": 14.955878180000582,
+    "text_sha256": "000470d31994ce9525fa80a3afe372b537181c2d81fcfb870aedb8e8033bb709"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 2,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2531,
+    "seconds": 12.2250270289951,
+    "text_sha256": "1a848798373b68fa7125638c2c67a256cf0474e57701fbef8153a6add369b75e"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.7,
+    "finish": "stop",
+    "chars": 2221,
+    "seconds": 11.826476130998344,
+    "text_sha256": "16d4e10358de3affd56f458f54bbe0153c463e8ebff078a6915646d48e60e984"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2810,
+    "seconds": 12.145358370995382,
+    "text_sha256": "0f3471ad0ea7db9d01defdb70f8c041d08b1d48b6ca1e767bc74eb45c71d9dc6"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 3188,
+    "seconds": 12.869561027997406,
+    "text_sha256": "873d44e8b83d8448f27277bc7f22855eef2db1b7ce2f5378317af167e117e0cf"
+   }
+  ],
+  "rank0_completed": [
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "48.5",
+    "draft_accepted": "502",
+    "draft_proposed": "561",
+    "draft_rounds": "266",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "63.3",
+    "draft_accepted": "572",
+    "draft_proposed": "645",
+    "draft_rounds": "196",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "83.6",
+    "draft_accepted": "669",
+    "draft_proposed": "673",
+    "draft_rounds": "99",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "513",
+    "decode_tps": "47.7",
+    "draft_accepted": "328",
+    "draft_proposed": "377",
+    "draft_rounds": "185",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "39.8",
+    "draft_accepted": "554",
+    "draft_proposed": "623",
+    "draft_rounds": "214",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "42.6",
+    "draft_accepted": "555",
+    "draft_proposed": "600",
+    "draft_rounds": "213",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "41.6",
+    "draft_accepted": "619",
+    "draft_proposed": "681",
+    "draft_rounds": "149",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "26.9",
+    "draft_accepted": "350",
+    "draft_proposed": "460",
+    "draft_rounds": "385",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "723",
+    "decode_tps": "36.5",
+    "draft_accepted": "518",
+    "draft_proposed": "576",
+    "draft_rounds": "205",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "60.2",
+    "draft_accepted": "509",
+    "draft_proposed": "580",
+    "draft_rounds": "258",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "58.0",
+    "draft_accepted": "529",
+    "draft_proposed": "595",
+    "draft_rounds": "239",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "629",
+    "decode_tps": "52.8",
+    "draft_accepted": "391",
+    "draft_proposed": "443",
+    "draft_rounds": "238",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "41.3",
+    "draft_accepted": "594",
+    "draft_proposed": "674",
+    "draft_rounds": "155",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "39.5",
+    "draft_accepted": "584",
+    "draft_proposed": "667",
+    "draft_rounds": "160",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "57.4",
+    "draft_accepted": "662",
+    "draft_proposed": "669",
+    "draft_rounds": "99",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "513",
+    "decode_tps": "32.8",
+    "draft_accepted": "374",
+    "draft_proposed": "439",
+    "draft_rounds": "117",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "41.6",
+    "draft_accepted": "604",
+    "draft_proposed": "667",
+    "draft_rounds": "151",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "40.6",
+    "draft_accepted": "598",
+    "draft_proposed": "673",
+    "draft_rounds": "149",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "46.5",
+    "draft_accepted": "586",
+    "draft_proposed": "647",
+    "draft_rounds": "165",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "31.9",
+    "draft_accepted": "444",
+    "draft_proposed": "577",
+    "draft_rounds": "278",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "39.8",
+    "draft_accepted": "572",
+    "draft_proposed": "660",
+    "draft_rounds": "166",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "723",
+    "decode_tps": "44.8",
+    "draft_accepted": "571",
+    "draft_proposed": "632",
+    "draft_rounds": "136",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "41.5",
+    "draft_accepted": "592",
+    "draft_proposed": "704",
+    "draft_rounds": "153",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "629",
+    "decode_tps": "37.7",
+    "draft_accepted": "476",
+    "draft_proposed": "577",
+    "draft_rounds": "130",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "55.7",
+    "draft_accepted": "548",
+    "draft_proposed": "621",
+    "draft_rounds": "220",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "51.4",
+    "draft_accepted": "486",
+    "draft_proposed": "602",
+    "draft_rounds": "265",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "62.9",
+    "draft_accepted": "575",
+    "draft_proposed": "610",
+    "draft_rounds": "177",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "607",
+    "decode_tps": "51.4",
+    "draft_accepted": "384",
+    "draft_proposed": "491",
+    "draft_rounds": "223",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "63.3",
+    "draft_accepted": "581",
+    "draft_proposed": "654",
+    "draft_rounds": "187",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "59.7",
+    "draft_accepted": "561",
+    "draft_proposed": "625",
+    "draft_rounds": "207",
+    "outcome": "completed"
+   }
+  ]
+ },
+ "repro-fix-q4": {
+  "binary": "/home/ugo/projects/gufo/artifacts/upstream-2026-11-18/gufo-fix-confidence-v2",
+  "quant": "q4",
+  "sessions": 2,
+  "passed": true,
+  "errors": [],
+  "started_at": "2026-11-18T19:18:12.474503+08:00",
+  "finished_at": "2026-11-18T19:23:52.423768+08:00",
+  "requests": [
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3118,
+    "seconds": 11.777323752001394,
+    "text_sha256": "c806f2c3bf3d9ff9e7f442ec8b1f8670480934aad34a4577d6cec806d476cd3f"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2352,
+    "seconds": 12.366661612992175,
+    "text_sha256": "d9930d4919a6bbb24fbef5c006d00a3b7892b943293edb8fa955489dc93df642"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 2,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 1965,
+    "seconds": 8.857395611994434,
+    "text_sha256": "9ce5f8b538015036b6f29551fa28a76f4f31078628d7d39eeac49a554d237ccd"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1446,
+    "seconds": 7.8982087559998035,
+    "text_sha256": "b4051a5391268625ba3e8be06d18b365c7767ca968cb29e8ccdf9912b5f20e0b"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2742,
+    "seconds": 10.644035034012632,
+    "text_sha256": "4aecba19c64ef68ca0e7acbfbac45053f6387945aed67635fb3a68fd3c838d41"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3139,
+    "seconds": 10.686043972003972,
+    "text_sha256": "8409179d8c8be550aa7734a54e694a05780ed9d6a81bc95cdc94cfa0dc0f305e"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 6,
+    "prompt": "Write a TypeScript React component for a sortable table with",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2580,
+    "seconds": 11.258561270995415,
+    "text_sha256": "d3dd7d2fc04c538dca404fbdadb1b3017107a64c1dec29b46a518a1c760faa59"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 7,
+    "prompt": "Explain, step by step, how TCP congestion control (slow star",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2811,
+    "seconds": 13.990323813006398,
+    "text_sha256": "97334e9a45884d0839e81d9398118f195543a0b5b1f2b00bf329ca8a34ef50f3"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 8,
+    "prompt": "Write a Go HTTP server with graceful shutdown, a /health end",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 2483,
+    "seconds": 10.739128628993058,
+    "text_sha256": "b27a51eb13b6e3646abc365f005114ae02f04948d397c4fb03cf6904be98194d"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 9,
+    "prompt": "Write an eBPF program in C that counts execve calls per proc",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2518,
+    "seconds": 12.358598887003609,
+    "text_sha256": "2406078e1182ff216cb858850c0aea032af4d0e8927b54bd75a3a65efe918959"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 10,
+    "prompt": "Write a Python script that reads a CSV of sales and prints t",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2825,
+    "seconds": 12.446985011003562,
+    "text_sha256": "e9f8b49843da6b21c385d3c4349df5f4fc5e17990d7f4df2765c4bdedee76fc6"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 11,
+    "prompt": "Write a Makefile for a C project with src/, include/ and tes",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1899,
+    "seconds": 10.520357950008474,
+    "text_sha256": "d1bfe279f9f379bae8e9325b11d69ee5b5c76aa9f7851ed96912a30cbc2b902d"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3118,
+    "seconds": 17.999757778001367,
+    "text_sha256": "c806f2c3bf3d9ff9e7f442ec8b1f8670480934aad34a4577d6cec806d476cd3f"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2352,
+    "seconds": 17.999411868993775,
+    "text_sha256": "d9930d4919a6bbb24fbef5c006d00a3b7892b943293edb8fa955489dc93df642"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 1,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 1965,
+    "seconds": 12.750305537003442,
+    "text_sha256": "9ce5f8b538015036b6f29551fa28a76f4f31078628d7d39eeac49a554d237ccd"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1446,
+    "seconds": 12.750100232995464,
+    "text_sha256": "b4051a5391268625ba3e8be06d18b365c7767ca968cb29e8ccdf9912b5f20e0b"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 2,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2742,
+    "seconds": 16.37967159099935,
+    "text_sha256": "4aecba19c64ef68ca0e7acbfbac45053f6387945aed67635fb3a68fd3c838d41"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 2,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3139,
+    "seconds": 16.379506896002567,
+    "text_sha256": "8409179d8c8be550aa7734a54e694a05780ed9d6a81bc95cdc94cfa0dc0f305e"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a TypeScript React component for a sortable table with",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2580,
+    "seconds": 16.36753108398989,
+    "text_sha256": "d3dd7d2fc04c538dca404fbdadb1b3017107a64c1dec29b46a518a1c760faa59"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 3,
+    "prompt": "Explain, step by step, how TCP congestion control (slow star",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2811,
+    "seconds": 19.814811796997674,
+    "text_sha256": "97334e9a45884d0839e81d9398118f195543a0b5b1f2b00bf329ca8a34ef50f3"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Go HTTP server with graceful shutdown, a /health end",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 2483,
+    "seconds": 17.952342364995275,
+    "text_sha256": "b27a51eb13b6e3646abc365f005114ae02f04948d397c4fb03cf6904be98194d"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write an eBPF program in C that counts execve calls per proc",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2518,
+    "seconds": 18.03898619399115,
+    "text_sha256": "2406078e1182ff216cb858850c0aea032af4d0e8927b54bd75a3a65efe918959"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a Python script that reads a CSV of sales and prints t",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2825,
+    "seconds": 18.30525552399922,
+    "text_sha256": "e9f8b49843da6b21c385d3c4349df5f4fc5e17990d7f4df2765c4bdedee76fc6"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a Makefile for a C project with src/, include/ and tes",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1899,
+    "seconds": 16.800134488003096,
+    "text_sha256": "d1bfe279f9f379bae8e9325b11d69ee5b5c76aa9f7851ed96912a30cbc2b902d"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 3058,
+    "seconds": 12.883645707988762,
+    "text_sha256": "0a9dd4013941af55c6284d229ae534e9d1e70e492371930f534804a648e260a1"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2539,
+    "seconds": 12.642694285008474,
+    "text_sha256": "9a23f30e5bd6c60e0c76bf9d4b0c00e57cf2017dc2e4a0845c26be7008c4cad8"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 2,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2715,
+    "seconds": 12.098741579990019,
+    "text_sha256": "b7cde1f3fabcbe54969f4d09fa10ba40d2f35b411672adf94c88d4c3161d5010"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.7,
+    "finish": "stop",
+    "chars": 2579,
+    "seconds": 13.566803654000978,
+    "text_sha256": "6e0a3ebf6c6b025b5a4c60c99f0162630cd48699364217d9214623f9ae6a8842"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2916,
+    "seconds": 12.775457862997428,
+    "text_sha256": "07e9ce5f5805efc56c92edee64d54101a3d123578f7d72e17d7e33f3cb9db287"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 3111,
+    "seconds": 11.78470332500001,
+    "text_sha256": "b6f97bf338b598215e639dd247d2aa8c5e147e19645b6cdcde38184d6346a3f5"
+   }
+  ],
+  "rank0_completed": [
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "66.3",
+    "draft_accepted": "528",
+    "draft_proposed": "605",
+    "draft_rounds": "240",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "63.2",
+    "draft_accepted": "512",
+    "draft_proposed": "570",
+    "draft_rounds": "255",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "89.0",
+    "draft_accepted": "669",
+    "draft_proposed": "674",
+    "draft_rounds": "99",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "417",
+    "decode_tps": "54.3",
+    "draft_accepted": "259",
+    "draft_proposed": "313",
+    "draft_rounds": "142",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "73.8",
+    "draft_accepted": "592",
+    "draft_proposed": "638",
+    "draft_rounds": "175",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "73.6",
+    "draft_accepted": "601",
+    "draft_proposed": "658",
+    "draft_rounds": "166",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "69.5",
+    "draft_accepted": "563",
+    "draft_proposed": "610",
+    "draft_rounds": "205",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "55.9",
+    "draft_accepted": "452",
+    "draft_proposed": "558",
+    "draft_rounds": "316",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "709",
+    "decode_tps": "67.5",
+    "draft_accepted": "520",
+    "draft_proposed": "594",
+    "draft_rounds": "189",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "63.4",
+    "draft_accepted": "523",
+    "draft_proposed": "597",
+    "draft_rounds": "245",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "63.0",
+    "draft_accepted": "523",
+    "draft_proposed": "609",
+    "draft_rounds": "228",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "632",
+    "decode_tps": "61.5",
+    "draft_accepted": "410",
+    "draft_proposed": "465",
+    "draft_rounds": "222",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "42.7",
+    "draft_accepted": "574",
+    "draft_proposed": "657",
+    "draft_rounds": "169",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "43.2",
+    "draft_accepted": "578",
+    "draft_proposed": "697",
+    "draft_rounds": "171",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "63.5",
+    "draft_accepted": "659",
+    "draft_proposed": "664",
+    "draft_rounds": "100",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "417",
+    "decode_tps": "32.7",
+    "draft_accepted": "299",
+    "draft_proposed": "373",
+    "draft_rounds": "93",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "46.9",
+    "draft_accepted": "610",
+    "draft_proposed": "688",
+    "draft_rounds": "143",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "49.1",
+    "draft_accepted": "620",
+    "draft_proposed": "676",
+    "draft_rounds": "133",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "53.7",
+    "draft_accepted": "607",
+    "draft_proposed": "665",
+    "draft_rounds": "147",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "38.8",
+    "draft_accepted": "478",
+    "draft_proposed": "577",
+    "draft_rounds": "261",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "709",
+    "decode_tps": "48.0",
+    "draft_accepted": "544",
+    "draft_proposed": "618",
+    "draft_rounds": "145",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "42.6",
+    "draft_accepted": "546",
+    "draft_proposed": "650",
+    "draft_rounds": "195",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "632",
+    "decode_tps": "40.6",
+    "draft_accepted": "469",
+    "draft_proposed": "596",
+    "draft_rounds": "138",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "42.0",
+    "draft_accepted": "568",
+    "draft_proposed": "687",
+    "draft_rounds": "173",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "59.6",
+    "draft_accepted": "513",
+    "draft_proposed": "600",
+    "draft_rounds": "255",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "60.8",
+    "draft_accepted": "526",
+    "draft_proposed": "618",
+    "draft_rounds": "242",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "63.5",
+    "draft_accepted": "556",
+    "draft_proposed": "599",
+    "draft_rounds": "196",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "744",
+    "decode_tps": "54.9",
+    "draft_accepted": "447",
+    "draft_proposed": "545",
+    "draft_rounds": "297",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "60.2",
+    "draft_accepted": "511",
+    "draft_proposed": "597",
+    "draft_rounds": "257",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "65.2",
+    "draft_accepted": "550",
+    "draft_proposed": "612",
+    "draft_rounds": "218",
+    "outcome": "completed"
+   }
+  ]
+ },
+ "repro-fix-q8-repeat": {
+  "binary": "/home/ugo/projects/gufo/artifacts/upstream-2026-11-18/gufo-fix-confidence-v2",
+  "quant": "q8",
+  "sessions": 2,
+  "passed": true,
+  "errors": [],
+  "started_at": "2026-11-18T19:56:58.546210+08:00",
+  "finished_at": "2026-11-18T20:03:19.516332+08:00",
+  "requests": [
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3046,
+    "seconds": 13.33538543600298,
+    "text_sha256": "06b2587e065781b7592008caba5339d89b0453b2ce52ce40ba811e6eddc61cb5"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2384,
+    "seconds": 11.999217012998997,
+    "text_sha256": "48225dfc76a8c0513e20dc7978125f62be8670b8845dd79d1a5bd559622ec86c"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 2,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 1965,
+    "seconds": 9.423292480001692,
+    "text_sha256": "9ce5f8b538015036b6f29551fa28a76f4f31078628d7d39eeac49a554d237ccd"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1811,
+    "seconds": 9.739590793993557,
+    "text_sha256": "02b3159db917730716137dfbd896e8184c6c576b3233a74384443ecc7efbd412"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2923,
+    "seconds": 12.812908737003454,
+    "text_sha256": "fcdf7674b301ce12c3d5a9b83b53b6c5b1950f35ef4512d83f178d78d0e17c7b"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3179,
+    "seconds": 12.737820328999078,
+    "text_sha256": "acc2cf12e8014f5fe0f06e1bf7de2e6cf4a5eb8b810e748cf0c56a95abcbb85a"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 6,
+    "prompt": "Write a TypeScript React component for a sortable table with",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2757,
+    "seconds": 10.83984837398748,
+    "text_sha256": "a5bcdc319b5597085ac02854c1edaa9cccc813fbeb4e4d7096cdc17f5f7362bc"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 7,
+    "prompt": "Explain, step by step, how TCP congestion control (slow star",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3116,
+    "seconds": 18.158019489012077,
+    "text_sha256": "d4c49ba85e9f80139b59ec3e8da153d6557b8e97b2f235b464c50ecc925498a8"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 8,
+    "prompt": "Write a Go HTTP server with graceful shutdown, a /health end",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 2551,
+    "seconds": 11.986229460002505,
+    "text_sha256": "74b26831b8b637780580fc82dbbc08d1cf0abe1d0933e3301e4ef258e20e34ef"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 9,
+    "prompt": "Write an eBPF program in C that counts execve calls per proc",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2501,
+    "seconds": 13.758360507010366,
+    "text_sha256": "951d9aa4dfa33f647e4477f00473f3a016269443fa7a567dc6a79a738f9c247b"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 10,
+    "prompt": "Write a Python script that reads a CSV of sales and prints t",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2959,
+    "seconds": 13.36878069199156,
+    "text_sha256": "5257814cae8bfc2f3200eed9b0d9366590d6d443c52858c990a50451c38550c3"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 11,
+    "prompt": "Write a Makefile for a C project with src/, include/ and tes",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1874,
+    "seconds": 12.149477186991135,
+    "text_sha256": "6113f3c745fae55a96d590365cdfd83f23c4045f637ed1c802ba0331eaf1e0c6"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3046,
+    "seconds": 19.34036292199744,
+    "text_sha256": "06b2587e065781b7592008caba5339d89b0453b2ce52ce40ba811e6eddc61cb5"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2384,
+    "seconds": 19.340207196990377,
+    "text_sha256": "48225dfc76a8c0513e20dc7978125f62be8670b8845dd79d1a5bd559622ec86c"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 1,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 1965,
+    "seconds": 15.663638247002382,
+    "text_sha256": "9ce5f8b538015036b6f29551fa28a76f4f31078628d7d39eeac49a554d237ccd"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1811,
+    "seconds": 15.663136212009704,
+    "text_sha256": "02b3159db917730716137dfbd896e8184c6c576b3233a74384443ecc7efbd412"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 2,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2923,
+    "seconds": 19.013945211001555,
+    "text_sha256": "fcdf7674b301ce12c3d5a9b83b53b6c5b1950f35ef4512d83f178d78d0e17c7b"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 2,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3179,
+    "seconds": 19.01368741899205,
+    "text_sha256": "acc2cf12e8014f5fe0f06e1bf7de2e6cf4a5eb8b810e748cf0c56a95abcbb85a"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a TypeScript React component for a sortable table with",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2757,
+    "seconds": 20.417895335995127,
+    "text_sha256": "a5bcdc319b5597085ac02854c1edaa9cccc813fbeb4e4d7096cdc17f5f7362bc"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 3,
+    "prompt": "Explain, step by step, how TCP congestion control (slow star",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3116,
+    "seconds": 24.34596378300921,
+    "text_sha256": "d4c49ba85e9f80139b59ec3e8da153d6557b8e97b2f235b464c50ecc925498a8"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Go HTTP server with graceful shutdown, a /health end",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 2551,
+    "seconds": 19.109051913008443,
+    "text_sha256": "74b26831b8b637780580fc82dbbc08d1cf0abe1d0933e3301e4ef258e20e34ef"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write an eBPF program in C that counts execve calls per proc",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2501,
+    "seconds": 19.108796400003484,
+    "text_sha256": "951d9aa4dfa33f647e4477f00473f3a016269443fa7a567dc6a79a738f9c247b"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a Python script that reads a CSV of sales and prints t",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2959,
+    "seconds": 18.05398390699702,
+    "text_sha256": "5257814cae8bfc2f3200eed9b0d9366590d6d443c52858c990a50451c38550c3"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a Makefile for a C project with src/, include/ and tes",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1874,
+    "seconds": 18.053799932007678,
+    "text_sha256": "6113f3c745fae55a96d590365cdfd83f23c4045f637ed1c802ba0331eaf1e0c6"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 3038,
+    "seconds": 13.662249628003337,
+    "text_sha256": "01e665ff21a07306f2e045258b73d6596317ee1a4a099fc946dacdb92d775237"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2607,
+    "seconds": 14.901847497996641,
+    "text_sha256": "000470d31994ce9525fa80a3afe372b537181c2d81fcfb870aedb8e8033bb709"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 2,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2531,
+    "seconds": 12.232257235998986,
+    "text_sha256": "1a848798373b68fa7125638c2c67a256cf0474e57701fbef8153a6add369b75e"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.7,
+    "finish": "stop",
+    "chars": 2221,
+    "seconds": 11.8568477830122,
+    "text_sha256": "16d4e10358de3affd56f458f54bbe0153c463e8ebff078a6915646d48e60e984"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2810,
+    "seconds": 12.284778358007316,
+    "text_sha256": "0f3471ad0ea7db9d01defdb70f8c041d08b1d48b6ca1e767bc74eb45c71d9dc6"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 3188,
+    "seconds": 12.954752211997402,
+    "text_sha256": "873d44e8b83d8448f27277bc7f22855eef2db1b7ce2f5378317af167e117e0cf"
+   }
+  ],
+  "rank0_completed": [
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "58.7",
+    "draft_accepted": "502",
+    "draft_proposed": "561",
+    "draft_rounds": "266",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "65.2",
+    "draft_accepted": "572",
+    "draft_proposed": "645",
+    "draft_rounds": "196",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "84.0",
+    "draft_accepted": "669",
+    "draft_proposed": "673",
+    "draft_rounds": "99",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "513",
+    "decode_tps": "54.1",
+    "draft_accepted": "328",
+    "draft_proposed": "377",
+    "draft_rounds": "185",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "61.1",
+    "draft_accepted": "554",
+    "draft_proposed": "623",
+    "draft_rounds": "214",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "61.5",
+    "draft_accepted": "555",
+    "draft_proposed": "600",
+    "draft_rounds": "213",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "72.3",
+    "draft_accepted": "619",
+    "draft_proposed": "681",
+    "draft_rounds": "149",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "42.9",
+    "draft_accepted": "350",
+    "draft_proposed": "460",
+    "draft_rounds": "385",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "723",
+    "decode_tps": "61.6",
+    "draft_accepted": "518",
+    "draft_proposed": "576",
+    "draft_rounds": "205",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "56.8",
+    "draft_accepted": "509",
+    "draft_proposed": "580",
+    "draft_rounds": "258",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "58.6",
+    "draft_accepted": "529",
+    "draft_proposed": "595",
+    "draft_rounds": "239",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "629",
+    "decode_tps": "52.8",
+    "draft_accepted": "391",
+    "draft_proposed": "443",
+    "draft_rounds": "238",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "39.7",
+    "draft_accepted": "572",
+    "draft_proposed": "639",
+    "draft_rounds": "170",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "39.7",
+    "draft_accepted": "572",
+    "draft_proposed": "654",
+    "draft_rounds": "173",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "56.0",
+    "draft_accepted": "657",
+    "draft_proposed": "661",
+    "draft_rounds": "105",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "513",
+    "decode_tps": "32.8",
+    "draft_accepted": "369",
+    "draft_proposed": "426",
+    "draft_rounds": "125",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "40.4",
+    "draft_accepted": "581",
+    "draft_proposed": "639",
+    "draft_rounds": "165",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "41.1",
+    "draft_accepted": "585",
+    "draft_proposed": "637",
+    "draft_rounds": "166",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "50.7",
+    "draft_accepted": "618",
+    "draft_proposed": "682",
+    "draft_rounds": "139",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "31.6",
+    "draft_accepted": "428",
+    "draft_proposed": "555",
+    "draft_rounds": "302",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "723",
+    "decode_tps": "44.6",
+    "draft_accepted": "567",
+    "draft_proposed": "628",
+    "draft_rounds": "136",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "40.2",
+    "draft_accepted": "570",
+    "draft_proposed": "661",
+    "draft_rounds": "169",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "42.6",
+    "draft_accepted": "602",
+    "draft_proposed": "701",
+    "draft_rounds": "146",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "629",
+    "decode_tps": "37.2",
+    "draft_accepted": "476",
+    "draft_proposed": "574",
+    "draft_rounds": "131",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "56.3",
+    "draft_accepted": "548",
+    "draft_proposed": "621",
+    "draft_rounds": "220",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "51.6",
+    "draft_accepted": "486",
+    "draft_proposed": "602",
+    "draft_rounds": "265",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "62.8",
+    "draft_accepted": "575",
+    "draft_proposed": "610",
+    "draft_rounds": "177",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "607",
+    "decode_tps": "51.2",
+    "draft_accepted": "384",
+    "draft_proposed": "491",
+    "draft_rounds": "223",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "62.6",
+    "draft_accepted": "581",
+    "draft_proposed": "654",
+    "draft_rounds": "187",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "59.3",
+    "draft_accepted": "561",
+    "draft_proposed": "625",
+    "draft_rounds": "207",
+    "outcome": "completed"
+   }
+  ]
+ },
+ "repro-fix-q8": {
+  "binary": "/home/ugo/projects/gufo/artifacts/upstream-2026-11-18/gufo-fix-confidence",
+  "quant": "q8",
+  "sessions": 2,
+  "passed": true,
+  "errors": [],
+  "started_at": "2026-11-18T19:00:21.286770+08:00",
+  "finished_at": "2026-11-18T19:13:05.137215+08:00",
+  "requests": [
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3046,
+    "seconds": 14.94513749401085,
+    "text_head_sha256": "02df367821fdda650b80ee621eaf7e318a417be742a738fadb0b9b6f55463a33"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2384,
+    "seconds": 12.342717951003578,
+    "text_head_sha256": "546b0b751f6789cf467252475bdf78dd439946240889157078b196ca254a6029"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 2,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 1965,
+    "seconds": 10.090311949999887,
+    "text_head_sha256": "1eed8048492649a811bbf68d7eb7caaa917a9f0153ca01b36ca26fef729db321"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1811,
+    "seconds": 9.748864370994852,
+    "text_head_sha256": "de92bd3bc99b54222a2a848a6c4e9a7379b5a87916ed258cc87e3c2da3dc4358"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2923,
+    "seconds": 12.562393289001193,
+    "text_head_sha256": "77c966561bf4821b11bee9442e6f0e1b3f882ec8f27453606ac5bc0d41c43b7b"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3179,
+    "seconds": 12.662854941998376,
+    "text_head_sha256": "c0e206c323bb953c4a3739f56414fb6f4f9f424cdde0ef5d52bf7ee53eb88be7"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 6,
+    "prompt": "Write a TypeScript React component for a sortable table with",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2757,
+    "seconds": 10.762220459000673,
+    "text_head_sha256": "ee095bd9e609a0c5c9f5f2cdeacb73650412ad9412d5cc2dbf7711b92f62032b"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 7,
+    "prompt": "Explain, step by step, how TCP congestion control (slow star",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3116,
+    "seconds": 18.05651326100633,
+    "text_head_sha256": "fe1dd6490bca62ea0a1fa72766cb0cbcbce9fc19331aa325d6cf1fa50627e528"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 8,
+    "prompt": "Write a Go HTTP server with graceful shutdown, a /health end",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 2551,
+    "seconds": 11.863552603012067,
+    "text_head_sha256": "7b500c7457e87a774754cc34be100a08f2001964edf5f1328304cf28c7ebb053"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 9,
+    "prompt": "Write an eBPF program in C that counts execve calls per proc",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2501,
+    "seconds": 13.625210621990846,
+    "text_head_sha256": "4ec23b1d5ca887b21b9181d05537fa93703d6efd378e5fea9805bfed39c84c1a"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 10,
+    "prompt": "Write a Python script that reads a CSV of sales and prints t",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2959,
+    "seconds": 13.250865742011229,
+    "text_head_sha256": "0f7154f929a5bd3edee8703feb80e4bcb88a3276cad6b59e99352f6d1291f801"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 11,
+    "prompt": "Write a Makefile for a C project with src/, include/ and tes",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1874,
+    "seconds": 12.02499582899327,
+    "text_head_sha256": "681ba42957d2711f65e1c9c2fab401c0a60a6394a8f2c3efd7004138defa48bc"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3046,
+    "seconds": 19.102400606003357,
+    "text_head_sha256": "02df367821fdda650b80ee621eaf7e318a417be742a738fadb0b9b6f55463a33"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2384,
+    "seconds": 19.268034804001218,
+    "text_head_sha256": "546b0b751f6789cf467252475bdf78dd439946240889157078b196ca254a6029"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 1,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 1965,
+    "seconds": 13.781333160994109,
+    "text_head_sha256": "1eed8048492649a811bbf68d7eb7caaa917a9f0153ca01b36ca26fef729db321"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1811,
+    "seconds": 15.709895073989173,
+    "text_head_sha256": "de92bd3bc99b54222a2a848a6c4e9a7379b5a87916ed258cc87e3c2da3dc4358"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 2,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2923,
+    "seconds": 19.476878618996125,
+    "text_head_sha256": "77c966561bf4821b11bee9442e6f0e1b3f882ec8f27453606ac5bc0d41c43b7b"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 2,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3179,
+    "seconds": 19.476560477996827,
+    "text_head_sha256": "c0e206c323bb953c4a3739f56414fb6f4f9f424cdde0ef5d52bf7ee53eb88be7"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a TypeScript React component for a sortable table with",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2757,
+    "seconds": 25.106091187990387,
+    "text_head_sha256": "ee095bd9e609a0c5c9f5f2cdeacb73650412ad9412d5cc2dbf7711b92f62032b"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 3,
+    "prompt": "Explain, step by step, how TCP congestion control (slow star",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3116,
+    "seconds": 25.10547452699393,
+    "text_head_sha256": "fe1dd6490bca62ea0a1fa72766cb0cbcbce9fc19331aa325d6cf1fa50627e528"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Go HTTP server with graceful shutdown, a /health end",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 2551,
+    "seconds": 17.643164651002735,
+    "text_head_sha256": "7b500c7457e87a774754cc34be100a08f2001964edf5f1328304cf28c7ebb053"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write an eBPF program in C that counts execve calls per proc",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2501,
+    "seconds": 20.3601634640072,
+    "text_head_sha256": "4ec23b1d5ca887b21b9181d05537fa93703d6efd378e5fea9805bfed39c84c1a"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a Python script that reads a CSV of sales and prints t",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2959,
+    "seconds": 19.166603689998738,
+    "text_head_sha256": "0f7154f929a5bd3edee8703feb80e4bcb88a3276cad6b59e99352f6d1291f801"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a Makefile for a C project with src/, include/ and tes",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1874,
+    "seconds": 19.166472425000393,
+    "text_head_sha256": "681ba42957d2711f65e1c9c2fab401c0a60a6394a8f2c3efd7004138defa48bc"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 3038,
+    "seconds": 13.48186610499397,
+    "text_head_sha256": "eca1bc5e569e45e70c2d27fcc83930feaedd2923208572b478a161f93cd6662b"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2607,
+    "seconds": 15.324409488006495,
+    "text_head_sha256": "01808af280d8ddadbdc8126f1b3ad239fa26180953a26d049de2c431d254d37b"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 2,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2531,
+    "seconds": 13.286273549005273,
+    "text_head_sha256": "79f12b016aa05e9b9dfb019fe9c75b9dc56c9e341cb6947a2106c5ad0f0fd2e7"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.7,
+    "finish": "stop",
+    "chars": 2221,
+    "seconds": 12.208232817007229,
+    "text_head_sha256": "e6f57cf4a2498cc27f6d0223b330d4b5d31b0fca98678c447ae43dd8db6da22a"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2810,
+    "seconds": 12.995826804995886,
+    "text_head_sha256": "e9932ff4c39328c7684585dfaae204b394ba206c02ee6ca0e7c521572ab8ca41"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 3188,
+    "seconds": 13.292833226005314,
+    "text_head_sha256": "a0f645c20b268cecb76fbbb76cd656780c404634fabb919260a18a21a111a545"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3046,
+    "seconds": 14.119900019009947,
+    "text_head_sha256": "02df367821fdda650b80ee621eaf7e318a417be742a738fadb0b9b6f55463a33"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 1,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2384,
+    "seconds": 13.551821690009092,
+    "text_head_sha256": "546b0b751f6789cf467252475bdf78dd439946240889157078b196ca254a6029"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 2,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 1965,
+    "seconds": 10.296043308000662,
+    "text_head_sha256": "1eed8048492649a811bbf68d7eb7caaa917a9f0153ca01b36ca26fef729db321"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 3,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1811,
+    "seconds": 10.638022026003455,
+    "text_head_sha256": "de92bd3bc99b54222a2a848a6c4e9a7379b5a87916ed258cc87e3c2da3dc4358"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 4,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2923,
+    "seconds": 13.693244509995566,
+    "text_head_sha256": "77c966561bf4821b11bee9442e6f0e1b3f882ec8f27453606ac5bc0d41c43b7b"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 5,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3179,
+    "seconds": 13.069967313989764,
+    "text_head_sha256": "c0e206c323bb953c4a3739f56414fb6f4f9f424cdde0ef5d52bf7ee53eb88be7"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 6,
+    "prompt": "Write a TypeScript React component for a sortable table with",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2757,
+    "seconds": 12.376341588009382,
+    "text_head_sha256": "ee095bd9e609a0c5c9f5f2cdeacb73650412ad9412d5cc2dbf7711b92f62032b"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 7,
+    "prompt": "Explain, step by step, how TCP congestion control (slow star",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3116,
+    "seconds": 19.707625114999246,
+    "text_head_sha256": "fe1dd6490bca62ea0a1fa72766cb0cbcbce9fc19331aa325d6cf1fa50627e528"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 8,
+    "prompt": "Write a Go HTTP server with graceful shutdown, a /health end",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 2551,
+    "seconds": 13.58567417699669,
+    "text_head_sha256": "7b500c7457e87a774754cc34be100a08f2001964edf5f1328304cf28c7ebb053"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 9,
+    "prompt": "Write an eBPF program in C that counts execve calls per proc",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2501,
+    "seconds": 15.287840692006284,
+    "text_head_sha256": "4ec23b1d5ca887b21b9181d05537fa93703d6efd378e5fea9805bfed39c84c1a"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 10,
+    "prompt": "Write a Python script that reads a CSV of sales and prints t",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2959,
+    "seconds": 14.226585398006137,
+    "text_head_sha256": "0f7154f929a5bd3edee8703feb80e4bcb88a3276cad6b59e99352f6d1291f801"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 11,
+    "prompt": "Write a Makefile for a C project with src/, include/ and tes",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1874,
+    "seconds": 13.05330338299973,
+    "text_head_sha256": "681ba42957d2711f65e1c9c2fab401c0a60a6394a8f2c3efd7004138defa48bc"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3046,
+    "seconds": 22.280372466004337,
+    "text_head_sha256": "02df367821fdda650b80ee621eaf7e318a417be742a738fadb0b9b6f55463a33"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 0,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2384,
+    "seconds": 22.28019342100015,
+    "text_head_sha256": "546b0b751f6789cf467252475bdf78dd439946240889157078b196ca254a6029"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 1,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 1965,
+    "seconds": 16.335468482997385,
+    "text_head_sha256": "1eed8048492649a811bbf68d7eb7caaa917a9f0153ca01b36ca26fef729db321"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 1,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1811,
+    "seconds": 16.335248058996513,
+    "text_head_sha256": "de92bd3bc99b54222a2a848a6c4e9a7379b5a87916ed258cc87e3c2da3dc4358"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 2,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2923,
+    "seconds": 20.464918794008554,
+    "text_head_sha256": "77c966561bf4821b11bee9442e6f0e1b3f882ec8f27453606ac5bc0d41c43b7b"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 2,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3179,
+    "seconds": 20.46466808200057,
+    "text_head_sha256": "c0e206c323bb953c4a3739f56414fb6f4f9f424cdde0ef5d52bf7ee53eb88be7"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 3,
+    "prompt": "Write a TypeScript React component for a sortable table with",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2757,
+    "seconds": 24.031367315998068,
+    "text_head_sha256": "ee095bd9e609a0c5c9f5f2cdeacb73650412ad9412d5cc2dbf7711b92f62032b"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 3,
+    "prompt": "Explain, step by step, how TCP congestion control (slow star",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3116,
+    "seconds": 24.031188470995403,
+    "text_head_sha256": "fe1dd6490bca62ea0a1fa72766cb0cbcbce9fc19331aa325d6cf1fa50627e528"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 4,
+    "prompt": "Write a Go HTTP server with graceful shutdown, a /health end",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 2551,
+    "seconds": 19.568803032001597,
+    "text_head_sha256": "7b500c7457e87a774754cc34be100a08f2001964edf5f1328304cf28c7ebb053"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 4,
+    "prompt": "Write an eBPF program in C that counts execve calls per proc",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2501,
+    "seconds": 20.889641556001152,
+    "text_head_sha256": "4ec23b1d5ca887b21b9181d05537fa93703d6efd378e5fea9805bfed39c84c1a"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 5,
+    "prompt": "Write a Python script that reads a CSV of sales and prints t",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2959,
+    "seconds": 19.561319539003307,
+    "text_head_sha256": "0f7154f929a5bd3edee8703feb80e4bcb88a3276cad6b59e99352f6d1291f801"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 5,
+    "prompt": "Write a Makefile for a C project with src/, include/ and tes",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1874,
+    "seconds": 19.561198522991617,
+    "text_head_sha256": "681ba42957d2711f65e1c9c2fab401c0a60a6394a8f2c3efd7004138defa48bc"
+   },
+   {
+    "stage": "sampled",
+    "round": 1,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 3038,
+    "seconds": 13.61537484600558,
+    "text_head_sha256": "eca1bc5e569e45e70c2d27fcc83930feaedd2923208572b478a161f93cd6662b"
+   },
+   {
+    "stage": "sampled",
+    "round": 1,
+    "index": 1,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2607,
+    "seconds": 15.673914373008301,
+    "text_head_sha256": "01808af280d8ddadbdc8126f1b3ad239fa26180953a26d049de2c431d254d37b"
+   },
+   {
+    "stage": "sampled",
+    "round": 1,
+    "index": 2,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2531,
+    "seconds": 13.48802665900439,
+    "text_head_sha256": "79f12b016aa05e9b9dfb019fe9c75b9dc56c9e341cb6947a2106c5ad0f0fd2e7"
+   },
+   {
+    "stage": "sampled",
+    "round": 1,
+    "index": 3,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.7,
+    "finish": "stop",
+    "chars": 2221,
+    "seconds": 12.313693930002046,
+    "text_head_sha256": "e6f57cf4a2498cc27f6d0223b330d4b5d31b0fca98678c447ae43dd8db6da22a"
+   },
+   {
+    "stage": "sampled",
+    "round": 1,
+    "index": 4,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2810,
+    "seconds": 12.639560260009603,
+    "text_head_sha256": "e9932ff4c39328c7684585dfaae204b394ba206c02ee6ca0e7c521572ab8ca41"
+   },
+   {
+    "stage": "sampled",
+    "round": 1,
+    "index": 5,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 3188,
+    "seconds": 13.853947622003034,
+    "text_head_sha256": "a0f645c20b268cecb76fbbb76cd656780c404634fabb919260a18a21a111a545"
+   }
+  ],
+  "rank0_completed": [
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "52.5",
+    "draft_accepted": "502",
+    "draft_proposed": "561",
+    "draft_rounds": "266",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "63.5",
+    "draft_accepted": "572",
+    "draft_proposed": "645",
+    "draft_rounds": "196",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "78.2",
+    "draft_accepted": "669",
+    "draft_proposed": "673",
+    "draft_rounds": "99",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "513",
+    "decode_tps": "54.1",
+    "draft_accepted": "328",
+    "draft_proposed": "377",
+    "draft_rounds": "185",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "62.3",
+    "draft_accepted": "554",
+    "draft_proposed": "623",
+    "draft_rounds": "214",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "61.9",
+    "draft_accepted": "555",
+    "draft_proposed": "600",
+    "draft_rounds": "213",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "72.9",
+    "draft_accepted": "619",
+    "draft_proposed": "681",
+    "draft_rounds": "149",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "43.2",
+    "draft_accepted": "350",
+    "draft_proposed": "460",
+    "draft_rounds": "385",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "723",
+    "decode_tps": "62.2",
+    "draft_accepted": "518",
+    "draft_proposed": "576",
+    "draft_rounds": "205",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "57.4",
+    "draft_accepted": "509",
+    "draft_proposed": "580",
+    "draft_rounds": "258",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "59.2",
+    "draft_accepted": "529",
+    "draft_proposed": "595",
+    "draft_rounds": "239",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "629",
+    "decode_tps": "53.4",
+    "draft_accepted": "391",
+    "draft_proposed": "443",
+    "draft_rounds": "238",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "40.8",
+    "draft_accepted": "584",
+    "draft_proposed": "652",
+    "draft_rounds": "163",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "39.9",
+    "draft_accepted": "579",
+    "draft_proposed": "667",
+    "draft_rounds": "164",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "56.1",
+    "draft_accepted": "655",
+    "draft_proposed": "658",
+    "draft_rounds": "105",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "513",
+    "decode_tps": "32.7",
+    "draft_accepted": "366",
+    "draft_proposed": "425",
+    "draft_rounds": "124",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "41.2",
+    "draft_accepted": "593",
+    "draft_proposed": "650",
+    "draft_rounds": "162",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "39.5",
+    "draft_accepted": "584",
+    "draft_proposed": "653",
+    "draft_rounds": "161",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "30.6",
+    "draft_accepted": "454",
+    "draft_proposed": "620",
+    "draft_rounds": "274",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "43.7",
+    "draft_accepted": "606",
+    "draft_proposed": "656",
+    "draft_rounds": "148",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "723",
+    "decode_tps": "41.3",
+    "draft_accepted": "556",
+    "draft_proposed": "614",
+    "draft_rounds": "146",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "37.7",
+    "draft_accepted": "558",
+    "draft_proposed": "649",
+    "draft_rounds": "178",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "40.1",
+    "draft_accepted": "589",
+    "draft_proposed": "678",
+    "draft_rounds": "159",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "629",
+    "decode_tps": "36.3",
+    "draft_accepted": "474",
+    "draft_proposed": "564",
+    "draft_rounds": "133",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "57.0",
+    "draft_accepted": "548",
+    "draft_proposed": "621",
+    "draft_rounds": "220",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "50.1",
+    "draft_accepted": "486",
+    "draft_proposed": "602",
+    "draft_rounds": "265",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "57.8",
+    "draft_accepted": "575",
+    "draft_proposed": "610",
+    "draft_rounds": "177",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "607",
+    "decode_tps": "49.8",
+    "draft_accepted": "384",
+    "draft_proposed": "491",
+    "draft_rounds": "223",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "59.1",
+    "draft_accepted": "581",
+    "draft_proposed": "654",
+    "draft_rounds": "187",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "57.8",
+    "draft_accepted": "561",
+    "draft_proposed": "625",
+    "draft_rounds": "207",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "54.4",
+    "draft_accepted": "502",
+    "draft_proposed": "561",
+    "draft_rounds": "266",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "56.7",
+    "draft_accepted": "572",
+    "draft_proposed": "645",
+    "draft_rounds": "196",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "74.6",
+    "draft_accepted": "669",
+    "draft_proposed": "673",
+    "draft_rounds": "99",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "513",
+    "decode_tps": "48.3",
+    "draft_accepted": "328",
+    "draft_proposed": "377",
+    "draft_rounds": "185",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "56.1",
+    "draft_accepted": "554",
+    "draft_proposed": "623",
+    "draft_rounds": "214",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "58.8",
+    "draft_accepted": "555",
+    "draft_proposed": "600",
+    "draft_rounds": "213",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "62.1",
+    "draft_accepted": "619",
+    "draft_proposed": "681",
+    "draft_rounds": "149",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "39.0",
+    "draft_accepted": "350",
+    "draft_proposed": "460",
+    "draft_rounds": "385",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "723",
+    "decode_tps": "53.2",
+    "draft_accepted": "518",
+    "draft_proposed": "576",
+    "draft_rounds": "205",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "50.3",
+    "draft_accepted": "509",
+    "draft_proposed": "580",
+    "draft_rounds": "258",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "54.0",
+    "draft_accepted": "529",
+    "draft_proposed": "595",
+    "draft_rounds": "239",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "629",
+    "decode_tps": "48.2",
+    "draft_accepted": "391",
+    "draft_proposed": "443",
+    "draft_rounds": "238",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "34.5",
+    "draft_accepted": "544",
+    "draft_proposed": "591",
+    "draft_rounds": "196",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "34.5",
+    "draft_accepted": "545",
+    "draft_proposed": "605",
+    "draft_rounds": "197",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "513",
+    "decode_tps": "31.4",
+    "draft_accepted": "368",
+    "draft_proposed": "433",
+    "draft_rounds": "124",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "54.8",
+    "draft_accepted": "659",
+    "draft_proposed": "663",
+    "draft_rounds": "100",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "37.5",
+    "draft_accepted": "568",
+    "draft_proposed": "631",
+    "draft_rounds": "172",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "38.3",
+    "draft_accepted": "573",
+    "draft_proposed": "626",
+    "draft_rounds": "180",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "38.2",
+    "draft_accepted": "488",
+    "draft_proposed": "509",
+    "draft_rounds": "258",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "32.0",
+    "draft_accepted": "411",
+    "draft_proposed": "516",
+    "draft_rounds": "291",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "723",
+    "decode_tps": "38.1",
+    "draft_accepted": "515",
+    "draft_proposed": "568",
+    "draft_rounds": "189",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "36.8",
+    "draft_accepted": "534",
+    "draft_proposed": "614",
+    "draft_rounds": "198",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "39.3",
+    "draft_accepted": "575",
+    "draft_proposed": "660",
+    "draft_rounds": "172",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "629",
+    "decode_tps": "35.7",
+    "draft_accepted": "460",
+    "draft_proposed": "544",
+    "draft_rounds": "147",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "56.4",
+    "draft_accepted": "548",
+    "draft_proposed": "621",
+    "draft_rounds": "220",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "49.0",
+    "draft_accepted": "486",
+    "draft_proposed": "602",
+    "draft_rounds": "265",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "57.0",
+    "draft_accepted": "575",
+    "draft_proposed": "610",
+    "draft_rounds": "177",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "607",
+    "decode_tps": "49.3",
+    "draft_accepted": "384",
+    "draft_proposed": "491",
+    "draft_rounds": "223",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "60.8",
+    "draft_accepted": "581",
+    "draft_proposed": "654",
+    "draft_rounds": "187",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "55.5",
+    "draft_accepted": "561",
+    "draft_proposed": "625",
+    "draft_rounds": "207",
+    "outcome": "completed"
+   }
+  ]
+ },
+ "repro-main-q4": {
+  "binary": "/home/ugo/projects/gufo/artifacts/upstream-2026-11-18/gufo-main-v0.34.0",
+  "quant": "q4",
+  "sessions": 2,
+  "passed": false,
+  "errors": [
+   "HTTPError: HTTP Error 500: Internal Server Error"
+  ],
+  "started_at": "2026-11-18T19:14:02.820214+08:00",
+  "finished_at": "2026-11-18T19:18:12.414420+08:00",
+  "requests": [
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3118,
+    "seconds": 15.202672516999883,
+    "text_sha256": "c806f2c3bf3d9ff9e7f442ec8b1f8670480934aad34a4577d6cec806d476cd3f"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2352,
+    "seconds": 15.253712945006555,
+    "text_sha256": "d9930d4919a6bbb24fbef5c006d00a3b7892b943293edb8fa955489dc93df642"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 2,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 1965,
+    "seconds": 15.077565845000208,
+    "text_sha256": "9ce5f8b538015036b6f29551fa28a76f4f31078628d7d39eeac49a554d237ccd"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1446,
+    "seconds": 8.755442483001389,
+    "text_sha256": "b4051a5391268625ba3e8be06d18b365c7767ca968cb29e8ccdf9912b5f20e0b"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2742,
+    "seconds": 15.214889020993724,
+    "text_sha256": "4aecba19c64ef68ca0e7acbfbac45053f6387945aed67635fb3a68fd3c838d41"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3139,
+    "seconds": 14.917834578998736,
+    "text_sha256": "8409179d8c8be550aa7734a54e694a05780ed9d6a81bc95cdc94cfa0dc0f305e"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 6,
+    "prompt": "Write a TypeScript React component for a sortable table with",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2580,
+    "seconds": 15.030393858003663,
+    "text_sha256": "d3dd7d2fc04c538dca404fbdadb1b3017107a64c1dec29b46a518a1c760faa59"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 7,
+    "prompt": "Explain, step by step, how TCP congestion control (slow star",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2811,
+    "seconds": 16.384483656001976,
+    "text_sha256": "97334e9a45884d0839e81d9398118f195543a0b5b1f2b00bf329ca8a34ef50f3"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 8,
+    "prompt": "Write a Go HTTP server with graceful shutdown, a /health end",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 2483,
+    "seconds": 14.378052446001675,
+    "text_sha256": "b27a51eb13b6e3646abc365f005114ae02f04948d397c4fb03cf6904be98194d"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 9,
+    "prompt": "Write an eBPF program in C that counts execve calls per proc",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2518,
+    "seconds": 15.762485806000768,
+    "text_sha256": "2406078e1182ff216cb858850c0aea032af4d0e8927b54bd75a3a65efe918959"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 10,
+    "prompt": "Write a Python script that reads a CSV of sales and prints t",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2825,
+    "seconds": 15.781812506000279,
+    "text_sha256": "e9f8b49843da6b21c385d3c4349df5f4fc5e17990d7f4df2765c4bdedee76fc6"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 11,
+    "prompt": "Write a Makefile for a C project with src/, include/ and tes",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1899,
+    "seconds": 12.516912303006393,
+    "text_sha256": "d1bfe279f9f379bae8e9325b11d69ee5b5c76aa9f7851ed96912a30cbc2b902d"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3118,
+    "seconds": 17.560103926007287,
+    "text_sha256": "c806f2c3bf3d9ff9e7f442ec8b1f8670480934aad34a4577d6cec806d476cd3f"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2352,
+    "seconds": 17.559947831003228,
+    "text_sha256": "d9930d4919a6bbb24fbef5c006d00a3b7892b943293edb8fa955489dc93df642"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 1,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 1965,
+    "seconds": 15.78341032100434,
+    "text_sha256": "9ce5f8b538015036b6f29551fa28a76f4f31078628d7d39eeac49a554d237ccd"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1446,
+    "seconds": 15.782785780000268,
+    "text_sha256": "b4051a5391268625ba3e8be06d18b365c7767ca968cb29e8ccdf9912b5f20e0b"
+   }
+  ],
+  "rank0_completed": [
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "51.5",
+    "draft_accepted": "373",
+    "draft_proposed": "394",
+    "draft_rounds": "394",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "51.1",
+    "draft_accepted": "369",
+    "draft_proposed": "399",
+    "draft_rounds": "399",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "51.7",
+    "draft_accepted": "384",
+    "draft_proposed": "384",
+    "draft_rounds": "384",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "417",
+    "decode_tps": "48.9",
+    "draft_accepted": "185",
+    "draft_proposed": "216",
+    "draft_rounds": "216",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "51.2",
+    "draft_accepted": "372",
+    "draft_proposed": "395",
+    "draft_rounds": "395",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "52.3",
+    "draft_accepted": "380",
+    "draft_proposed": "388",
+    "draft_rounds": "388",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "51.8",
+    "draft_accepted": "377",
+    "draft_proposed": "391",
+    "draft_rounds": "391",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "47.5",
+    "draft_accepted": "350",
+    "draft_proposed": "417",
+    "draft_rounds": "417",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "709",
+    "decode_tps": "50.0",
+    "draft_accepted": "342",
+    "draft_proposed": "367",
+    "draft_rounds": "367",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "49.5",
+    "draft_accepted": "369",
+    "draft_proposed": "398",
+    "draft_rounds": "398",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "49.4",
+    "draft_accepted": "358",
+    "draft_proposed": "394",
+    "draft_rounds": "394",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "632",
+    "decode_tps": "51.5",
+    "draft_accepted": "305",
+    "draft_proposed": "327",
+    "draft_rounds": "327",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "43.8",
+    "draft_accepted": "552",
+    "draft_proposed": "638",
+    "draft_rounds": "193",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "43.9",
+    "draft_accepted": "554",
+    "draft_proposed": "642",
+    "draft_rounds": "188",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "417",
+    "decode_tps": "38.8",
+    "draft_accepted": "291",
+    "draft_proposed": "357",
+    "draft_rounds": "100",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "48.7",
+    "draft_accepted": "514",
+    "draft_proposed": "515",
+    "draft_rounds": "244",
+    "outcome": "completed"
+   },
+   {
+    "status": "500",
+    "outcome": "failed",
+    "error_code": "server_exception"
+   },
+   {
+    "status": "500",
+    "outcome": "failed",
+    "error_code": "server_exception"
+   }
+  ]
+ },
+ "repro-main-q8": {
+  "binary": "/home/ugo/projects/gufo/artifacts/upstream-2026-11-18/gufo-main-v0.34.0",
+  "quant": "q8",
+  "sessions": 2,
+  "passed": true,
+  "errors": [],
+  "started_at": "2026-11-18T18:43:48.564319+08:00",
+  "finished_at": "2026-11-18T18:58:09.755391+08:00",
+  "requests": [
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3046,
+    "seconds": 16.396023567998782,
+    "text_head_sha256": "02df367821fdda650b80ee621eaf7e318a417be742a738fadb0b9b6f55463a33"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2384,
+    "seconds": 16.831361424992792,
+    "text_head_sha256": "546b0b751f6789cf467252475bdf78dd439946240889157078b196ca254a6029"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 2,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 1965,
+    "seconds": 17.184251699000015,
+    "text_head_sha256": "1eed8048492649a811bbf68d7eb7caaa917a9f0153ca01b36ca26fef729db321"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1811,
+    "seconds": 11.797743553004693,
+    "text_head_sha256": "de92bd3bc99b54222a2a848a6c4e9a7379b5a87916ed258cc87e3c2da3dc4358"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2923,
+    "seconds": 17.072925421001855,
+    "text_head_sha256": "77c966561bf4821b11bee9442e6f0e1b3f882ec8f27453606ac5bc0d41c43b7b"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3179,
+    "seconds": 16.722374554999988,
+    "text_head_sha256": "c0e206c323bb953c4a3739f56414fb6f4f9f424cdde0ef5d52bf7ee53eb88be7"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 6,
+    "prompt": "Write a TypeScript React component for a sortable table with",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2757,
+    "seconds": 16.736167437993572,
+    "text_head_sha256": "ee095bd9e609a0c5c9f5f2cdeacb73650412ad9412d5cc2dbf7711b92f62032b"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 7,
+    "prompt": "Explain, step by step, how TCP congestion control (slow star",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3116,
+    "seconds": 18.37185041999328,
+    "text_head_sha256": "fe1dd6490bca62ea0a1fa72766cb0cbcbce9fc19331aa325d6cf1fa50627e528"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 8,
+    "prompt": "Write a Go HTTP server with graceful shutdown, a /health end",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 2551,
+    "seconds": 15.747978372004582,
+    "text_head_sha256": "7b500c7457e87a774754cc34be100a08f2001964edf5f1328304cf28c7ebb053"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 9,
+    "prompt": "Write an eBPF program in C that counts execve calls per proc",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2501,
+    "seconds": 16.786413370995433,
+    "text_head_sha256": "4ec23b1d5ca887b21b9181d05537fa93703d6efd378e5fea9805bfed39c84c1a"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 10,
+    "prompt": "Write a Python script that reads a CSV of sales and prints t",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2959,
+    "seconds": 16.95819100200606,
+    "text_head_sha256": "0f7154f929a5bd3edee8703feb80e4bcb88a3276cad6b59e99352f6d1291f801"
+   },
+   {
+    "stage": "greedy",
+    "round": 0,
+    "index": 11,
+    "prompt": "Write a Makefile for a C project with src/, include/ and tes",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1874,
+    "seconds": 13.877020403990173,
+    "text_head_sha256": "681ba42957d2711f65e1c9c2fab401c0a60a6394a8f2c3efd7004138defa48bc"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3046,
+    "seconds": 20.160800835001282,
+    "text_head_sha256": "02df367821fdda650b80ee621eaf7e318a417be742a738fadb0b9b6f55463a33"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2384,
+    "seconds": 20.160434345991234,
+    "text_head_sha256": "546b0b751f6789cf467252475bdf78dd439946240889157078b196ca254a6029"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 1,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 1965,
+    "seconds": 19.21616181000718,
+    "text_head_sha256": "1eed8048492649a811bbf68d7eb7caaa917a9f0153ca01b36ca26fef729db321"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1811,
+    "seconds": 19.215548428008333,
+    "text_head_sha256": "de92bd3bc99b54222a2a848a6c4e9a7379b5a87916ed258cc87e3c2da3dc4358"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 2,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2923,
+    "seconds": 21.5846305390005,
+    "text_head_sha256": "77c966561bf4821b11bee9442e6f0e1b3f882ec8f27453606ac5bc0d41c43b7b"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 2,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3179,
+    "seconds": 21.584329888006323,
+    "text_head_sha256": "c0e206c323bb953c4a3739f56414fb6f4f9f424cdde0ef5d52bf7ee53eb88be7"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a TypeScript React component for a sortable table with",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2757,
+    "seconds": 25.527800810988992,
+    "text_head_sha256": "ee095bd9e609a0c5c9f5f2cdeacb73650412ad9412d5cc2dbf7711b92f62032b"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 3,
+    "prompt": "Explain, step by step, how TCP congestion control (slow star",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3116,
+    "seconds": 25.52753990900237,
+    "text_head_sha256": "fe1dd6490bca62ea0a1fa72766cb0cbcbce9fc19331aa325d6cf1fa50627e528"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Go HTTP server with graceful shutdown, a /health end",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 2551,
+    "seconds": 21.49788261100184,
+    "text_head_sha256": "7b500c7457e87a774754cc34be100a08f2001964edf5f1328304cf28c7ebb053"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write an eBPF program in C that counts execve calls per proc",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2501,
+    "seconds": 21.497731605995796,
+    "text_head_sha256": "4ec23b1d5ca887b21b9181d05537fa93703d6efd378e5fea9805bfed39c84c1a"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a Python script that reads a CSV of sales and prints t",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2959,
+    "seconds": 20.8134285529959,
+    "text_head_sha256": "0f7154f929a5bd3edee8703feb80e4bcb88a3276cad6b59e99352f6d1291f801"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a Makefile for a C project with src/, include/ and tes",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1874,
+    "seconds": 20.813164300998324,
+    "text_head_sha256": "681ba42957d2711f65e1c9c2fab401c0a60a6394a8f2c3efd7004138defa48bc"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 3038,
+    "seconds": 14.153234441007953,
+    "text_head_sha256": "eca1bc5e569e45e70c2d27fcc83930feaedd2923208572b478a161f93cd6662b"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 1,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2607,
+    "seconds": 15.982345288997749,
+    "text_head_sha256": "01808af280d8ddadbdc8126f1b3ad239fa26180953a26d049de2c431d254d37b"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 2,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2531,
+    "seconds": 13.717685021998477,
+    "text_head_sha256": "79f12b016aa05e9b9dfb019fe9c75b9dc56c9e341cb6947a2106c5ad0f0fd2e7"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 3,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.7,
+    "finish": "stop",
+    "chars": 2221,
+    "seconds": 12.835967271996196,
+    "text_head_sha256": "e6f57cf4a2498cc27f6d0223b330d4b5d31b0fca98678c447ae43dd8db6da22a"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 4,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2810,
+    "seconds": 13.411012159995153,
+    "text_head_sha256": "e9932ff4c39328c7684585dfaae204b394ba206c02ee6ca0e7c521572ab8ca41"
+   },
+   {
+    "stage": "sampled",
+    "round": 0,
+    "index": 5,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 3188,
+    "seconds": 13.643818911994458,
+    "text_head_sha256": "a0f645c20b268cecb76fbbb76cd656780c404634fabb919260a18a21a111a545"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3046,
+    "seconds": 18.25619114699657,
+    "text_head_sha256": "02df367821fdda650b80ee621eaf7e318a417be742a738fadb0b9b6f55463a33"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 1,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2384,
+    "seconds": 18.281165024003712,
+    "text_head_sha256": "546b0b751f6789cf467252475bdf78dd439946240889157078b196ca254a6029"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 2,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 1965,
+    "seconds": 17.464619704987854,
+    "text_head_sha256": "1eed8048492649a811bbf68d7eb7caaa917a9f0153ca01b36ca26fef729db321"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 3,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1811,
+    "seconds": 12.422046840001713,
+    "text_head_sha256": "de92bd3bc99b54222a2a848a6c4e9a7379b5a87916ed258cc87e3c2da3dc4358"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 4,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2923,
+    "seconds": 17.998975634996896,
+    "text_head_sha256": "77c966561bf4821b11bee9442e6f0e1b3f882ec8f27453606ac5bc0d41c43b7b"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 5,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3179,
+    "seconds": 17.308834654002567,
+    "text_head_sha256": "c0e206c323bb953c4a3739f56414fb6f4f9f424cdde0ef5d52bf7ee53eb88be7"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 6,
+    "prompt": "Write a TypeScript React component for a sortable table with",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2757,
+    "seconds": 17.579432646001806,
+    "text_head_sha256": "ee095bd9e609a0c5c9f5f2cdeacb73650412ad9412d5cc2dbf7711b92f62032b"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 7,
+    "prompt": "Explain, step by step, how TCP congestion control (slow star",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3116,
+    "seconds": 19.16202284299652,
+    "text_head_sha256": "fe1dd6490bca62ea0a1fa72766cb0cbcbce9fc19331aa325d6cf1fa50627e528"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 8,
+    "prompt": "Write a Go HTTP server with graceful shutdown, a /health end",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 2551,
+    "seconds": 16.861338094997336,
+    "text_head_sha256": "7b500c7457e87a774754cc34be100a08f2001964edf5f1328304cf28c7ebb053"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 9,
+    "prompt": "Write an eBPF program in C that counts execve calls per proc",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2501,
+    "seconds": 18.111374371001148,
+    "text_head_sha256": "4ec23b1d5ca887b21b9181d05537fa93703d6efd378e5fea9805bfed39c84c1a"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 10,
+    "prompt": "Write a Python script that reads a CSV of sales and prints t",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2959,
+    "seconds": 18.140474497995456,
+    "text_head_sha256": "0f7154f929a5bd3edee8703feb80e4bcb88a3276cad6b59e99352f6d1291f801"
+   },
+   {
+    "stage": "greedy",
+    "round": 1,
+    "index": 11,
+    "prompt": "Write a Makefile for a C project with src/, include/ and tes",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1874,
+    "seconds": 15.095916101010516,
+    "text_head_sha256": "681ba42957d2711f65e1c9c2fab401c0a60a6394a8f2c3efd7004138defa48bc"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3046,
+    "seconds": 20.86286208999809,
+    "text_head_sha256": "02df367821fdda650b80ee621eaf7e318a417be742a738fadb0b9b6f55463a33"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 0,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2384,
+    "seconds": 20.86272691299382,
+    "text_head_sha256": "546b0b751f6789cf467252475bdf78dd439946240889157078b196ca254a6029"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 1,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 1965,
+    "seconds": 18.137277993999305,
+    "text_head_sha256": "1eed8048492649a811bbf68d7eb7caaa917a9f0153ca01b36ca26fef729db321"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 1,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1811,
+    "seconds": 18.136532696007635,
+    "text_head_sha256": "de92bd3bc99b54222a2a848a6c4e9a7379b5a87916ed258cc87e3c2da3dc4358"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 2,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2923,
+    "seconds": 19.670079982010066,
+    "text_head_sha256": "77c966561bf4821b11bee9442e6f0e1b3f882ec8f27453606ac5bc0d41c43b7b"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 2,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3179,
+    "seconds": 19.66984714999853,
+    "text_head_sha256": "c0e206c323bb953c4a3739f56414fb6f4f9f424cdde0ef5d52bf7ee53eb88be7"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 3,
+    "prompt": "Write a TypeScript React component for a sortable table with",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2757,
+    "seconds": 23.86389236499963,
+    "text_head_sha256": "ee095bd9e609a0c5c9f5f2cdeacb73650412ad9412d5cc2dbf7711b92f62032b"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 3,
+    "prompt": "Explain, step by step, how TCP congestion control (slow star",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 3116,
+    "seconds": 23.86375745901023,
+    "text_head_sha256": "fe1dd6490bca62ea0a1fa72766cb0cbcbce9fc19331aa325d6cf1fa50627e528"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 4,
+    "prompt": "Write a Go HTTP server with graceful shutdown, a /health end",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 2551,
+    "seconds": 20.37035579899384,
+    "text_head_sha256": "7b500c7457e87a774754cc34be100a08f2001964edf5f1328304cf28c7ebb053"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 4,
+    "prompt": "Write an eBPF program in C that counts execve calls per proc",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2501,
+    "seconds": 20.36998485100048,
+    "text_head_sha256": "4ec23b1d5ca887b21b9181d05537fa93703d6efd378e5fea9805bfed39c84c1a"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 5,
+    "prompt": "Write a Python script that reads a CSV of sales and prints t",
+    "temperature": 0.0,
+    "finish": "length",
+    "chars": 2959,
+    "seconds": 19.623688368999865,
+    "text_head_sha256": "0f7154f929a5bd3edee8703feb80e4bcb88a3276cad6b59e99352f6d1291f801"
+   },
+   {
+    "stage": "greedy-concurrent",
+    "round": 1,
+    "index": 5,
+    "prompt": "Write a Makefile for a C project with src/, include/ and tes",
+    "temperature": 0.0,
+    "finish": "stop",
+    "chars": 1874,
+    "seconds": 19.623335289012175,
+    "text_head_sha256": "681ba42957d2711f65e1c9c2fab401c0a60a6394a8f2c3efd7004138defa48bc"
+   },
+   {
+    "stage": "sampled",
+    "round": 1,
+    "index": 0,
+    "prompt": "Write a complete Python implementation of a red-black tree w",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 3038,
+    "seconds": 13.964139047995559,
+    "text_head_sha256": "eca1bc5e569e45e70c2d27fcc83930feaedd2923208572b478a161f93cd6662b"
+   },
+   {
+    "stage": "sampled",
+    "round": 1,
+    "index": 1,
+    "prompt": "Write a C function that parses an IPv4 address string into a",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2607,
+    "seconds": 15.769036860991037,
+    "text_head_sha256": "01808af280d8ddadbdc8126f1b3ad239fa26180953a26d049de2c431d254d37b"
+   },
+   {
+    "stage": "sampled",
+    "round": 1,
+    "index": 2,
+    "prompt": "List the first 60 US states and territories as a JSON array ",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2531,
+    "seconds": 13.131521483999677,
+    "text_head_sha256": "79f12b016aa05e9b9dfb019fe9c75b9dc56c9e341cb6947a2106c5ad0f0fd2e7"
+   },
+   {
+    "stage": "sampled",
+    "round": 1,
+    "index": 3,
+    "prompt": "Write a bash script that rotates log files in /var/log/myapp",
+    "temperature": 0.7,
+    "finish": "stop",
+    "chars": 2221,
+    "seconds": 13.010197978990618,
+    "text_head_sha256": "e6f57cf4a2498cc27f6d0223b330d4b5d31b0fca98678c447ae43dd8db6da22a"
+   },
+   {
+    "stage": "sampled",
+    "round": 1,
+    "index": 4,
+    "prompt": "Write a Rust struct for a ring buffer with push, pop and ite",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 2810,
+    "seconds": 12.943057411990594,
+    "text_head_sha256": "e9932ff4c39328c7684585dfaae204b394ba206c02ee6ca0e7c521572ab8ca41"
+   },
+   {
+    "stage": "sampled",
+    "round": 1,
+    "index": 5,
+    "prompt": "Write a SQL schema for a library system (books, authors, mem",
+    "temperature": 0.7,
+    "finish": "length",
+    "chars": 3188,
+    "seconds": 13.604370536995702,
+    "text_head_sha256": "a0f645c20b268cecb76fbbb76cd656780c404634fabb919260a18a21a111a545"
+   }
+  ],
+  "rank0_completed": [
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "47.6",
+    "draft_accepted": "372",
+    "draft_proposed": "396",
+    "draft_rounds": "396",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "46.5",
+    "draft_accepted": "372",
+    "draft_proposed": "395",
+    "draft_rounds": "395",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "45.4",
+    "draft_accepted": "384",
+    "draft_proposed": "384",
+    "draft_rounds": "384",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "513",
+    "decode_tps": "44.4",
+    "draft_accepted": "234",
+    "draft_proposed": "263",
+    "draft_rounds": "263",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "45.6",
+    "draft_accepted": "369",
+    "draft_proposed": "399",
+    "draft_rounds": "399",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "46.6",
+    "draft_accepted": "379",
+    "draft_proposed": "388",
+    "draft_rounds": "388",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "46.5",
+    "draft_accepted": "376",
+    "draft_proposed": "391",
+    "draft_rounds": "391",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "42.4",
+    "draft_accepted": "324",
+    "draft_proposed": "411",
+    "draft_rounds": "411",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "723",
+    "decode_tps": "46.6",
+    "draft_accepted": "349",
+    "draft_proposed": "374",
+    "draft_rounds": "374",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "46.4",
+    "draft_accepted": "370",
+    "draft_proposed": "397",
+    "draft_rounds": "397",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "46.0",
+    "draft_accepted": "369",
+    "draft_proposed": "398",
+    "draft_rounds": "398",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "629",
+    "decode_tps": "46.1",
+    "draft_accepted": "303",
+    "draft_proposed": "326",
+    "draft_rounds": "326",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "38.1",
+    "draft_accepted": "544",
+    "draft_proposed": "612",
+    "draft_rounds": "196",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "38.5",
+    "draft_accepted": "549",
+    "draft_proposed": "609",
+    "draft_rounds": "191",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "40.0",
+    "draft_accepted": "538",
+    "draft_proposed": "541",
+    "draft_rounds": "220",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "513",
+    "decode_tps": "33.9",
+    "draft_accepted": "365",
+    "draft_proposed": "425",
+    "draft_rounds": "121",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "36.6",
+    "draft_accepted": "550",
+    "draft_proposed": "589",
+    "draft_rounds": "198",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "35.6",
+    "draft_accepted": "537",
+    "draft_proposed": "601",
+    "draft_rounds": "208",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "30.1",
+    "draft_accepted": "385",
+    "draft_proposed": "481",
+    "draft_rounds": "312",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "34.1",
+    "draft_accepted": "453",
+    "draft_proposed": "484",
+    "draft_rounds": "289",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "723",
+    "decode_tps": "37.0",
+    "draft_accepted": "517",
+    "draft_proposed": "590",
+    "draft_rounds": "182",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "35.7",
+    "draft_accepted": "518",
+    "draft_proposed": "617",
+    "draft_rounds": "218",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "36.9",
+    "draft_accepted": "523",
+    "draft_proposed": "601",
+    "draft_rounds": "219",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "629",
+    "decode_tps": "35.7",
+    "draft_accepted": "452",
+    "draft_proposed": "519",
+    "draft_rounds": "151",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "54.3",
+    "draft_accepted": "548",
+    "draft_proposed": "621",
+    "draft_rounds": "220",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "48.1",
+    "draft_accepted": "486",
+    "draft_proposed": "602",
+    "draft_rounds": "265",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "56.0",
+    "draft_accepted": "575",
+    "draft_proposed": "610",
+    "draft_rounds": "177",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "607",
+    "decode_tps": "47.3",
+    "draft_accepted": "384",
+    "draft_proposed": "491",
+    "draft_rounds": "223",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "57.3",
+    "draft_accepted": "581",
+    "draft_proposed": "654",
+    "draft_rounds": "187",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "56.3",
+    "draft_accepted": "561",
+    "draft_proposed": "625",
+    "draft_rounds": "207",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "42.1",
+    "draft_accepted": "372",
+    "draft_proposed": "396",
+    "draft_rounds": "396",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "42.0",
+    "draft_accepted": "372",
+    "draft_proposed": "395",
+    "draft_rounds": "395",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "44.0",
+    "draft_accepted": "384",
+    "draft_proposed": "384",
+    "draft_rounds": "384",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "513",
+    "decode_tps": "41.3",
+    "draft_accepted": "234",
+    "draft_proposed": "263",
+    "draft_rounds": "263",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "42.7",
+    "draft_accepted": "369",
+    "draft_proposed": "399",
+    "draft_rounds": "399",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "44.4",
+    "draft_accepted": "379",
+    "draft_proposed": "388",
+    "draft_rounds": "388",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "43.7",
+    "draft_accepted": "376",
+    "draft_proposed": "391",
+    "draft_rounds": "391",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "40.1",
+    "draft_accepted": "324",
+    "draft_proposed": "411",
+    "draft_rounds": "411",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "723",
+    "decode_tps": "42.9",
+    "draft_accepted": "349",
+    "draft_proposed": "374",
+    "draft_rounds": "374",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "42.4",
+    "draft_accepted": "370",
+    "draft_proposed": "397",
+    "draft_rounds": "397",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "42.4",
+    "draft_accepted": "369",
+    "draft_proposed": "398",
+    "draft_rounds": "398",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "629",
+    "decode_tps": "41.7",
+    "draft_accepted": "303",
+    "draft_proposed": "326",
+    "draft_rounds": "326",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "37.0",
+    "draft_accepted": "563",
+    "draft_proposed": "637",
+    "draft_rounds": "179",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "36.8",
+    "draft_accepted": "561",
+    "draft_proposed": "640",
+    "draft_rounds": "186",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "513",
+    "decode_tps": "35.1",
+    "draft_accepted": "378",
+    "draft_proposed": "447",
+    "draft_rounds": "113",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "42.4",
+    "draft_accepted": "556",
+    "draft_proposed": "559",
+    "draft_rounds": "204",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "39.1",
+    "draft_accepted": "556",
+    "draft_proposed": "625",
+    "draft_rounds": "187",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "40.2",
+    "draft_accepted": "569",
+    "draft_proposed": "618",
+    "draft_rounds": "182",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "32.2",
+    "draft_accepted": "426",
+    "draft_proposed": "566",
+    "draft_rounds": "281",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "38.5",
+    "draft_accepted": "519",
+    "draft_proposed": "560",
+    "draft_rounds": "228",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "37.7",
+    "draft_accepted": "508",
+    "draft_proposed": "602",
+    "draft_rounds": "225",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "723",
+    "decode_tps": "39.5",
+    "draft_accepted": "512",
+    "draft_proposed": "566",
+    "draft_rounds": "186",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "39.2",
+    "draft_accepted": "519",
+    "draft_proposed": "574",
+    "draft_rounds": "226",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "629",
+    "decode_tps": "37.5",
+    "draft_accepted": "443",
+    "draft_proposed": "514",
+    "draft_rounds": "162",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "55.0",
+    "draft_accepted": "548",
+    "draft_proposed": "621",
+    "draft_rounds": "220",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "48.7",
+    "draft_accepted": "486",
+    "draft_proposed": "602",
+    "draft_rounds": "265",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "58.5",
+    "draft_accepted": "575",
+    "draft_proposed": "610",
+    "draft_rounds": "177",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "607",
+    "decode_tps": "46.7",
+    "draft_accepted": "384",
+    "draft_proposed": "491",
+    "draft_rounds": "223",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "59.4",
+    "draft_accepted": "581",
+    "draft_proposed": "654",
+    "draft_rounds": "187",
+    "outcome": "completed"
+   },
+   {
+    "status": "200",
+    "generated_tokens": "768",
+    "decode_tps": "56.5",
+    "draft_accepted": "561",
+    "draft_proposed": "625",
+    "draft_rounds": "207",
+    "outcome": "completed"
+   }
+  ]
+ }
+}

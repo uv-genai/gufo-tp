@@ -1,0 +1,652 @@
+{
+ "functional_checks": {
+  "q4_mtp": 212,
+  "q8_mtp": 182
+ },
+ "timing_comparisons": 256,
+ "timing_output_or_work_mismatches": 0,
+ "timing_flags": [
+  {
+   "quant": "q4",
+   "baseline": "q4/baseline",
+   "candidate": "q4/candidate",
+   "case": "std0",
+   "phase": "prefill_ms",
+   "baseline_ms": 144.69611600000002,
+   "candidate_ms": 154.728747
+  },
+  {
+   "quant": "q4",
+   "baseline": "q4-repeat/candidate",
+   "candidate": "q4-repeat-control/candidate",
+   "case": "long-prefill",
+   "phase": "decode_ms",
+   "baseline_ms": 1863.5545639999998,
+   "candidate_ms": 2179.10435
+  },
+  {
+   "quant": "q4",
+   "baseline": "q4-repeat/candidate",
+   "candidate": "q4-repeat-control/candidate",
+   "case": "long-prefill-cached",
+   "phase": "decode_ms",
+   "baseline_ms": 1871.5405320000004,
+   "candidate_ms": 2048.151127
+  },
+  {
+   "quant": "q4",
+   "baseline": "q4-repeat/candidate",
+   "candidate": "q4-repeat-control/candidate",
+   "case": "short-code",
+   "phase": "decode_ms",
+   "baseline_ms": 1024.362464,
+   "candidate_ms": 1189.445552
+  },
+  {
+   "quant": "q4",
+   "baseline": "q4-repeat/candidate",
+   "candidate": "q4-repeat-control/candidate",
+   "case": "short-code",
+   "phase": "prefill_ms",
+   "baseline_ms": 164.54331200000001,
+   "candidate_ms": 228.89758899999998
+  },
+  {
+   "quant": "q4",
+   "baseline": "q4-repeat/candidate",
+   "candidate": "q4-repeat-control/candidate",
+   "case": "short-code",
+   "phase": "ttft_ms",
+   "baseline_ms": 170.963617,
+   "candidate_ms": 235.225046
+  },
+  {
+   "quant": "q4",
+   "baseline": "q4-repeat/candidate",
+   "candidate": "q4-repeat-control/candidate",
+   "case": "short-code-cached",
+   "phase": "decode_ms",
+   "baseline_ms": 1002.572215,
+   "candidate_ms": 1097.699777
+  },
+  {
+   "quant": "q4",
+   "baseline": "q4-repeat/candidate",
+   "candidate": "q4-repeat-control/candidate",
+   "case": "std0",
+   "phase": "prefill_ms",
+   "baseline_ms": 134.682496,
+   "candidate_ms": 163.769007
+  },
+  {
+   "quant": "q4",
+   "baseline": "q4-repeat/candidate",
+   "candidate": "q4-repeat-control/candidate",
+   "case": "std0",
+   "phase": "ttft_ms",
+   "baseline_ms": 141.392284,
+   "candidate_ms": 171.058513
+  },
+  {
+   "quant": "q4",
+   "baseline": "q4-repeat/candidate",
+   "candidate": "q4-repeat-control/candidate",
+   "case": "std1",
+   "phase": "decode_ms",
+   "baseline_ms": 28.553006,
+   "candidate_ms": 40.198933000000004
+  },
+  {
+   "quant": "q4",
+   "baseline": "q4-repeat/candidate",
+   "candidate": "q4-repeat-control/candidate",
+   "case": "std3",
+   "phase": "decode_ms",
+   "baseline_ms": 2740.2498410000007,
+   "candidate_ms": 2938.073478
+  },
+  {
+   "quant": "q4",
+   "baseline": "q4/baseline",
+   "candidate": "q4-repeat-control/candidate",
+   "case": "long-prefill",
+   "phase": "decode_ms",
+   "baseline_ms": 2011.589781,
+   "candidate_ms": 2179.10435
+  },
+  {
+   "quant": "q4",
+   "baseline": "q4/baseline",
+   "candidate": "q4-repeat-control/candidate",
+   "case": "short-code",
+   "phase": "decode_ms",
+   "baseline_ms": 1112.365236,
+   "candidate_ms": 1189.445552
+  },
+  {
+   "quant": "q4",
+   "baseline": "q4/baseline",
+   "candidate": "q4-repeat-control/candidate",
+   "case": "short-code",
+   "phase": "prefill_ms",
+   "baseline_ms": 178.377458,
+   "candidate_ms": 228.89758899999998
+  },
+  {
+   "quant": "q4",
+   "baseline": "q4/baseline",
+   "candidate": "q4-repeat-control/candidate",
+   "case": "short-code",
+   "phase": "ttft_ms",
+   "baseline_ms": 184.765537,
+   "candidate_ms": 235.225046
+  },
+  {
+   "quant": "q4",
+   "baseline": "q4/baseline",
+   "candidate": "q4-repeat-control/candidate",
+   "case": "std0",
+   "phase": "prefill_ms",
+   "baseline_ms": 144.69611600000002,
+   "candidate_ms": 163.769007
+  },
+  {
+   "quant": "q4",
+   "baseline": "q4/baseline",
+   "candidate": "q4-repeat-control/candidate",
+   "case": "std0",
+   "phase": "ttft_ms",
+   "baseline_ms": 152.469705,
+   "candidate_ms": 171.058513
+  },
+  {
+   "quant": "q4",
+   "baseline": "q4/baseline",
+   "candidate": "q4-repeat-control/candidate",
+   "case": "std1",
+   "phase": "decode_ms",
+   "baseline_ms": 28.775782,
+   "candidate_ms": 40.198933000000004
+  },
+  {
+   "quant": "q8",
+   "baseline": "q8/baseline",
+   "candidate": "q8/candidate",
+   "case": "long-prefill",
+   "phase": "prefill_ms",
+   "baseline_ms": 1870.016414,
+   "candidate_ms": 2252.7287760000004
+  },
+  {
+   "quant": "q8",
+   "baseline": "q8/baseline",
+   "candidate": "q8/candidate",
+   "case": "long-prefill",
+   "phase": "ttft_ms",
+   "baseline_ms": 1904.21976,
+   "candidate_ms": 2279.79305
+  },
+  {
+   "quant": "q8",
+   "baseline": "q8/baseline",
+   "candidate": "q8/candidate",
+   "case": "short-code-cached",
+   "phase": "decode_ms",
+   "baseline_ms": 1342.1739989999999,
+   "candidate_ms": 1448.3486719999999
+  },
+  {
+   "quant": "q8",
+   "baseline": "q8/baseline",
+   "candidate": "q8/candidate",
+   "case": "std0",
+   "phase": "decode_ms",
+   "baseline_ms": 51.622733000000004,
+   "candidate_ms": 80.212933
+  },
+  {
+   "quant": "q8",
+   "baseline": "q8/baseline",
+   "candidate": "q8/candidate",
+   "case": "warmup",
+   "phase": "decode_ms",
+   "baseline_ms": 54.313973000000004,
+   "candidate_ms": 152.56346
+  },
+  {
+   "quant": "q8",
+   "baseline": "q8-repeat/candidate",
+   "candidate": "q8-repeat-control/candidate",
+   "case": "std1",
+   "phase": "prefill_ms",
+   "baseline_ms": 2461.2761130000004,
+   "candidate_ms": 2655.613352
+  },
+  {
+   "quant": "q8",
+   "baseline": "q8-repeat/candidate",
+   "candidate": "q8-repeat-control/candidate",
+   "case": "std1",
+   "phase": "ttft_ms",
+   "baseline_ms": 2473.963498,
+   "candidate_ms": 2669.233705
+  }
+ ],
+ "studies": [
+  {
+   "study": "q4",
+   "passed": true,
+   "errors": [],
+   "suites": [
+    "standard-speed",
+    "timing",
+    "sampling-defaults",
+    "tool-streaming",
+    "messages-tools",
+    "seed",
+    "reasoning-budget",
+    "reasoning-separator",
+    "long-context",
+    "prefill-scheduling",
+    "image-inputs",
+    "constraints"
+   ],
+   "runs": [
+    {
+     "name": "baseline",
+     "passed": false,
+     "sha256": "c238423fcf3c6a9bfac6c198583b3e06e4e9134688f0cebe3bcd2145450df8df",
+     "source_revision": "f0bcd92218d99b7e668cf98f4d16e482a1d0740b",
+     "rank_errors": [],
+     "forced_stop": false,
+     "checks": [
+      {
+       "name": "standard-speed",
+       "exit_code": 0
+      },
+      {
+       "name": "timing",
+       "exit_code": 0
+      },
+      {
+       "name": "prefill-scheduling",
+       "exit_code": 0
+      }
+     ]
+    },
+    {
+     "name": "candidate",
+     "passed": false,
+     "sha256": "fef19e2d79ca2d7e74f273057b29e69b7ec39759dab70cba3f773666908f1e9b",
+     "source_revision": "4bdc23c070385b4a1192103080811653f6e7d0fd",
+     "rank_errors": [],
+     "forced_stop": false,
+     "checks": [
+      {
+       "name": "standard-speed",
+       "exit_code": 0
+      },
+      {
+       "name": "timing",
+       "exit_code": 0
+      },
+      {
+       "name": "sampling-defaults",
+       "exit_code": 0
+      },
+      {
+       "name": "tool-streaming",
+       "exit_code": 0
+      },
+      {
+       "name": "messages-tools",
+       "exit_code": 0
+      },
+      {
+       "name": "seed",
+       "exit_code": 0
+      },
+      {
+       "name": "reasoning-budget",
+       "exit_code": 0
+      },
+      {
+       "name": "reasoning-separator",
+       "exit_code": 0
+      },
+      {
+       "name": "long-context",
+       "exit_code": 0
+      },
+      {
+       "name": "prefill-scheduling",
+       "exit_code": 0
+      },
+      {
+       "name": "image-inputs",
+       "exit_code": 0
+      },
+      {
+       "name": "constraints",
+       "exit_code": 0
+      }
+     ]
+    },
+    {
+     "name": "candidate-restore",
+     "passed": false,
+     "sha256": "fef19e2d79ca2d7e74f273057b29e69b7ec39759dab70cba3f773666908f1e9b",
+     "source_revision": "4bdc23c070385b4a1192103080811653f6e7d0fd",
+     "rank_errors": [],
+     "forced_stop": false,
+     "checks": [
+      {
+       "name": "restore",
+       "exit_code": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "study": "q4-repeat",
+   "passed": true,
+   "errors": [],
+   "suites": [
+    "standard-speed",
+    "timing"
+   ],
+   "runs": [
+    {
+     "name": "baseline",
+     "passed": false,
+     "sha256": "c238423fcf3c6a9bfac6c198583b3e06e4e9134688f0cebe3bcd2145450df8df",
+     "source_revision": "f0bcd92218d99b7e668cf98f4d16e482a1d0740b",
+     "rank_errors": [],
+     "forced_stop": false,
+     "checks": [
+      {
+       "name": "standard-speed",
+       "exit_code": 0
+      },
+      {
+       "name": "timing",
+       "exit_code": 0
+      }
+     ]
+    },
+    {
+     "name": "candidate",
+     "passed": false,
+     "sha256": "fef19e2d79ca2d7e74f273057b29e69b7ec39759dab70cba3f773666908f1e9b",
+     "source_revision": "4bdc23c070385b4a1192103080811653f6e7d0fd",
+     "rank_errors": [],
+     "forced_stop": false,
+     "checks": [
+      {
+       "name": "standard-speed",
+       "exit_code": 0
+      },
+      {
+       "name": "timing",
+       "exit_code": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "study": "q4-repeat-control",
+   "passed": true,
+   "errors": [],
+   "suites": [
+    "standard-speed",
+    "timing"
+   ],
+   "runs": [
+    {
+     "name": "candidate",
+     "passed": false,
+     "sha256": "c238423fcf3c6a9bfac6c198583b3e06e4e9134688f0cebe3bcd2145450df8df",
+     "source_revision": "f0bcd92218d99b7e668cf98f4d16e482a1d0740b",
+     "rank_errors": [],
+     "forced_stop": false,
+     "checks": [
+      {
+       "name": "standard-speed",
+       "exit_code": 0
+      },
+      {
+       "name": "timing",
+       "exit_code": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "study": "q8",
+   "passed": true,
+   "errors": [],
+   "suites": [
+    "standard-speed",
+    "timing",
+    "sampling-defaults",
+    "tool-streaming",
+    "messages-tools",
+    "seed",
+    "reasoning-budget",
+    "reasoning-separator",
+    "long-context",
+    "prefill-scheduling",
+    "image-inputs",
+    "constraints"
+   ],
+   "runs": [
+    {
+     "name": "baseline",
+     "passed": false,
+     "sha256": "c238423fcf3c6a9bfac6c198583b3e06e4e9134688f0cebe3bcd2145450df8df",
+     "source_revision": "f0bcd92218d99b7e668cf98f4d16e482a1d0740b",
+     "rank_errors": [],
+     "forced_stop": false,
+     "checks": [
+      {
+       "name": "standard-speed",
+       "exit_code": 0
+      },
+      {
+       "name": "timing",
+       "exit_code": 0
+      },
+      {
+       "name": "prefill-scheduling",
+       "exit_code": 0
+      }
+     ]
+    },
+    {
+     "name": "candidate",
+     "passed": false,
+     "sha256": "fef19e2d79ca2d7e74f273057b29e69b7ec39759dab70cba3f773666908f1e9b",
+     "source_revision": "4bdc23c070385b4a1192103080811653f6e7d0fd",
+     "rank_errors": [],
+     "forced_stop": false,
+     "checks": [
+      {
+       "name": "standard-speed",
+       "exit_code": 0
+      },
+      {
+       "name": "timing",
+       "exit_code": 0
+      },
+      {
+       "name": "sampling-defaults",
+       "exit_code": 0
+      },
+      {
+       "name": "tool-streaming",
+       "exit_code": 0
+      },
+      {
+       "name": "messages-tools",
+       "exit_code": 0
+      },
+      {
+       "name": "seed",
+       "exit_code": 0
+      },
+      {
+       "name": "reasoning-budget",
+       "exit_code": 0
+      },
+      {
+       "name": "reasoning-separator",
+       "exit_code": 0
+      },
+      {
+       "name": "long-context",
+       "exit_code": 0
+      },
+      {
+       "name": "prefill-scheduling",
+       "exit_code": 0
+      },
+      {
+       "name": "constraints",
+       "exit_code": 0
+      }
+     ]
+    },
+    {
+     "name": "candidate-restore",
+     "passed": false,
+     "sha256": "fef19e2d79ca2d7e74f273057b29e69b7ec39759dab70cba3f773666908f1e9b",
+     "source_revision": "4bdc23c070385b4a1192103080811653f6e7d0fd",
+     "rank_errors": [],
+     "forced_stop": false,
+     "checks": [
+      {
+       "name": "restore",
+       "exit_code": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "study": "q8-harness-model-id-failure",
+   "passed": false,
+   "errors": [
+    "RuntimeError: baseline/standard-speed failed; /home/ugo/projects/gufo/artifacts/upstream-2026-11-18/v0.35.0/q8/baseline/standard-speed.log"
+   ],
+   "suites": [
+    "standard-speed",
+    "timing",
+    "sampling-defaults",
+    "tool-streaming",
+    "messages-tools",
+    "seed",
+    "reasoning-budget",
+    "reasoning-separator",
+    "long-context",
+    "prefill-scheduling",
+    "image-inputs",
+    "constraints"
+   ],
+   "runs": [
+    {
+     "name": "baseline",
+     "passed": false,
+     "sha256": "c238423fcf3c6a9bfac6c198583b3e06e4e9134688f0cebe3bcd2145450df8df",
+     "source_revision": "f0bcd92218d99b7e668cf98f4d16e482a1d0740b",
+     "rank_errors": [],
+     "forced_stop": false,
+     "checks": [
+      {
+       "name": "standard-speed",
+       "exit_code": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "study": "q8-repeat",
+   "passed": true,
+   "errors": [],
+   "suites": [
+    "standard-speed",
+    "timing"
+   ],
+   "runs": [
+    {
+     "name": "baseline",
+     "passed": false,
+     "sha256": "c238423fcf3c6a9bfac6c198583b3e06e4e9134688f0cebe3bcd2145450df8df",
+     "source_revision": "f0bcd92218d99b7e668cf98f4d16e482a1d0740b",
+     "rank_errors": [],
+     "forced_stop": false,
+     "checks": [
+      {
+       "name": "standard-speed",
+       "exit_code": 0
+      },
+      {
+       "name": "timing",
+       "exit_code": 0
+      }
+     ]
+    },
+    {
+     "name": "candidate",
+     "passed": false,
+     "sha256": "fef19e2d79ca2d7e74f273057b29e69b7ec39759dab70cba3f773666908f1e9b",
+     "source_revision": "4bdc23c070385b4a1192103080811653f6e7d0fd",
+     "rank_errors": [],
+     "forced_stop": false,
+     "checks": [
+      {
+       "name": "standard-speed",
+       "exit_code": 0
+      },
+      {
+       "name": "timing",
+       "exit_code": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "study": "q8-repeat-control",
+   "passed": true,
+   "errors": [],
+   "suites": [
+    "standard-speed",
+    "timing"
+   ],
+   "runs": [
+    {
+     "name": "candidate",
+     "passed": false,
+     "sha256": "c238423fcf3c6a9bfac6c198583b3e06e4e9134688f0cebe3bcd2145450df8df",
+     "source_revision": "f0bcd92218d99b7e668cf98f4d16e482a1d0740b",
+     "rank_errors": [],
+     "forced_stop": false,
+     "checks": [
+      {
+       "name": "standard-speed",
+       "exit_code": 0
+      },
+      {
+       "name": "timing",
+       "exit_code": 0
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

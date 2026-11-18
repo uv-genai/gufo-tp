@@ -276,6 +276,7 @@ limits disallow those pins. Gufo leaves `HSA_USERPTR_FOR_PAGED_MEM` unchanged.
 | libopus | Ogg Opus audio decoding; other formats and resampling are built in |
 | FFmpeg and ffprobe | Video/audio output; invoked as separate executables |
 | libibverbs (rdma-core) | Optional TP2 two-host path (`-DGUFO_ENABLE_TP2_RDMA=ON`) |
+| XRT with the amdxdna plugin, libuuid | Optional NPU execution; without XRT the Linux build skips the NPU module and runs on the GPU |
 
 Install ROCm using [AMD's Linux instructions](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/).
 Use the development packages for the libraries above. ROCm normally installs

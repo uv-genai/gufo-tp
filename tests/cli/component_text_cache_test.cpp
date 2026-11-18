@@ -1979,7 +1979,7 @@ void InPassPromptTargetSurvivesACancelledLaterPass() {
       auto& s = dynamic_cast<State&>(state);
       const auto head = prompt.subspan(offset, boundaries.front() - offset);
       s.adapter.Append(s.slot, head, head);
-      consume(0);
+      consume(0, nullptr);
       armed = false;
       cancelled_ = true;
       return {.consumed_tokens = boundaries.front() - offset};

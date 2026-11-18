@@ -123,7 +123,8 @@ the candidate. The first candidate run's slow stretch (requests 5–9,
 in both runs (−12.8%/−13.3% and −11.8%/−6.3% against the fix mean). These
 are probe observations, not the qualified timing harness above: they stay
 **inconclusive**, with [every request retained](models/qwen3.8-flash-next/artifacts/upstream-v0.35.0/probe-results.json).
-Watch early greedy decode rates in the user llama-swap check.
+On November 18 the user ran the deployed candidate through llama-swap and
+confirmed it works well.
 
 The [result index](models/qwen3.8-flash-next/artifacts/upstream-v0.35.0/results.json),
 [functional evidence](models/qwen3.8-flash-next/artifacts/upstream-v0.35.0/functional-results.tar.gz),

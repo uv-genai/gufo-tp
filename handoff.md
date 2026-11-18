@@ -134,6 +134,14 @@ Q4 file on rank 1; inspect both rank logs before diagnosing a collective bug.
 
 ## Current upstream validation
 
+The [November 18 merge record](docs/internal/MERGE-UPSTREAM-2026-11-18.md)
+records v0.35.0 with the TP2 draft-confidence fix: 134/134 native PR checks
+and 394 TP2+MTP functional checks (Q4 212, Q8 182) with clean rank logs and
+restart restore. Timing is inconclusive: no initial flag recurred in the
+focused repeat, and two early greedy probe requests stayed slower on the
+candidate. On November 18 the user confirmed the deployed candidate works
+well through llama-swap.
+
 The [November 17 merge record](docs/internal/MERGE-UPSTREAM-2026-11-17.md)
 records v0.34.0: 124/124 native PR checks and 362 TP2+MTP functional checks
 (Q4 196, Q8 166) with clean rank logs and restart restore. Timing is

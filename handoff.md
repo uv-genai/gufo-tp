@@ -4,9 +4,9 @@ Canonical file: `/home/ugo/projects/gufo/handoff.md`. Updated **2026-11-19** for
 the split batched draft heads ([PR #44](https://github.com/uv-genai/gufo-tp/pull/44)),
 deployed, confirmed by the user through llama-swap and merged, and the split sampled draft
 head ([PR #43](https://github.com/uv-genai/gufo-tp/pull/43)), deployed, confirmed by
-the user through llama-swap and merged; **2026-11-18** for the TP2
+the user through llama-swap and merged, and their release; **2026-11-18** for the TP2
 draft-gate fix (PR #40), the v0.35.0 integration (PR #41) and its release. Latest release:
-`tp2-rdma-merge-v0.35.0-2026-11-18`. Edit this file after deployment,
+`tp2-rdma-fixes-v0.35.0-2026-11-19`. Edit this file after deployment,
 merge, release or incident changes; dated files under `~/gufo-merge-handoff/`
 are archives, and its lowercase `handoff.md` is only a pointer here.
 
@@ -25,7 +25,8 @@ before using either GPU; this document does not establish current availability.
    [November 17 record](docs/internal/MERGE-UPSTREAM-2026-11-17.md) covers v0.34.0.
    [November 11 record](docs/internal/MERGE-UPSTREAM-2026-11-11.md) covers v0.32–v0.33.
    [November 6 record](docs/internal/MERGE-UPSTREAM-2026-11-06.md) covers v0.29–v0.31.
-   [Current release notes](docs/releases/2026-11-18-tp2-merge.md) describe this source release;
+   [Current release notes](docs/releases/2026-11-19-tp2-fixes.md) describe this source release;
+   [November 18 notes](docs/releases/2026-11-18-tp2-merge.md) cover v0.35.0;
    [November 17 notes](docs/releases/2026-11-17-tp2-merge.md) cover v0.34.0;
    [November 11 notes](docs/releases/2026-11-11-tp2-merge.md) cover v0.29–v0.33.
    [Prior release notes](docs/releases/2026-11-06-tp2-fixes.md) describe the published v0.28.1 fixes.
@@ -41,8 +42,9 @@ before using either GPU; this document does not establish current availability.
 | Upstream | `origin` → `gufo-org/gufo`, local tracking branch `gufo-org`; never push there |
 | Upstream merged through | **v0.35.0** (`0260e116`), validated [PR #41](https://github.com/uv-genai/gufo-tp/pull/41), squash `6d2b14ce`; v0.34.0 via [#36](https://github.com/uv-genai/gufo-tp/pull/36). Linux builds without the NPU module where XRT is absent. Unreleased upstream main is excluded |
 | Draft-gate fix | [PR #40](https://github.com/uv-genai/gufo-tp/pull/40), squash **`7dcc8c67`**: split greedy draft confidence exchanged on both ranks; TP protocol 24 |
-| Latest release | [tp2-rdma-merge-v0.35.0-2026-11-18](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.35.0-2026-11-18) |
-| Previous release | [tp2-rdma-merge-v0.34.0-2026-11-17](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.34.0-2026-11-17) |
+| Split draft heads | [PR #43](https://github.com/uv-genai/gufo-tp/pull/43), squash **`79b14aad`**: sampled draft head split, protocol 25; [PR #44](https://github.com/uv-genai/gufo-tp/pull/44), squash **`0ff2a36a`**: batched draft heads split, protocol 26 |
+| Latest release | [tp2-rdma-fixes-v0.35.0-2026-11-19](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-fixes-v0.35.0-2026-11-19) |
+| Previous release | [tp2-rdma-merge-v0.35.0-2026-11-18](https://github.com/uv-genai/gufo-tp/releases/tag/tp2-rdma-merge-v0.35.0-2026-11-18) |
 | Review fixes | [PR #25](https://github.com/uv-genai/gufo-tp/pull/25), merged **`ba1ab427`**, closes #21–#24 |
 | Q4 reader fix | [PR #27](https://github.com/uv-genai/gufo-tp/pull/27), merged **`ae8a93c3`**, closes #26 |
 | Package version | `version.txt` is **0.35.0** from the upstream tag; the dated TP2 release integrates upstream v0.35.0 |

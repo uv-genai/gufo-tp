@@ -632,6 +632,143 @@ void CheckSplitArgmax(std::uint32_t vocab) {
             << ": ties, infinities, NaN and confidence match the full head\n";
 }
 
+// A batch of TP2 draft heads shares one exchange row, each request's half (a
+// greedy argmax or sampled candidates) in its own slot, as
+// Executor::MtpHeads lays them out. Merging each slot must give, bit for bit,
+// what that request's own single split exchange gives, with greedy and
+// sampled requests mixed, and no request's slot may disturb another's.
+void CheckSplitBatchSlots(std::uint32_t vocab, std::uint32_t members) {
+  constexpr auto kCandidates = gufo::models::qwen38_flash_next::kMtpCandidates;
+  constexpr std::uint32_t width = 2560;
+  constexpr std::uint32_t slot = 4 * kCandidates;
+  constexpr float kPoison = 1234.0F;
+  const std::uint32_t half = vocab / 2;
+  const auto count = std::min<std::uint32_t>(half, kCandidates);
+  if (half < kCandidates || std::size_t{members} * slot > width)
+    throw std::invalid_argument("invalid split batch shape");
+  const auto workspace = std::max<std::size_t>(
+      q::MtpCandidateWorkspaceSize(vocab), 2 * kCandidates);
+  auto logits = Allocate<float>(std::size_t{members} * vocab);
+  auto ids = Allocate<std::uint32_t>(workspace);
+  auto scratch = Allocate<std::uint32_t>(workspace);
+  auto* scores = reinterpret_cast<float*>(ids.get() + kCandidates);
+  auto argmax = Allocate<q::ArgmaxCandidate>(q::kArgmaxParts);
+  auto exchange = Allocate<float>(width);
+  auto token = Allocate<std::int32_t>(2);
+  std::vector<float> rows(std::size_t{members} * vocab);
+  for (std::uint32_t m = 0; m < members; ++m) {
+    float* row = rows.data() + std::size_t{m} * vocab;
+    for (std::uint32_t i = 0; i < vocab; ++i)
+      row[i] =
+          static_cast<float>((i * 7919U + m * 104729U) % 1009) * 0.01F - 5.0F;
+    if (m % 3 == 2)
+      row[half - 1] = row[half] = 20.0F;  // A tie across the halves.
+    if (m % 4 == 3)
+      for (std::uint32_t i = 0; i < vocab; i += 2)
+        row[i] = i % 4 ? 0.0F : -0.0F;  // Signed zeros.
+  }
+  CheckHip(hipMemcpy(logits.get(), rows.data(), rows.size() * sizeof(float),
+                     hipMemcpyHostToDevice),
+           "upload batch logits");
+  const auto sampled = [](std::uint32_t m) { return m % 2 == 1; };
+  // One rank's parts for `n` requests from `first`, slots `stride` apart.
+  const auto part_row = [&](std::uint32_t part, std::uint32_t first,
+                            std::uint32_t n, std::uint32_t stride) {
+    std::vector<float> row(width, kPoison);
+    CheckHip(hipMemcpy(exchange.get(), row.data(), width * sizeof(float),
+                       hipMemcpyHostToDevice),
+             "poison batch exchange");
+    for (std::uint32_t k = 0; k < n; ++k) {
+      const std::uint32_t m = first + k;
+      const float* half_logits =
+          logits.get() + std::size_t{m} * vocab + std::size_t{part} * half;
+      float* target = exchange.get() + std::size_t{k} * stride;
+      if (!sampled(m)) {
+        q::SplitArgmaxPart(half_logits, argmax.get(), target, stride, half,
+                           part * half, part, nullptr);
+        continue;
+      }
+      q::MtpTopCandidates(half_logits, ids.get(), scratch.get(), scores, half,
+                          nullptr);
+      q::SplitCandidatesPart(ids.get(), scores, target, stride, count,
+                             part * half, part, nullptr);
+    }
+    CheckHip(hipMemcpy(row.data(), exchange.get(), width * sizeof(float),
+                       hipMemcpyDeviceToHost),
+             "download batch exchange");
+    return row;
+  };
+  // The merged result of slot `k`: a greedy token and confidence bits, or the
+  // sampled candidates' IDs then score bits.
+  const auto finish = [&](const std::vector<float>& sum, std::uint32_t k,
+                          std::uint32_t stride, bool is_sampled) {
+    CheckHip(hipMemcpy(exchange.get(), sum.data(), width * sizeof(float),
+                       hipMemcpyHostToDevice),
+             "upload batch exchange sum");
+    const float* source = exchange.get() + std::size_t{k} * stride;
+    if (!is_sampled) {
+      q::SplitArgmaxFinish(source, token.get(), nullptr);
+      std::vector<std::uint32_t> out(2);
+      CheckHip(hipMemcpy(out.data(), token.get(), 8, hipMemcpyDeviceToHost),
+               "download batch token");
+      return out;
+    }
+    q::SplitCandidatesFinish(source, ids.get(), scores, nullptr);
+    std::vector<std::uint32_t> out(2 * kCandidates);
+    CheckHip(
+        hipMemcpy(out.data(), ids.get(), out.size() * 4, hipMemcpyDeviceToHost),
+        "download batch candidates");
+    return out;
+  };
+  const auto add = [](const std::vector<float>& a,
+                      const std::vector<float>& b) {
+    std::vector<float> sum(a.size());
+    for (std::size_t i = 0; i < a.size(); ++i)
+      sum[i] = a[i] + b[i];
+    return sum;
+  };
+  const auto parts =
+      std::array{part_row(0, 0, members, slot), part_row(1, 0, members, slot)};
+  for (std::uint32_t part = 0; part < 2; ++part) {
+    const auto& row = parts[part];
+    for (std::uint32_t i = 0; i < width; ++i) {
+      const std::uint32_t k = i / slot;
+      const std::uint32_t word = i % slot;
+      const auto bits = std::bit_cast<std::uint32_t>(row[i]);
+      bool foreign_ok = true;
+      if (k >= members) {
+        foreign_ok = row[i] == kPoison;  // The unused tail stays untouched.
+      } else if (sampled(k)) {
+        foreign_ok = word / (2 * kCandidates) == part ||
+                     bits == std::bit_cast<std::uint32_t>(-0.0F);
+      } else {
+        foreign_ok = word / 2 == part ||
+                     word == q::kSplitArgmaxNormalizerSlot + part || bits == 0U;
+      }
+      if (!foreign_ok)
+        throw std::runtime_error("split batch slot " + std::to_string(k) +
+                                 " word " + std::to_string(word) +
+                                 " was disturbed by rank " +
+                                 std::to_string(part));
+    }
+  }
+  const auto batch_sum = add(parts[0], parts[1]);
+  for (std::uint32_t k = 0; k < members; ++k) {
+    const auto batched = finish(batch_sum, k, slot, sampled(k));
+    const auto alone =
+        finish(add(part_row(0, k, 1, width), part_row(1, k, 1, width)), 0,
+               width, sampled(k));
+    if (batched != alone)
+      throw std::runtime_error(
+          "split batch slot differs from its single exchange: vocab=" +
+          std::to_string(vocab) + " members=" + std::to_string(members) +
+          " request=" + std::to_string(k) +
+          (sampled(k) ? " (sampled)" : " (greedy)"));
+  }
+  std::cout << "split batch vocab=" << vocab << " members=" << members
+            << ": every slot matches its single exchange bit for bit\n";
+}
+
 void CheckRemapDraftIds() {
   constexpr std::uint32_t prefix = 8, table_rows = 4;
   constexpr std::int32_t beyond = 0x7EADBEEF;
@@ -932,6 +1069,10 @@ int main() {
     CheckSplitCandidates(130);
     CheckSplitCandidates(4096);
     CheckSplitCandidates(248320);
+    CheckSplitBatchSlots(130, 2);
+    CheckSplitBatchSlots(4096, 5);
+    CheckSplitBatchSlots(248320, 3);
+    CheckSplitBatchSlots(248320, 8);
     CheckHip(gufo::hip::PrepareBatchedGPUArgmax(), "prepare MTP argmax");
     CheckArgmax(248320);
     for (const unsigned vocab :

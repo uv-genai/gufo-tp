@@ -2,7 +2,7 @@
 
 Canonical file: `/home/ugo/projects/gufo/handoff.md`. Updated **2026-11-19** for
 the split batched draft heads ([PR #44](https://github.com/uv-genai/gufo-tp/pull/44)),
-deployed for the user llama-swap check before merge, and the split sampled draft
+deployed, confirmed by the user through llama-swap and merged, and the split sampled draft
 head ([PR #43](https://github.com/uv-genai/gufo-tp/pull/43)), deployed, confirmed by
 the user through llama-swap and merged; **2026-11-18** for the TP2
 draft-gate fix (PR #40), the v0.35.0 integration (PR #41) and its release. Latest release:
@@ -60,7 +60,8 @@ Both hosts have `/home/ugo/projects/gufo/build/release/gufo`:
 
 - Compiled revision **`1593d7e0c02d408cafef5242f36bfde1b36245f3`** (PR #44 branch,
   before its documentation and evidence commits), deployed November 19 at about
-  12:45 AWST for the user llama-swap check; PR #44 is not merged yet.
+  12:45 AWST. The user confirmed it through llama-swap before PR #44 merged: it
+  worked with performance similar to before, generating above 50 tok/s on Q8.
 - SHA-256 **`0b75c5aaa3a043626508bfea5aeb0b1a6afc58556311131973df60076ad1394c`**.
 - Production code is main (v0.35.0 with the split sampled draft head) plus the
   split batched draft heads, with TP control protocol **26** (older peers are

@@ -70,8 +70,8 @@ Both hosts have `/home/ugo/projects/gufo/build/release/gufo`:
 - **Known issue:** with two or more requests decoding concurrently, this binary
   can poison the TP2 pair (`identity or size mismatch`, 10240 against 20480
   bytes), seen at C2 and C3 in the November 19 multi-agent benchmark. The fix
-  (split batched draft heads, control protocol 26) is on branch
-  `fix/tp2-split-batched-draft-head`; until it is deployed, `SESSIONS=1`
+  (split batched draft heads, control protocol 26) is
+  [PR #44](https://github.com/uv-genai/gufo-tp/pull/44); until it is deployed, `SESSIONS=1`
   avoids batched decoding at the cost of concurrency.
 - The v0.35.0 release binary `4bdc23c0…` (SHA `fef19e2d…`, protocol 24),
   deployed November 18 and confirmed through llama-swap, is retained on both

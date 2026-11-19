@@ -375,6 +375,130 @@ void CheckCandidates(std::uint32_t vocab) {
             << ": exact ordering, ties, guards and graph replay passed\n";
 }
 
+// A sampled TP2 draft selects each rank's top candidates over its half, sums
+// both ranks' exchange rows and merges them. The result must equal
+// MtpTopCandidates over the full vocabulary bit for bit: IDs, order and score
+// bits (signed zeros and nonfinite logits included), with halves that hold
+// fewer than kMtpCandidates entries and with every winner in one half.
+void CheckSplitCandidates(std::uint32_t vocab) {
+  constexpr auto kCandidates = gufo::models::qwen38_flash_next::kMtpCandidates;
+  constexpr std::uint32_t width = 2560;
+  const std::uint32_t half = vocab / 2;
+  const auto full_count = std::min<std::size_t>(vocab, kCandidates);
+  const auto half_count = std::min<std::uint32_t>(half, kCandidates);
+  // Scores share the ID workspace from offset kCandidates, as in the
+  // executor; a tiny vocabulary still needs room for both.
+  const auto workspace = std::max<std::size_t>(
+      q::MtpCandidateWorkspaceSize(vocab), 2 * kCandidates);
+  auto device_logits = Allocate<float>(vocab);
+  auto ids = Allocate<std::uint32_t>(workspace);
+  auto scratch = Allocate<std::uint32_t>(workspace);
+  auto* scores = reinterpret_cast<float*>(ids.get() + kCandidates);
+  auto exchange = Allocate<float>(width);
+  const float inf = std::numeric_limits<float>::infinity();
+  const float nan = std::numeric_limits<float>::quiet_NaN();
+  for (std::uint32_t t = 0; t < 7; ++t) {
+    std::vector<float> row(vocab);
+    for (std::uint32_t i = 0; i < vocab; ++i)
+      row[i] = static_cast<float>((i * 7919U + t * 131U) % 97) - 48.0F;
+    switch (t) {
+      case 1:  // Signed zeros tie everywhere.
+        for (std::uint32_t i = 0; i < vocab; ++i)
+          row[i] = i % 3 ? 0.0F : -0.0F;
+        break;
+      case 2:  // Nonfinite logits become -infinity.
+        row[0] = inf;
+        row[vocab - 1] = nan;
+        if (half > 0)
+          row[half] = -inf;
+        break;
+      case 3:  // Every winner in the second half.
+        for (std::uint32_t i = 0; i < vocab; ++i)
+          row[i] = i >= half ? 100.0F + static_cast<float>(i % 5) : -5.0F;
+        break;
+      case 4:  // Every winner in the first half.
+        for (std::uint32_t i = 0; i < vocab; ++i)
+          row[i] = i < half ? 7.0F : -7.0F;
+        break;
+      case 5:
+        std::fill(row.begin(), row.end(), nan);
+        break;
+      default:
+        break;
+    }
+    CheckHip(hipMemcpy(device_logits.get(), row.data(), vocab * sizeof(float),
+                       hipMemcpyHostToDevice),
+             "upload split candidate logits");
+    // The full-vocabulary selection the split must reproduce.
+    q::MtpTopCandidates(device_logits.get(), ids.get(), scratch.get(), scores,
+                        vocab, nullptr);
+    std::vector<std::uint32_t> want_ids(full_count);
+    std::vector<float> want_scores(full_count);
+    CheckHip(hipMemcpy(want_ids.data(), ids.get(), full_count * 4,
+                       hipMemcpyDeviceToHost),
+             "full candidate IDs");
+    CheckHip(hipMemcpy(want_scores.data(), scores, full_count * 4,
+                       hipMemcpyDeviceToHost),
+             "full candidate scores");
+    std::vector<float> sum(width, 0.0F);
+    for (std::uint32_t part = 0; part < 2; ++part) {
+      q::MtpTopCandidates(device_logits.get() + part * half, ids.get(),
+                          scratch.get(), scores, half, nullptr);
+      std::vector<float> poison(width, 1234.0F);
+      CheckHip(hipMemcpy(exchange.get(), poison.data(), width * 4,
+                         hipMemcpyHostToDevice),
+               "poison candidate exchange");
+      q::SplitCandidatesPart(ids.get(), scores, exchange.get(), width,
+                             half_count, part * half, part, nullptr);
+      std::vector<float> rank(width);
+      CheckHip(hipMemcpy(rank.data(), exchange.get(), width * 4,
+                         hipMemcpyDeviceToHost),
+               "download candidate exchange");
+      for (std::uint32_t i = 0; i < width; ++i) {
+        const bool own = i / (2 * kCandidates) == part;
+        if (!own && std::bit_cast<std::uint32_t>(rank[i]) !=
+                        std::bit_cast<std::uint32_t>(-0.0F))
+          throw std::runtime_error("split candidates left a foreign slot set");
+        // The all-reduce: the first rank's row plus the second's.
+        sum[i] = part == 0 ? rank[i] : sum[i] + rank[i];
+      }
+    }
+    CheckHip(
+        hipMemcpy(exchange.get(), sum.data(), width * 4, hipMemcpyHostToDevice),
+        "upload candidate exchange sum");
+    std::vector<std::uint32_t> guard(2 * kCandidates, 0xABABABABU);
+    CheckHip(hipMemcpy(ids.get(), guard.data(), guard.size() * 4,
+                       hipMemcpyHostToDevice),
+             "poison merged candidates");
+    q::SplitCandidatesFinish(exchange.get(), ids.get(), scores, nullptr);
+    std::vector<std::uint32_t> got_ids(kCandidates);
+    std::vector<float> got_scores(kCandidates);
+    CheckHip(hipMemcpy(got_ids.data(), ids.get(), kCandidates * 4,
+                       hipMemcpyDeviceToHost),
+             "merged candidate IDs");
+    CheckHip(hipMemcpy(got_scores.data(), scores, kCandidates * 4,
+                       hipMemcpyDeviceToHost),
+             "merged candidate scores");
+    for (std::size_t i = 0; i < full_count; ++i) {
+      if (got_ids[i] != want_ids[i] ||
+          std::bit_cast<std::uint32_t>(got_scores[i]) !=
+              std::bit_cast<std::uint32_t>(want_scores[i]))
+        throw std::runtime_error(
+            "split candidates disagree with the full head: vocab=" +
+            std::to_string(vocab) + " row=" + std::to_string(t) +
+            " rank=" + std::to_string(i) + " ID=" + std::to_string(got_ids[i]) +
+            "/" + std::to_string(want_ids[i]) +
+            " score=" + std::to_string(got_scores[i]) + "/" +
+            std::to_string(want_scores[i]));
+    }
+    for (std::size_t i = full_count; i < kCandidates; ++i)
+      if (got_ids[i] != UINT32_MAX)
+        throw std::runtime_error("split candidates filled an empty slot");
+  }
+  std::cout << "split candidates vocab=" << vocab
+            << ": IDs, order and score bits match the full head\n";
+}
+
 // Each rank's half of a split vocabulary and the summed exchange rows must
 // select what the full argmax selects, including ties across the halves and
 // NaN or infinite logits, and report the full-vocabulary softmax probability
@@ -804,6 +928,10 @@ int main() {
     CheckSplitArgmax(2);
     CheckSplitArgmax(256);
     CheckSplitArgmax(248320);
+    CheckSplitCandidates(2);
+    CheckSplitCandidates(130);
+    CheckSplitCandidates(4096);
+    CheckSplitCandidates(248320);
     CheckHip(gufo::hip::PrepareBatchedGPUArgmax(), "prepare MTP argmax");
     CheckArgmax(248320);
     for (const unsigned vocab :

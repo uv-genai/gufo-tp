@@ -1,8 +1,9 @@
 # LIVE HANDOFF — Gufo-TP
 
-Canonical file: `/home/ugo/projects/gufo/handoff.md`. Updated **2026-11-18** for
-the TP2 draft-gate fix (PR #40), the v0.35.0 integration (PR #41) and its
-release. Latest release:
+Canonical file: `/home/ugo/projects/gufo/handoff.md`. Updated **2026-11-19** for
+the split sampled draft head ([PR #43](https://github.com/uv-genai/gufo-tp/pull/43)),
+deployed, confirmed by the user through llama-swap and merged; **2026-11-18** for the TP2
+draft-gate fix (PR #40), the v0.35.0 integration (PR #41) and its release. Latest release:
 `tp2-rdma-merge-v0.35.0-2026-11-18`. Edit this file after deployment,
 merge, release or incident changes; dated files under `~/gufo-merge-handoff/`
 are archives, and its lowercase `handoff.md` is only a pointer here.
@@ -55,16 +56,21 @@ scope for this release.
 
 Both hosts have `/home/ugo/projects/gufo/build/release/gufo`:
 
-- Compiled revision **`4bdc23c070385b4a1192103080811653f6e7d0fd`** (PR #41 branch,
-  before its test and documentation commits), deployed November 18 at about
-  21:00 AWST; the user confirmed it through llama-swap before both PRs merged.
-  Do not confuse it with the squash commit `6d2b14ce`.
-- SHA-256 **`fef19e2d79ca2d7e74f273057b29e69b7ec39759dab70cba3f773666908f1e9b`**.
-- Production code includes upstream v0.35.0, the unsplit TP2 scheduling
-  profile, the exchanged split draft confidence and TP control protocol **24**
-  (older peers are rejected). Source extension API is **0.3.20**. Built
-  without XRT, so the NPU module is absent; GPU serving is unaffected.
-- The binary reports `gufo version development (4bdc23c0...)`.
+- Compiled revision **`3ea2bc10b816540d7c354a849ca28fab51a7fc58`** (PR #43 branch,
+  before its documentation and evidence commits), deployed November 19 at about
+  08:40 AWST. The user confirmed it through llama-swap before PR #43 merged: a
+  long sampled Q8 eBPF tutorial generation ran at 50.5 tok/s, against 39.0 tok/s
+  on v0.35.0 the day before.
+- SHA-256 **`c28b59d70d47b9b2f706f0e195816cbf20214aadef7deabb01f56042ab7492eb`**.
+- Production code is the v0.35.0 release plus the split sampled draft head,
+  with TP control protocol **25** (older peers are rejected). Source extension
+  API is **0.3.20**. Built without XRT, so the NPU module is absent; GPU
+  serving is unaffected.
+- The binary reports `gufo version development (3ea2bc10...)`.
+- The v0.35.0 release binary `4bdc23c0…` (SHA `fef19e2d…`, protocol 24),
+  deployed November 18 and confirmed through llama-swap, is retained on both
+  hosts at `artifacts/upstream-2026-11-18/gufo-candidate-v0.35.0` for
+  rollback. Do not confuse it with the squash commit `6d2b14ce`.
 - The v0.34.0 binary `991ecf2a…` (SHA `5503297f…`) is retained on both hosts
   at `artifacts/upstream-2026-11-18/gufo-main-v0.34.0` for rollback, and the
   fix-only binary `f0bcd922…` (SHA `c238423f…`) at
@@ -165,7 +171,7 @@ See the [merge record](docs/internal/MERGE-UPSTREAM-2026-11-06.md) for v0.29.0 t
 build, CPU/GPU tests, four TP2 modes and per-request timing controls. Raw
 evidence is retained under the corresponding version directories in
 `artifacts/upstream-2026-11-06/`.
-TP protocol is **24** (deployed November 18; 23 before), snapshot payload is 20, and TP2 retains its mirrored
+TP protocol is **25** (deployed November 19; 24 before), snapshot payload is 20, and TP2 retains its mirrored
 snapshot path with component caching disabled. Static YaRN has a distinct
 persistence identity. Upgrade both hosts together; older peers are rejected.
 Only compatible persisted states can restore.
@@ -254,7 +260,7 @@ difference of **0.698152**; it is not a byte-exact sparse-prefill pass.
 ## TP2 invariants and future work
 
 - **Same binary/revision/SHA on both hosts; one model process per GPU host.**
-- Control protocol **24**, snapshot payload **v20**. Upgrade ranks together.
+- Control protocol **25**, snapshot payload **v20**. Upgrade ranks together.
 - `TpMirroredRunner::UsesComponentCache()` remains **false**.
 - Draft subset/small head, prompt lookup copies and residual deferral stay
   single-host only. Rank 0 mirrors draft counts and execution shape.

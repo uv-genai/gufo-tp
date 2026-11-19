@@ -40,8 +40,8 @@ and `--mmproj` use; the handshake names any setting that differs.
 `--prefill-chunk` is deprecated and ignored: both ranks confirm the fixed
 TP2 pass width.
 
-Control protocol **24** rejects peers whose split draft head does not
-exchange its confidence (see Exchange below). It carries v0.31 provider
+Control protocol **25** rejects peers whose split draft head does not
+exchange its confidence or split sampled drafts (see Exchange below). It carries v0.31 provider
 reasoning: budget openers,
 whitespace masks and the exact automatic/reasoning/content constraint state.
 The mirrored runner also forwards provider tool dialects and reasoning markup.
@@ -159,7 +159,9 @@ and recurrent state. The indexer, draft block, HC, embedding, PLE, LM head and
 vision encoder are replicated. A greedy draft scores only its rank's half of
 the Q8_0 LM head; the two halves' argmax candidates and softmax normalizers
 cross in one all-reduce row, so both ranks read the same draft token and the
-same confidence. Target rows, sampled drafts and logprobs keep the full head.
+same confidence. A sampled draft splits the same way: each half's top 64
+candidates cross in one row and both ranks merge them into the exact
+full-vocabulary top 64. Target rows and logprobs keep the full head.
 
 **Exchange.** Each mixer block and each MoE ends in one exchange of partial
 sums, 10 KiB per decode row. A stage kernel copies the partial to host memory

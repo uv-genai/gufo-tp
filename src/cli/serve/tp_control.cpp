@@ -27,11 +27,12 @@ namespace gufo::server {
 namespace {
 
 constexpr std::uint32_t kMagic = 0x54504331U;  // "TPC1"
-constexpr std::uint16_t kVersion = 25;         // requests and rank-1 executor
+constexpr std::uint16_t kVersion = 26;         // requests and rank-1 executor
                                                // instructions for concurrent
                                                // requests; 24: the split draft
                                                // head exchanges its confidence;
-                                               // 25: sampled drafts split too
+                                               // 25: sampled drafts split too;
+                                               // 26: batched draft heads split
 constexpr std::uint16_t kHello = 1;
 constexpr std::uint16_t kCommand = 2;
 constexpr std::uint16_t kResponse = 3;

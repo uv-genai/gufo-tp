@@ -575,7 +575,78 @@ bool Executor::MtpHeads(std::span<const MtpHeadItem> items,
                                  : batch_logits_ + subset_rows * kSmall +
                                        (slot[i] - subset_rows) * vocab;
   };
+  // Under TP each rank scores its half of the vocabulary for every row, as
+  // MtpHead does for one: each request's half (the greedy argmax with its
+  // softmax normalizer, or the sampled top kMtpCandidates) takes its own slot
+  // of one all-reduce row, and both ranks merge the same data. The draft gate
+  // reads the result on both ranks. A rank-local value would end one rank's
+  // chain earlier and desync the next exchange: a one-row split head against
+  // a two-row draft body.
+  constexpr std::uint32_t kSplitSlot = 4 * kMtpCandidates;
+  static_assert(kSplitSlot >= kSplitArgmaxNormalizerSlot + 2);
+  const std::uint32_t half = static_cast<std::uint32_t>(vocab / 2);
+  const bool split =
+      model_->tp_world_size() == 2 && subset_rows == 0 &&
+      full_head.type == core::GgmlType::kQ8_0 && full_head.cols % 32 == 0 &&
+      vocab % 2 == 0 && half >= kMtpCandidates &&
+      std::size_t{n} * kSplitSlot <= config().hidden_size &&
+      std::all_of(items.begin(), items.end(), [](const MtpHeadItem& item) {
+        return (item.output.token == nullptr) !=
+               (item.output.candidates == nullptr);
+      });
   const Scratch base = s_;
+  const auto split_heads = [&]() {
+    const std::uint32_t rank = model_->tp_rank();
+    DeviceTensor part = full_head;
+    part.rows = half;
+    part.data = static_cast<std::uint8_t*>(full_head.data) +
+                std::size_t{rank} * half * (full_head.cols / 32) * 34;
+    if (!DenseBatch(part, base.mixed, batch_logits_, n, error))
+      return false;
+    // The row follows the n half-width logit rows inside the batch buffer.
+    float* exchange = batch_logits_ + std::size_t{n} * half;
+    for (std::uint32_t i = 0; i < n; ++i) {
+      const float* logits = batch_logits_ + std::size_t{i} * half;
+      float* slot_row = exchange + std::size_t{i} * kSplitSlot;
+      if (items[i].output.candidates == nullptr) {
+        SplitArgmaxPart(logits, s_.mtp_argmax, slot_row, kSplitSlot, half,
+                        rank * half, rank, stream_);
+        continue;
+      }
+      // A candidate outside its half's top kMtpCandidates cannot be in the
+      // full vocabulary's.
+      MtpTopCandidates(logits, s_.mtp_ids, s_.mtp_scratch_ids, s_.mtp_scores,
+                       half, stream_);
+      SplitCandidatesPart(s_.mtp_ids, s_.mtp_scores, slot_row, kSplitSlot,
+                          kMtpCandidates, rank * half, rank, stream_);
+    }
+    if (!AllReduce(exchange, 1, error))
+      return false;
+    static_assert(offsetof(MtpCandidateLogits, logits) ==
+                  kMtpCandidates * sizeof(std::uint32_t));
+    for (std::uint32_t i = 0; i < n; ++i) {
+      const float* slot_row = exchange + std::size_t{i} * kSplitSlot;
+      if (items[i].output.candidates == nullptr) {
+        // The token and its confidence (float bits) land in ids[0..1].
+        SplitArgmaxFinish(slot_row, s_.mtp_token, stream_);
+        if (!Check(hipMemcpyAsync(batch_candidates_host_[i].ids.data(),
+                                  s_.mtp_token, 2 * sizeof(std::int32_t),
+                                  hipMemcpyDeviceToHost, stream_),
+                   error))
+          return false;
+        continue;
+      }
+      SplitCandidatesFinish(slot_row, s_.mtp_ids, s_.mtp_scores, stream_);
+      if (!Check(hipMemcpyAsync(batch_candidates_host_ + i, s_.mtp_ids,
+                                offsetof(MtpCandidateLogits, logits) +
+                                    kMtpCandidates * sizeof(float),
+                                hipMemcpyDeviceToHost, stream_),
+                 error))
+        return false;
+      batch_candidates_host_[i].size = kMtpCandidates;
+    }
+    return true;
+  };
   const auto body = [&]() {
     if (!AnyActive(items))
       return true;
@@ -590,6 +661,8 @@ bool Executor::MtpHeads(std::span<const MtpHeadItem> items,
       return false;
     if (!AnyActive(items))
       return true;
+    if (split)
+      return split_heads();
     static_assert(speculative::kDraftVocabExtraRows <= 1024,
                   "GatherDraftLogits is one block");
     if (mixed) {

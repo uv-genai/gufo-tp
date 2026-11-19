@@ -1,8 +1,10 @@
 # LIVE HANDOFF — Gufo-TP
 
 Canonical file: `/home/ugo/projects/gufo/handoff.md`. Updated **2026-11-19** for
-the split sampled draft head ([PR #43](https://github.com/uv-genai/gufo-tp/pull/43)),
-deployed, confirmed by the user through llama-swap and merged; **2026-11-18** for the TP2
+the split batched draft heads ([PR #44](https://github.com/uv-genai/gufo-tp/pull/44)),
+deployed, confirmed by the user through llama-swap and merged, and the split sampled draft
+head ([PR #43](https://github.com/uv-genai/gufo-tp/pull/43)), deployed, confirmed by
+the user through llama-swap and merged; **2026-11-18** for the TP2
 draft-gate fix (PR #40), the v0.35.0 integration (PR #41) and its release. Latest release:
 `tp2-rdma-merge-v0.35.0-2026-11-18`. Edit this file after deployment,
 merge, release or incident changes; dated files under `~/gufo-merge-handoff/`
@@ -56,17 +58,23 @@ scope for this release.
 
 Both hosts have `/home/ugo/projects/gufo/build/release/gufo`:
 
-- Compiled revision **`3ea2bc10b816540d7c354a849ca28fab51a7fc58`** (PR #43 branch,
+- Compiled revision **`1593d7e0c02d408cafef5242f36bfde1b36245f3`** (PR #44 branch,
   before its documentation and evidence commits), deployed November 19 at about
-  08:40 AWST. The user confirmed it through llama-swap before PR #43 merged: a
-  long sampled Q8 eBPF tutorial generation ran at 50.5 tok/s, against 39.0 tok/s
-  on v0.35.0 the day before.
-- SHA-256 **`c28b59d70d47b9b2f706f0e195816cbf20214aadef7deabb01f56042ab7492eb`**.
-- Production code is the v0.35.0 release plus the split sampled draft head,
-  with TP control protocol **25** (older peers are rejected). Source extension
-  API is **0.3.20**. Built without XRT, so the NPU module is absent; GPU
-  serving is unaffected.
-- The binary reports `gufo version development (3ea2bc10...)`.
+  12:45 AWST. The user confirmed it through llama-swap before PR #44 merged: it
+  worked with performance similar to before, generating above 50 tok/s on Q8.
+- SHA-256 **`0b75c5aaa3a043626508bfea5aeb0b1a6afc58556311131973df60076ad1394c`**.
+- Production code is main (v0.35.0 with the split sampled draft head) plus the
+  split batched draft heads, with TP control protocol **26** (older peers are
+  rejected). Source extension API is **0.3.20**. Built without XRT, so the NPU
+  module is absent; GPU serving is unaffected.
+- The binary reports `gufo version development (1593d7e0...)`.
+- The previous binary `3ea2bc10…` (SHA `c28b59d7…`, protocol 25, main's code
+  after PR #43), deployed November 19 at about 08:40 AWST, is retained on both
+  hosts at `artifacts/split-sampled-head-2026-11-18/gufo-candidate-split` for
+  rollback. It can poison the TP2 pair when two or more requests decode
+  concurrently (`identity or size mismatch`, 10240 against 20480 bytes; seen at
+  C2 and C3 in the November 19 multi-agent benchmark); with it, `SESSIONS=1`
+  avoids batched decoding at the cost of concurrency.
 - The v0.35.0 release binary `4bdc23c0…` (SHA `fef19e2d…`, protocol 24),
   deployed November 18 and confirmed through llama-swap, is retained on both
   hosts at `artifacts/upstream-2026-11-18/gufo-candidate-v0.35.0` for
@@ -171,7 +179,7 @@ See the [merge record](docs/internal/MERGE-UPSTREAM-2026-11-06.md) for v0.29.0 t
 build, CPU/GPU tests, four TP2 modes and per-request timing controls. Raw
 evidence is retained under the corresponding version directories in
 `artifacts/upstream-2026-11-06/`.
-TP protocol is **25** (deployed November 19; 24 before), snapshot payload is 20, and TP2 retains its mirrored
+TP protocol is **26** (deployed November 19; 25 and 24 before), snapshot payload is 20, and TP2 retains its mirrored
 snapshot path with component caching disabled. Static YaRN has a distinct
 persistence identity. Upgrade both hosts together; older peers are rejected.
 Only compatible persisted states can restore.
@@ -260,7 +268,7 @@ difference of **0.698152**; it is not a byte-exact sparse-prefill pass.
 ## TP2 invariants and future work
 
 - **Same binary/revision/SHA on both hosts; one model process per GPU host.**
-- Control protocol **25**, snapshot payload **v20**. Upgrade ranks together.
+- Control protocol **26**, snapshot payload **v20**. Upgrade ranks together.
 - `TpMirroredRunner::UsesComponentCache()` remains **false**.
 - Draft subset/small head, prompt lookup copies and residual deferral stay
   single-host only. Rank 0 mirrors draft counts and execution shape.

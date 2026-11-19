@@ -358,6 +358,41 @@ start: a second start with three cohorts per point gave mixed 90.06 (C4) and
 105.40 (C6), repetitive 115.74 (C4) and 118.65 (C6) tok/s, each cohort within
 3% of its point's rate.
 
+### Multiple coding agents, November 19, 2026
+
+Four coding agents share one system prompt. Each carries its own
+4,400–5,000-token repository file and task (tests, a refactor, documentation,
+a port), and every reply is exactly 1,024 tokens (`ignore_eos`). Prompts are
+cached first; each level runs twice, C1 to C4 and back. Sampled is temperature
+0.7, top-p 0.8, top-k 20, seeded; greedy is temperature 0. Four sessions,
+context capacity 524,288, YaRN 2, build `1593d7e0` on both hosts. Per agent is
+the mean request decode rate; combined sums the request rates; end to end
+divides all tokens by the time from the first request to the last reply, so it
+includes the tail after faster agents finish. Q4 averages two server starts.
+The launchers default to `--sessions 2`, where a third concurrent request
+waits for a session.
+
+| Flash-Next Q8 RDMA<br>Agents | Sampled per agent (tok/s) | Sampled combined | Sampled end to end | Greedy per agent | Greedy combined | Greedy end to end |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 54.9 | 54.9 | — | 52.3 | 52.3 | — |
+| 2 | 41.5 | 83.0 | 77.0 | 42.4 | 84.8 | 79.1 |
+| 3 | 31.5 | 94.4 | 71.1 | 31.3 | 94.0 | 76.9 |
+| 4 | 25.4 | 101.8 | 77.7 | 26.2 | 105.0 | 86.0 |
+
+| Flash-Next Q4 RDMA<br>Agents | Sampled per agent (tok/s) | Sampled combined | Sampled end to end | Greedy per agent | Greedy combined | Greedy end to end |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 55.5 | 55.5 | — | 61.1 | 61.1 | — |
+| 2 | 41.2 | 82.4 | 73.7 | 52.0 | 104.1 | 101.2 |
+| 3 | 31.0 | 93.1 | 79.1 | 39.0 | 116.9 | 89.2 |
+| 4 | 27.0 | 108.1 | 91.2 | 32.5 | 130.0 | 102.1 |
+
+Rates depend on the task: alone on Q8, the refactor ran at 56–67 tok/s and the
+documentation at 41–46. Against the previous build on matched rounds, combined
+C2–C4 throughput is 0–8% higher, mostly within the ±4% spread between two
+starts; that build could poison the pair at C2 and C3
+([split batched draft heads](EXPERIMENTS.md)).
+[Evidence](artifacts/tp2-batched-split-head/results.json).
+
 ## Cache cost calibration (November 12, 2026)
 
 Diagnostic least-squares fits of the retained single-user pp2048 depth sweeps

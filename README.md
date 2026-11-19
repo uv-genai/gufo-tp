@@ -143,6 +143,17 @@ before reading Gufo's `/metrics` or `/slots`. From bare metal to striped USB4:
 [TP2-SETUP.md](TP2-SETUP.md). Protocol, cache rules and qualification:
 [TP2.md](docs/internal/models/qwen3.8-flash-next/TP2.md).
 
+Concurrent coding agents on TP2, November 19, 2026 (sum of per-agent decode
+tok/s; ~5K-token prompts, 1,024-token sampled replies; `SESSIONS=4`;
+[details](docs/internal/models/qwen3.8-flash-next/BENCHMARKS.md#multiple-coding-agents-november-19-2026)):
+
+| Agents | TP2 Q8 | TP2 Q4 |
+| ---: | ---: | ---: |
+| 1 | 55 | 56 |
+| 2 | 83 | 82 |
+| 3 | 94 | 93 |
+| 4 | 102 | 108 |
+
 To add or maintain a model, start with the [source extension guide](docs/extensions.md).
 
 ## Philosophy

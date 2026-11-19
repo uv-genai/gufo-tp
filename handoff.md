@@ -2,7 +2,7 @@
 
 Canonical file: `/home/ugo/projects/gufo/handoff.md`. Updated **2026-11-19** for
 the split sampled draft head ([PR #43](https://github.com/uv-genai/gufo-tp/pull/43)),
-deployed for the user llama-swap check before merge; **2026-11-18** for the TP2
+deployed, confirmed by the user through llama-swap and merged; **2026-11-18** for the TP2
 draft-gate fix (PR #40), the v0.35.0 integration (PR #41) and its release. Latest release:
 `tp2-rdma-merge-v0.35.0-2026-11-18`. Edit this file after deployment,
 merge, release or incident changes; dated files under `~/gufo-merge-handoff/`
@@ -57,8 +57,10 @@ scope for this release.
 Both hosts have `/home/ugo/projects/gufo/build/release/gufo`:
 
 - Compiled revision **`3ea2bc10b816540d7c354a849ca28fab51a7fc58`** (PR #43 branch,
-  before its documentation and evidence commits), deployed November 19 for the
-  user llama-swap check; PR #43 is not merged yet.
+  before its documentation and evidence commits), deployed November 19 at about
+  08:40 AWST. The user confirmed it through llama-swap before PR #43 merged: a
+  long sampled Q8 eBPF tutorial generation ran at 50.5 tok/s, against 39.0 tok/s
+  on v0.35.0 the day before.
 - SHA-256 **`c28b59d70d47b9b2f706f0e195816cbf20214aadef7deabb01f56042ab7492eb`**.
 - Production code is the v0.35.0 release plus the split sampled draft head,
   with TP control protocol **25** (older peers are rejected). Source extension
